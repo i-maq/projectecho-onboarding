@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import OrbIntro from '../OrbIntro';
+import OrbIntro from '../../OrbIntro';
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [stage, setStage] = useState<'language' | 'soundCheck' | 'intro'>('language');
