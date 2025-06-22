@@ -37,17 +37,18 @@ const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
   const tapRef = useRef<HTMLAudioElement>(null);
   const [step, setStep] = useState(0);
 
-  // Initialize particle canvas animation
+  // Canvas particle animation inside orb
   useEffect(() => {
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext('2d')!;
-    const particles = Array.from({ length: 80 }, () => ({
+    const particles = Array.from({ length: 120 }, () => ({
       angle: Math.random() * Math.PI * 2,
       radius: 0.3 + Math.random() * 0.5,
       speed: 0.004 + Math.random() * 0.006,
       hue: 240 + Math.random() * 60,
     }));
-    let anim: number;
+    let animationId: number;
+
     function draw() {
       const { width, height } = canvas;
       ctx.clearRect(0, 0, width, height);
@@ -56,17 +57,18 @@ const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         const x = width / 2 + Math.cos(p.angle) * (width / 2) * p.radius;
         const y = height / 2 + Math.sin(p.angle) * (height / 2) * p.radius;
         ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 80%, 60%, 0.5)`;
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue},80%,60%,0.8)`;
         ctx.fill();
       });
-      anim = requestAnimationFrame(draw);
+      animationId = requestAnimationFrame(draw);
     }
+
     draw();
-    return () => cancelAnimationFrame(anim);
+    return () => cancelAnimationFrame(animationId);
   }, []);
 
-  // Play ambient background music on mount
+  // Ambient background music
   useEffect(() => {
     const bg = new Audio('/ambient-music.mp3');
     bg.loop = true;
@@ -81,10 +83,12 @@ const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
   }, []);
 
   const handleTap = () => {
+    // Play tap sound
     if (tapRef.current) {
       tapRef.current.currentTime = 0;
       tapRef.current.play();
     }
+    // Advance caption or finish
     if (step < captions.length - 1) {
       setStep(step + 1);
       if (audioRef.current) {
@@ -101,11 +105,15 @@ const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       className="fixed inset-0 flex flex-col items-center justify-center bg-[#f0f2f5] cursor-pointer"
       onClick={handleTap}
     >
-      <div className="relative w-72 h-72 mb-8 rounded-full bg-white bg-opacity-50 backdrop-blur-4xl overflow-hidden border border-white border-opacity-20">
+      {/* Background pulse from globals.css */}
+      <div className="pulse-circle-light"></div>
+
+      {/* Orb container */}
+      <div className="relative w-72 h-72 mb-8 rounded-full bg-white bg-opacity-30 backdrop-blur-3xl overflow-hidden border border-white border-opacity-20">
         {/* Gradient backlight */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500 via-blue-400 to-cyan-300 opacity-40 filter blur-3xl animate-pulse-slow" />
         {/* Particle canvas */}
-        <canvas ref={canvasRef} width={288} height={288} className="relative" />
+        <canvas ref={canvasRef} width={288} height={288} />
       </div>
 
       {/* Audio elements */}
