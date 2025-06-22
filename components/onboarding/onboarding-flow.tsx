@@ -2,9 +2,10 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import OrbIntro from '../OrbIntro';
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
-  const [stage, setStage] = useState<'language' | 'soundCheck'>('language');
+  const [stage, setStage] = useState<'language' | 'soundCheck' | 'intro'>('language');
   const [clickPulse, setClickPulse] = useState<{ x: number, y: number, key: number } | null>(null);
   
   const musicRef = useRef<HTMLAudioElement | null>(null);
@@ -20,6 +21,22 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
     setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
     setTimeout(() => setStage('soundCheck'), 700);
   };
+
+  const handleSoundCheckNext = () => {
+    setStage('intro');
+  };
+
+  if (stage === 'intro') {
+    return (
+      <OrbIntro
+        audioSrc="/audio/onboarding-intro.mp3"
+        onAdvance={() => {
+          onComplete();
+          localStorage.setItem('onboardingComplete', 'true');
+        }}
+      />
+    );
+  }
   
   return (
     <div className="w-full h-full flex items-center justify-center">
@@ -46,8 +63,8 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             <div className="glass-panel-light text-center max-w-lg">
               <h2 className="text-3xl font-bold mb-4 text-gray-800">A Cinematic Experience</h2>
               <p className="text-lg text-gray-600 mb-8">This experience is best enjoyed with sound.</p>
-              <button onClick={() => { onComplete(); localStorage.setItem('onboardingComplete', 'true'); }} className="neumorphic-button-light">
-                Finish Onboarding (Temp)
+              <button onClick={handleSoundCheckNext} className="neumorphic-button-light">
+                Continue
               </button>
             </div>
            </motion.div>
