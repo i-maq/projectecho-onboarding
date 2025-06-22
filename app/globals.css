@@ -98,3 +98,11 @@
   50%  {                                     opacity: 0.5; }
   100% { transform: translate(20px, -110vh); opacity: 0;   }
 }
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.6; }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
