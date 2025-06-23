@@ -119,15 +119,20 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     [particleCount, isMobile]
   );
 
-  // Aurora borealis color palette
+  // 🌈 ENHANCED Aurora borealis color palette with more vibrant greens and purples
   const auroraColors = [
-    { r: 0, g: 255, b: 127 },    // Spring green
-    { r: 64, g: 224, b: 255 },   // Deep sky blue  
-    { r: 138, g: 43, b: 226 },   // Blue violet
-    { r: 0, g: 191, b: 255 },    // Deep sky blue
-    { r: 127, g: 255, b: 212 },  // Aquamarine
-    { r: 72, g: 61, b: 139 },    // Dark slate blue
-    { r: 0, g: 206, b: 209 },    // Dark turquoise
+    { r: 50, g: 255, b: 50 },     // Bright green 
+    { r: 100, g: 255, b: 100 },   // Light green
+    { r: 0, g: 200, b: 100 },     // Emerald green
+    { r: 150, g: 50, b: 255 },    // Bright purple
+    { r: 200, g: 100, b: 255 },   // Light purple
+    { r: 100, g: 0, b: 200 },     // Deep purple
+    { r: 255, g: 100, b: 200 },   // Pink-purple
+    { r: 0, g: 255, b: 150 },     // Cyan-green
+    { r: 100, g: 150, b: 255 },   // Light blue
+    { r: 50, g: 100, b: 255 },    // Deep blue
+    { r: 255, g: 150, b: 0 },     // Orange (for warm contrast)
+    { r: 255, g: 200, b: 100 },   // Warm yellow
   ];
 
   // Initialize audio analysis
@@ -266,7 +271,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         speed: 0.012,
         noiseScale: 0.8,
         opacity: 0.9,
-        offset: { x: 0, y: 0 }
+        offset: { x: 0, y: 0 },
+        colorOffset: 0 // For color variation per layer
       },
       {
         baseRadius: 60,
@@ -274,7 +280,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         speed: 0.018,
         noiseScale: 1.1,
         opacity: 0.8,
-        offset: { x: 6, y: -4 }
+        offset: { x: 6, y: -4 },
+        colorOffset: 2.5 // Different color progression
       },
       {
         baseRadius: 85,
@@ -282,7 +289,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         speed: 0.009,
         noiseScale: 0.6,
         opacity: 0.7,
-        offset: { x: -5, y: 3 }
+        offset: { x: -5, y: 3 },
+        colorOffset: 5.0 // Different color progression
       },
       {
         baseRadius: 45,
@@ -290,7 +298,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         speed: 0.024,
         noiseScale: 1.4,
         opacity: 0.95,
-        offset: { x: 2, y: 6 }
+        offset: { x: 2, y: 6 },
+        colorOffset: 7.5 // Different color progression
       },
       {
         baseRadius: 95,
@@ -298,7 +307,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         speed: 0.006,
         noiseScale: 0.4,
         opacity: 0.6,
-        offset: { x: 0, y: 0 }
+        offset: { x: 0, y: 0 },
+        colorOffset: 10.0 // Different color progression
       },
       {
         baseRadius: 35,
@@ -306,7 +316,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         speed: 0.030,
         noiseScale: 1.8,
         opacity: 1.0,
-        offset: { x: 4, y: -2 }
+        offset: { x: 4, y: -2 },
+        colorOffset: 12.5 // Different color progression
       }
     ];
 
@@ -383,8 +394,40 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       return points;
     };
 
+    // 🌈 ENHANCED color selection for better variety and vibrancy
+    const getLayerColors = (layer: any, t: number, index: number) => {
+      // More dynamic color cycling with layer-specific offsets
+      const baseColorIndex = (t * 0.008 + layer.colorOffset + audioLevel * 2) % auroraColors.length;
+      const jumpColorShift = jumpState.isJumping ? jumpState.jumpProgress * 2 : 0;
+      
+      // Get multiple colors for rich blending
+      const colorIndex1 = Math.floor(baseColorIndex + jumpColorShift) % auroraColors.length;
+      const colorIndex2 = Math.floor(baseColorIndex + jumpColorShift + 3) % auroraColors.length;
+      const colorIndex3 = Math.floor(baseColorIndex + jumpColorShift + 6) % auroraColors.length;
+      
+      const color1 = auroraColors[colorIndex1];
+      const color2 = auroraColors[colorIndex2];
+      const color3 = auroraColors[colorIndex3];
+      
+      // Enhanced color mixing for richer results
+      const mix1 = (baseColorIndex % 1);
+      const mix2 = ((baseColorIndex + 3) % 1);
+      
+      const r = Math.floor(
+        color1.r * (1 - mix1) + color2.r * mix1 * 0.7 + color3.r * mix2 * 0.3
+      );
+      const g = Math.floor(
+        color1.g * (1 - mix1) + color2.g * mix1 * 0.7 + color3.g * mix2 * 0.3
+      );
+      const b = Math.floor(
+        color1.b * (1 - mix1) + color2.b * mix1 * 0.7 + color3.b * mix2 * 0.3
+      );
+      
+      return { r, g, b };
+    };
+
     // Enhanced smooth blob drawing with HEAVY BLUR and better blending
-    const drawSmoothBlob = (points: any[], color: string, layer: any) => {
+    const drawSmoothBlob = (points: any[], layer: any, layerIndex: number, t: number) => {
       if (points.length < 3) return;
       
       ctx.save();
@@ -419,14 +462,37 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       
       ctx.closePath();
       
+      // Get vibrant colors for this layer
+      const colors = getLayerColors(layer, t, layerIndex);
+      
+      // Enhanced radial gradient with more stops for smoother blending
+      const gradient = ctx.createRadialGradient(
+        orbPosition.x, orbPosition.y, 0,
+        orbPosition.x, orbPosition.y, layer.baseRadius * 2.5
+      );
+      
+      const baseOpacity = layer.opacity * (0.3 + audioLevel * 0.7);
+      const jumpGlow = jumpState.isJumping ? 0.5 : 0;
+      const opacity = Math.min(baseOpacity + jumpGlow, 1.0);
+      
+      // Multi-stop gradient for better depth and smoother blending with VIBRANT COLORS
+      gradient.addColorStop(0, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity})`);
+      gradient.addColorStop(0.15, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.95})`);
+      gradient.addColorStop(0.3, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.85})`);
+      gradient.addColorStop(0.45, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.7})`);
+      gradient.addColorStop(0.6, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.5})`);
+      gradient.addColorStop(0.75, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.3})`);
+      gradient.addColorStop(0.9, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.15})`);
+      gradient.addColorStop(1, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.05})`);
+      
       // Enhanced blending with multiple composition modes
       ctx.globalCompositeOperation = layer.baseRadius < 50 ? 'screen' : 'multiply';
-      ctx.fillStyle = color;
+      ctx.fillStyle = gradient;
       ctx.fill();
       
-      // CRITICAL: Add multiple blur layers for smoother effect
+      // CRITICAL: Add multiple blur layers for smoother effect with VIBRANT COLORS
       ctx.globalCompositeOperation = 'screen';
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.8})`;
       ctx.lineWidth = 4; // INCREASED line width
       ctx.filter = 'blur(12px) saturate(1.6)'; // HEAVY BLUR for stroke
       ctx.stroke();
@@ -434,6 +500,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       // Additional heavy blur layer for ultra-smooth effect
       ctx.globalCompositeOperation = 'soft-light';
       ctx.lineWidth = 8;
+      ctx.strokeStyle = `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.6})`;
       ctx.filter = 'blur(20px) saturate(2.0)'; // ULTRA HEAVY BLUR
       ctx.stroke();
       
@@ -458,41 +525,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       
       sortedLayers.forEach((layer, index) => {
         const points = generateBlobPoints(layer, time, audioBoost);
-        
-        // Enhanced dynamic color mixing
-        let jumpColorShift = jumpState.isJumping ? jumpState.jumpProgress * 3 : 0;
-        
-        const colorIndex = (time * 0.01 + index * 0.6 + audioLevel * 3 + jumpColorShift) % auroraColors.length;
-        const color1 = auroraColors[Math.floor(colorIndex)];
-        const color2 = auroraColors[Math.floor(colorIndex + 1) % auroraColors.length];
-        const color3 = auroraColors[Math.floor(colorIndex + 2) % auroraColors.length];
-        
-        const mix = colorIndex % 1;
-        const r = Math.floor(color1.r * (1 - mix) + color2.r * mix + color3.r * mix * 0.2);
-        const g = Math.floor(color1.g * (1 - mix) + color2.g * mix + color3.g * mix * 0.2);
-        const b = Math.floor(color1.b * (1 - mix) + color2.b * mix + color3.b * mix * 0.2);
-        
-        // Enhanced radial gradient with more stops for smoother blending
-        const gradient = ctx.createRadialGradient(
-          orbPosition.x, orbPosition.y, 0,
-          orbPosition.x, orbPosition.y, layer.baseRadius * audioBoost * 2.5
-        );
-        
-        const baseOpacity = layer.opacity * (0.3 + audioLevel * 0.7);
-        const jumpGlow = jumpState.isJumping ? 0.5 : 0;
-        const opacity = Math.min(baseOpacity + jumpGlow, 1.0);
-        
-        // Multi-stop gradient for better depth and smoother blending
-        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
-        gradient.addColorStop(0.15, `rgba(${r}, ${g}, ${b}, ${opacity * 0.95})`);
-        gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${opacity * 0.85})`);
-        gradient.addColorStop(0.45, `rgba(${r}, ${g}, ${b}, ${opacity * 0.7})`);
-        gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${opacity * 0.5})`);
-        gradient.addColorStop(0.75, `rgba(${r}, ${g}, ${b}, ${opacity * 0.3})`);
-        gradient.addColorStop(0.9, `rgba(${r}, ${g}, ${b}, ${opacity * 0.15})`);
-        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${opacity * 0.05})`);
-        
-        drawSmoothBlob(points, gradient, layer);
+        drawSmoothBlob(points, layer, index, time);
       });
 
       animationId = requestAnimationFrame(drawFrame);
@@ -736,10 +769,10 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
             className="absolute inset-0 rounded-full pointer-events-none"
             animate={{
               boxShadow: [
-                `0 0 ${100 + audioLevel * 120}px ${40 + audioLevel * 50}px rgba(100, 180, 255, ${0.35 + audioLevel * 0.45})`,
-                `0 0 ${110 + audioLevel * 130}px ${45 + audioLevel * 55}px rgba(150, 120, 255, ${0.3 + audioLevel * 0.4})`,
+                `0 0 ${100 + audioLevel * 120}px ${40 + audioLevel * 50}px rgba(100, 255, 100, ${0.35 + audioLevel * 0.45})`,
+                `0 0 ${110 + audioLevel * 130}px ${45 + audioLevel * 55}px rgba(200, 100, 255, ${0.3 + audioLevel * 0.4})`,
                 `0 0 ${95 + audioLevel * 115}px ${35 + audioLevel * 45}px rgba(80, 220, 150, ${0.4 + audioLevel * 0.5})`,
-                `0 0 ${105 + audioLevel * 125}px ${42 + audioLevel * 52}px rgba(120, 200, 255, ${0.32 + audioLevel * 0.42})`
+                `0 0 ${105 + audioLevel * 125}px ${42 + audioLevel * 52}px rgba(150, 200, 255, ${0.32 + audioLevel * 0.42})`
               ]
             }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
@@ -754,8 +787,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
             }}
             animate={{
               boxShadow: [
-                `0 0 ${150 + audioLevel * 80}px ${20 + audioLevel * 30}px rgba(100, 150, 255, ${0.2 + audioLevel * 0.25})`,
-                `0 0 ${160 + audioLevel * 90}px ${25 + audioLevel * 35}px rgba(150, 100, 255, ${0.15 + audioLevel * 0.2})`,
+                `0 0 ${150 + audioLevel * 80}px ${20 + audioLevel * 30}px rgba(50, 255, 50, ${0.2 + audioLevel * 0.25})`,
+                `0 0 ${160 + audioLevel * 90}px ${25 + audioLevel * 35}px rgba(200, 50, 255, ${0.15 + audioLevel * 0.2})`,
                 `0 0 ${140 + audioLevel * 75}px ${18 + audioLevel * 28}px rgba(80, 200, 180, ${0.25 + audioLevel * 0.3})`
               ]
             }}
