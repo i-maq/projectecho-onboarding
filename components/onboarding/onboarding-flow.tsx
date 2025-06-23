@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react';
-import OrbIntro from '../OrbIntro';
+import { DynamicOrbIntro } from '../orb/dynamic-orb-intro';
 import headphonesAnimation from '/public/wired-outline-1055-earbud-wireless-earphones-hover-pinch.json';
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
@@ -33,8 +33,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
 
   if (stage === 'intro') {
     return (
-      <OrbIntro
-        audioSrc="/audio/onboarding-intro.mp3"
+      <DynamicOrbIntro
         onAdvance={() => {
           onComplete();
           localStorage.setItem('onboardingComplete', 'true');
