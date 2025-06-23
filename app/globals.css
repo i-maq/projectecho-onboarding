@@ -84,3 +84,8 @@
   pointer-events: none;
   z-index: 0;
 }
+@keyframes pulse-animation {
+  0%   { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+  50%  { opacity: 0.75; }
+  100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+}
