@@ -147,7 +147,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     };
   }, [isAudioPlaying]);
 
-  // Enhanced Siri-like fluid orb animation
+  // Enhanced Siri-like fluid orb animation with bouncing movement
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -157,6 +157,21 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
 
     let animationId: number;
     let time = 0;
+
+    // Bouncing orb physics
+    const orbPosition = { x: canvas.width / 2, y: canvas.height / 2 };
+    const orbVelocity = { 
+      x: (Math.random() - 0.5) * 0.4, // Slow initial velocity
+      y: (Math.random() - 0.5) * 0.4 
+    };
+    const orbBounds = {
+      left: 80,   // Boundary margin from edges
+      right: canvas.width - 80,
+      top: 80,
+      bottom: canvas.height - 80
+    };
+    const friction = 0.998; // Slight friction for more natural movement
+    const bounceDeceleration = 0.85; // Energy loss on bounce
 
     // Multiple blob layers for Siri-like effect
     const blobLayers = [
@@ -194,6 +209,56 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       }
     ];
 
+    // Update orb position with bouncing physics
+    const updateOrbPosition = () => {
+      // Apply gravity-like subtle force toward center
+      const centerPull = 0.001;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const distanceFromCenter = Math.sqrt(
+        Math.pow(orbPosition.x - centerX, 2) + Math.pow(orbPosition.y - centerY, 2)
+      );
+      
+      if (distanceFromCenter > 0) {
+        const pullX = (centerX - orbPosition.x) / distanceFromCenter * centerPull;
+        const pullY = (centerY - orbPosition.y) / distanceFromCenter * centerPull;
+        orbVelocity.x += pullX;
+        orbVelocity.y += pullY;
+      }
+
+      // Add slight random movement for organic feel
+      orbVelocity.x += (Math.random() - 0.5) * 0.02;
+      orbVelocity.y += (Math.random() - 0.5) * 0.02;
+
+      // Apply friction
+      orbVelocity.x *= friction;
+      orbVelocity.y *= friction;
+
+      // Update position
+      orbPosition.x += orbVelocity.x;
+      orbPosition.y += orbVelocity.y;
+
+      // Boundary collision with soft bouncing
+      if (orbPosition.x <= orbBounds.left || orbPosition.x >= orbBounds.right) {
+        orbVelocity.x = -orbVelocity.x * bounceDeceleration;
+        orbPosition.x = Math.max(orbBounds.left, Math.min(orbBounds.right, orbPosition.x));
+      }
+      
+      if (orbPosition.y <= orbBounds.top || orbPosition.y >= orbBounds.bottom) {
+        orbVelocity.y = -orbVelocity.y * bounceDeceleration;
+        orbPosition.y = Math.max(orbBounds.top, Math.min(orbBounds.bottom, orbPosition.y));
+      }
+
+      // Keep minimum velocity to prevent complete stopping
+      const minVel = 0.1;
+      const currentSpeed = Math.sqrt(orbVelocity.x * orbVelocity.x + orbVelocity.y * orbVelocity.y);
+      if (currentSpeed < minVel && currentSpeed > 0) {
+        const multiplier = minVel / currentSpeed;
+        orbVelocity.x *= multiplier;
+        orbVelocity.y *= multiplier;
+      }
+    };
+
     // Improved Perlin-like noise function
     const smoothNoise = (x: number, y: number, t: number, scale: number) => {
       const noise1 = Math.sin(x * 0.02 * scale + t) * Math.cos(y * 0.015 * scale + t * 0.7);
@@ -203,7 +268,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       return (noise1 + noise2 * 0.5 + noise3 * 0.3) / 1.8;
     };
 
-    // Create smooth flowing movement
+    // Create smooth flowing movement for internal blob deformation
     const getFlowOffset = (t: number, layer: number) => {
       const flowSpeed = 0.008 + layer * 0.003;
       return {
@@ -238,11 +303,12 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         const combinedNoise = noise1 + noise2 * 0.3;
         const radiusVariation = layer.baseRadius * audioBoost + combinedNoise * 15 + audioLevel * 12;
         
-        // Flowing offset
+        // Flowing offset for internal movement
         const flowOffset = getFlowOffset(t, segments);
         
-        const x = canvas.width / 2 + Math.cos(angle) * radiusVariation + layer.offset.x + flowOffset.x;
-        const y = canvas.height / 2 + Math.sin(angle) * radiusVariation + layer.offset.y + flowOffset.y;
+        // Use the bouncing orb position as the center instead of canvas center
+        const x = orbPosition.x + Math.cos(angle) * radiusVariation + layer.offset.x + flowOffset.x;
+        const y = orbPosition.y + Math.sin(angle) * radiusVariation + layer.offset.y + flowOffset.y;
         
         points.push({ x, y, angle });
       }
@@ -289,6 +355,9 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       
       time += 1;
       
+      // Update orb bouncing position
+      updateOrbPosition();
+      
       // Audio-reactive scaling
       const audioBoost = 1 + audioLevel * 0.4;
       
@@ -307,10 +376,10 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         const g = Math.floor(color1.g * (1 - mix) + color2.g * mix);
         const b = Math.floor(color1.b * (1 - mix) + color2.b * mix);
         
-        // Create gradient for each layer
+        // Create gradient for each layer centered on the bouncing orb position
         const gradient = ctx.createRadialGradient(
-          canvas.width / 2, canvas.height / 2, 0,
-          canvas.width / 2, canvas.height / 2, layer.baseRadius * audioBoost * 1.5
+          orbPosition.x, orbPosition.y, 0,
+          orbPosition.x, orbPosition.y, layer.baseRadius * audioBoost * 1.5
         );
         
         const opacity = layer.opacity * (0.6 + audioLevel * 0.4);
