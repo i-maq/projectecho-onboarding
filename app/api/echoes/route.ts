@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Set user context for RLS
+    // Set user context for RLS policies
     await setUserContext(user.id);
 
     const { data: echoes, error } = await supabase
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Error fetching echoes:', error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to fetch echoes' }, { status: 500 });
     }
 
     return NextResponse.json(echoes || []);
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });
     }
 
-    // Set user context for RLS
+    // Set user context for RLS policies
     await setUserContext(user.id);
 
     const { data: echo, error } = await supabase
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error creating echo:', error);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to create echo' }, { status: 500 });
     }
 
     return NextResponse.json(echo);

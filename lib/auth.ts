@@ -36,10 +36,11 @@ export const createUser = async (email: string, password: string): Promise<User 
     const { data: existingUser } = await supabase
       .from('users')
       .select('id')
-      .eq('email', email)
+      .eq('email', email.toLowerCase())
       .single();
 
     if (existingUser) {
+      console.log('User already exists');
       return null; // User already exists
     }
 
@@ -49,7 +50,7 @@ export const createUser = async (email: string, password: string): Promise<User 
       .from('users')
       .insert([
         {
-          email,
+          email: email.toLowerCase(),
           password: hashedPassword,
         },
       ])
@@ -73,16 +74,18 @@ export const authenticateUser = async (email: string, password: string): Promise
     const { data: user, error } = await supabase
       .from('users')
       .select('id, email, password')
-      .eq('email', email)
+      .eq('email', email.toLowerCase())
       .single();
 
     if (error || !user) {
+      console.log('User not found');
       return null;
     }
 
     const isValid = await comparePassword(password, user.password);
 
     if (!isValid) {
+      console.log('Invalid password');
       return null;
     }
 
