@@ -458,15 +458,41 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
           {/* Inner clear glass layer */}
           <div className="absolute inset-3 rounded-full bg-gradient-to-br from-white/15 via-transparent to-white/8 backdrop-blur-xl border border-white/25" />
           
-          {/* Innermost content layer */}
+          {/* Innermost content layer with enhanced blur for fluid fusion */}
           <div className="absolute inset-6 rounded-full bg-gradient-to-br from-white/10 via-transparent to-white/5 backdrop-blur-lg overflow-hidden">
-            <canvas 
-              ref={canvasRef} 
-              width={336} 
-              height={336} 
-              className="w-full h-full"
-            />
+            <div 
+              className="w-full h-full rounded-full overflow-hidden"
+              style={{
+                filter: 'blur(8px) saturate(1.4) brightness(1.1)',
+                transform: 'scale(1.05)'
+              }}
+            >
+              <canvas 
+                ref={canvasRef} 
+                width={336} 
+                height={336} 
+                className="w-full h-full"
+                style={{
+                  filter: 'blur(4px) contrast(1.2)',
+                  opacity: 0.9
+                }}
+              />
+            </div>
           </div>
+          
+          {/* Additional soft blur overlay for seamless fusion */}
+          <div 
+            className="absolute inset-6 rounded-full pointer-events-none"
+            style={{
+              background: `radial-gradient(circle at center, 
+                rgba(100, 200, 255, 0.1) 0%, 
+                rgba(150, 100, 255, 0.08) 30%, 
+                rgba(200, 150, 255, 0.06) 60%, 
+                transparent 100%)`,
+              filter: 'blur(12px)',
+              mixBlendMode: 'soft-light'
+            }}
+          />
           
           {/* Glass depth and refraction effects */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent via-white/8 to-white/15 pointer-events-none" />
@@ -475,14 +501,14 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
           {/* Subtle rim highlight */}
           <div className="absolute inset-0 rounded-full ring-1 ring-white/30 ring-inset" />
           
-          {/* Audio-reactive outer glow */}
+          {/* Audio-reactive outer glow with softer edges */}
           <motion.div 
             className="absolute inset-0 rounded-full pointer-events-none"
             animate={{
               boxShadow: [
-                `0 0 ${30 + audioLevel * 50}px rgba(59, 130, 246, ${0.2 + audioLevel * 0.3})`,
-                `0 0 ${35 + audioLevel * 55}px rgba(168, 85, 247, ${0.15 + audioLevel * 0.25})`,
-                `0 0 ${30 + audioLevel * 50}px rgba(34, 197, 94, ${0.2 + audioLevel * 0.3})`
+                `0 0 ${40 + audioLevel * 60}px ${15 + audioLevel * 20}px rgba(59, 130, 246, ${0.15 + audioLevel * 0.25})`,
+                `0 0 ${45 + audioLevel * 65}px ${18 + audioLevel * 22}px rgba(168, 85, 247, ${0.12 + audioLevel * 0.2})`,
+                `0 0 ${40 + audioLevel * 60}px ${15 + audioLevel * 20}px rgba(34, 197, 94, ${0.15 + audioLevel * 0.25})`
               ]
             }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
