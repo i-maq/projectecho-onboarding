@@ -64,9 +64,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [audioError, setAudioError] = useState(false);
-  
-  // FIXED: Word highlighting now syncs with actual audio playback
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
   // Mobile detection
   useEffect(() => {
@@ -206,39 +203,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       }
     };
   }, [isAudioPlaying]);
-
-  // FIXED: Real-time audio-synced word highlighting
-  useEffect(() => {
-    if (!isAudioPlaying || audioError || !audioRef.current) return;
-
-    const currentSection = captionSections[step];
-    if (!currentSection) return;
-
-    const words = currentSection.text.split(' ');
-
-    const updateWordHighlight = () => {
-      if (!audioRef.current) return;
-      
-      const currentTime = audioRef.current.currentTime;
-      const duration = audioRef.current.duration || currentSection.duration;
-      
-      // Calculate which word should be highlighted based on actual audio position
-      const progress = currentTime / duration;
-      const wordIndex = Math.floor(progress * words.length);
-      
-      // Ensure we don't go beyond the word count
-      const clampedIndex = Math.min(wordIndex, words.length - 1);
-      
-      if (clampedIndex !== currentWordIndex && clampedIndex >= 0) {
-        setCurrentWordIndex(clampedIndex);
-      }
-    };
-
-    // Update word highlighting every 100ms for smooth sync
-    const interval = setInterval(updateWordHighlight, 100);
-
-    return () => clearInterval(interval);
-  }, [isAudioPlaying, step, currentWordIndex, audioError]);
 
   // Enhanced Siri-like fluid orb animation with 3D spherical movement
   useEffect(() => {
@@ -618,7 +582,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     const handlePlay = () => {
       setIsAudioPlaying(true);
       setAudioError(false);
-      setCurrentWordIndex(0); // Reset to first word when audio starts
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume();
       }
@@ -673,9 +636,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       audioRef.current.src = `/audio/onboarding/${currentSection.audioFile}`;
       audioRef.current.load();
       
-      // Reset word highlighting for new section
-      setCurrentWordIndex(0);
-      
       // Play after a short delay to ensure it's loaded
       setTimeout(() => {
         audioRef.current?.play().catch((error) => {
@@ -717,37 +677,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     } else {
       onAdvance();
     }
-  };
-
-  // FIXED: Render words with REAL audio-synced highlighting
-  const renderHighlightedText = () => {
-    const currentSection = captionSections[step];
-    if (!currentSection) return '';
-
-    const words = currentSection.text.split(' ');
-    
-    return words.map((word, index) => (
-      <span
-        key={index}
-        className={`word-highlight ${index === currentWordIndex ? 'active-word' : ''}`}
-        style={{
-          transition: 'all 0.2s ease-in-out',
-          ...(index === currentWordIndex ? {
-            transform: 'scale(1.08)',
-            textShadow: `
-              0 0 8px rgba(139, 92, 246, 0.6),
-              0 0 16px rgba(139, 92, 246, 0.4),
-              0 0 24px rgba(139, 92, 246, 0.2)
-            `,
-            fontWeight: '600',
-            color: '#8B5CF6'
-          } : {})
-        }}
-      >
-        {word}
-        {index < words.length - 1 && ' '}
-      </span>
-    ));
   };
 
   // Get current caption
@@ -930,7 +859,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       <audio ref={audioRef} preload="auto" />
       <audio ref={tapAudioRef} src="/tap-sound.mp3" preload="auto" />
 
-      {/* STATIC Caption Container with AUDIO-SYNCED Word Highlighting */}
+      {/* CLEAN Static Caption Container */}
       {currentCaption && (
         <div className="absolute bottom-16 w-full px-6 max-w-3xl text-center z-10">
           <div 
@@ -953,7 +882,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
             }}
           >
             <p className="text-lg leading-relaxed text-gray-800 font-light text-body">
-              {renderHighlightedText()}
+              {currentCaption}
             </p>
             
             {/* Audio status indicator */}
