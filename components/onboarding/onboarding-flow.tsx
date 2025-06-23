@@ -74,7 +74,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             className="w-full max-w-lg mx-auto"
           >
             <div className="glass-panel-light text-center">
-              <h2 className="text-3xl font-extrabold mb-4 text-gray-800 text-title">A Cinematic Experience</h2>
+              <h2 className="text-3xl font-extrabold mb-4 text-gray-800 text-title">Can You Hear Me?</h2>
               <p className="text-lg text-gray-600 mb-8 text-body">This experience is best enjoyed with sound.</p>
               <button onClick={handleSoundCheckNext} className="neumorphic-button-light text-button">
                 Continue
