@@ -65,9 +65,8 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
   const [isMobile, setIsMobile] = useState(false);
   const [audioError, setAudioError] = useState(false);
   
-  // NEW: Word highlighting state
+  // FIXED: Word highlighting now syncs with actual audio playback
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [sectionStartTime, setSectionStartTime] = useState(0);
 
   // Mobile detection
   useEffect(() => {
@@ -208,30 +207,38 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     };
   }, [isAudioPlaying]);
 
-  // NEW: Word highlighting timer
+  // FIXED: Real-time audio-synced word highlighting
   useEffect(() => {
-    if (!isAudioPlaying || audioError) return;
+    if (!isAudioPlaying || audioError || !audioRef.current) return;
 
     const currentSection = captionSections[step];
     if (!currentSection) return;
 
     const words = currentSection.text.split(' ');
-    const totalDuration = currentSection.duration * 1000; // Convert to milliseconds
-    const wordDuration = totalDuration / words.length;
 
-    const updateCurrentWord = () => {
-      const elapsed = Date.now() - sectionStartTime;
-      const newWordIndex = Math.floor(elapsed / wordDuration);
+    const updateWordHighlight = () => {
+      if (!audioRef.current) return;
       
-      if (newWordIndex < words.length && newWordIndex !== currentWordIndex) {
-        setCurrentWordIndex(newWordIndex);
+      const currentTime = audioRef.current.currentTime;
+      const duration = audioRef.current.duration || currentSection.duration;
+      
+      // Calculate which word should be highlighted based on actual audio position
+      const progress = currentTime / duration;
+      const wordIndex = Math.floor(progress * words.length);
+      
+      // Ensure we don't go beyond the word count
+      const clampedIndex = Math.min(wordIndex, words.length - 1);
+      
+      if (clampedIndex !== currentWordIndex && clampedIndex >= 0) {
+        setCurrentWordIndex(clampedIndex);
       }
     };
 
-    const interval = setInterval(updateCurrentWord, 100); // Update every 100ms for smooth highlighting
+    // Update word highlighting every 100ms for smooth sync
+    const interval = setInterval(updateWordHighlight, 100);
 
     return () => clearInterval(interval);
-  }, [isAudioPlaying, step, currentWordIndex, sectionStartTime, audioError]);
+  }, [isAudioPlaying, step, currentWordIndex, audioError]);
 
   // Enhanced Siri-like fluid orb animation with 3D spherical movement
   useEffect(() => {
@@ -611,8 +618,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     const handlePlay = () => {
       setIsAudioPlaying(true);
       setAudioError(false);
-      setSectionStartTime(Date.now()); // Reset timing for word highlighting
-      setCurrentWordIndex(0); // Reset to first word
+      setCurrentWordIndex(0); // Reset to first word when audio starts
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume();
       }
@@ -713,7 +719,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     }
   };
 
-  // NEW: Render words with highlighting
+  // FIXED: Render words with REAL audio-synced highlighting
   const renderHighlightedText = () => {
     const currentSection = captionSections[step];
     if (!currentSection) return '';
@@ -924,7 +930,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       <audio ref={audioRef} preload="auto" />
       <audio ref={tapAudioRef} src="/tap-sound.mp3" preload="auto" />
 
-      {/* STATIC Caption Container with Dynamic Word Highlighting */}
+      {/* STATIC Caption Container with AUDIO-SYNCED Word Highlighting */}
       {currentCaption && (
         <div className="absolute bottom-16 w-full px-6 max-w-3xl text-center z-10">
           <div 
