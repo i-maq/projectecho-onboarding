@@ -16,7 +16,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const handleLanguageSelect = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (musicRef.current?.paused) {
       musicRef.current.loop = true;
-      musicRef.current.volume = 0.3;
+      musicRef.current.volume = 0.1; // Reduced from 0.3 to 0.1 (10% volume)
       musicRef.current.play().catch(e => console.error("Audio play failed"));
     }
     soundRef.current?.play();

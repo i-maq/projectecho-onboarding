@@ -630,7 +630,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
   useEffect(() => {
     const bg = new Audio("/ambient-music.mp3");
     bg.loop = true;
-    bg.volume = 0.3;
+    bg.volume = 0.1; // Reduced from 0.3 to 0.1 (10% volume)
     bg.play().catch(() => {});
     return () => { bg.pause(); };
   }, []);
