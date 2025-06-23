@@ -41,19 +41,45 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
   const [audioLevel, setAudioLevel] = useState(0);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
 
-  // Background particles component (restored from main page)
+  // Enhanced background particles component with perfect circles and better depth
   const Particle = () => {
-    const style = useMemo(() => ({
-      position: 'absolute' as 'absolute', 
-      top: `${Math.random() * 100}%`,
-      left: `${Math.random() * 100}%`, 
-      width: `${Math.random() * 2 + 1}px`,
-      height: `${Math.random() * 2 + 1}px`, 
-      backgroundColor: `rgba(0, 0, 50, ${Math.random() * 0.4 + 0.1})`,
-      borderRadius: '50%', 
-      filter: `blur(${Math.random() > 0.5 ? 1 : 0}px)`,
-      animation: `random-float-animation ${Math.random() * 30 + 20}s infinite linear`,
-    }), []);
+    const style = useMemo(() => {
+      // Create perfect circles by using same value for width and height
+      const size = Math.random() * 3 + 0.5; // Size range: 0.5px to 3.5px
+      
+      // Enhanced depth of field blur - more gradual levels
+      const depthLevel = Math.random();
+      let blurAmount = 0;
+      
+      if (depthLevel < 0.3) {
+        blurAmount = 0; // Sharp foreground particles
+      } else if (depthLevel < 0.6) {
+        blurAmount = 0.5; // Slightly blurred mid-ground
+      } else if (depthLevel < 0.8) {
+        blurAmount = 1; // Medium blur background
+      } else {
+        blurAmount = 1.5; // Heavy blur far background
+      }
+      
+      // Opacity based on depth (farther = more transparent)
+      const opacity = depthLevel < 0.3 ? 0.8 : 
+                     depthLevel < 0.6 ? 0.6 : 
+                     depthLevel < 0.8 ? 0.4 : 0.3;
+      
+      return {
+        position: 'absolute' as 'absolute', 
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`, 
+        width: `${size}px`,
+        height: `${size}px`, // Same as width for perfect circles
+        backgroundColor: `rgba(0, 0, 50, ${opacity})`,
+        borderRadius: '50%', // Ensures perfect circle
+        filter: `blur(${blurAmount}px)`,
+        animation: `random-float-animation ${Math.random() * 35 + 15}s infinite linear`,
+        zIndex: Math.floor(depthLevel * 5), // Layer particles by depth
+      };
+    }, []);
+    
     return <div style={style}></div>;
   };
 
@@ -65,8 +91,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     { delay: '6s', duration: '8s' },
   ], []);
 
-  // Generate particles
-  const particles = useMemo(() => Array.from({ length: 150 }).map((_, i) => <Particle key={i} />), []);
+  // Generate MORE particles for increased intensity (300 instead of 150)
+  const particles = useMemo(() => Array.from({ length: 300 }).map((_, i) => <Particle key={i} />), []);
 
   // Aurora borealis color palette
   const auroraColors = [
@@ -336,7 +362,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       className="fixed inset-0 flex items-center justify-center bg-[#f0f2f5] cursor-pointer overflow-hidden"
       onClick={handleTap}
     >
-      {/* Background particles and floating elements (restored) */}
+      {/* Enhanced background particles and floating elements */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow:'hidden' }}>
         {circles.map((circle, index) => (
           <div 
