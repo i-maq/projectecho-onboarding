@@ -156,6 +156,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
   // Initialize audio analysis
   const initAudioAnalysis = async () => {
     if (!audioRef.current) return;
+    
+    // Prevent duplicate initialization
+    if (audioContextRef.current) return;
 
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
