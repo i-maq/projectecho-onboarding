@@ -6,91 +6,47 @@ interface DynamicOrbIntroProps {
   onAdvance: () => void;
 }
 
-// Enhanced caption system with audio sync
+// Updated caption system matching your new script
 const captionSections = [
   {
-    audioFile: "01-hey-you.mp3",
-    text: "Hey you... or should I say Hey, me."
+    audioFile: "ob-vo-1.mp3",
+    text: "Think of who you are right now, in this moment.",
+    duration: 12 // seconds
   },
   {
-    audioFile: "02-im-you-from-future.mp3", 
-    text: "I'm you, from years in the future."
+    audioFile: "ob-vo-2.mp3", 
+    text: "You are not a single, solid thing.",
+    duration: 3
   },
   {
-    audioFile: "03-how-many-years.mp3",
-    text: "How many? I can't say without giving too much away."
+    audioFile: "ob-vo-3.mp3",
+    text: "You are a symphony of all the moments that came before.",
+    duration: 4
   },
   {
-    audioFile: "04-not-as-sharp.mp3",
-    text: "I'm not as sharp as you–as I once was."
+    audioFile: "ob-vo-4.mp3",
+    text: "Your courage today is an echo of a time you were scared, and pushed through anyway.",
+    duration: 5
   },
   {
-    audioFile: "05-memories-fading.mp3",
-    text: "My memories are beginning to fade."
+    audioFile: "ob-vo-5.mp3",
+    text: "Your laughter is an echo of a thousand jokes shared with friends.",
+    duration: 5
   },
   {
-    audioFile: "06-some-moments-hazy.mp3",
-    text: "Some of the moments I've cherished are becoming... hazy."
+    audioFile: "ob-vo-6.mp3",
+    text: "Your wisdom is an echo of mistakes made, and lessons learned.",
+    duration: 5
   },
   {
-    audioFile: "07-dont-want-forget.mp3",
-    text: "I don't want to forget."
+    audioFile: "ob-vo-7.mp3",
+    text: "An echo is not a distant, faded copy. It proves you are there.",
+    duration: 6
   },
   {
-    audioFile: "08-everything-beautiful.mp3",
-    text: "Everything we've done, everything we've loved, everything we've lost."
-  },
-  {
-    audioFile: "09-all-beautiful.mp3",
-    text: "It was all beautiful, and it can't be forgotten."
-  },
-  {
-    audioFile: "10-help-me-remember.mp3",
-    text: "You've got to help me–help you remember all of this, so that by the time you are me, nothing is forgotten."
-  },
-  {
-    audioFile: "11-think-who-you-are.mp3",
-    text: "Think of who you are right now, in this moment."
-  },
-  {
-    audioFile: "12-not-single-thing.mp3",
-    text: "You are not a single, solid thing."
-  },
-  {
-    audioFile: "13-symphony-moments.mp3",
-    text: "You are a symphony of all the moments that came before."
-  },
-  {
-    audioFile: "",
-    text: ""
-  },
-  {
-    audioFile: "14-courage-echo.mp3",
-    text: "Your courage today... is an echo of a time you were scared, and pushed through anyway."
-  },
-  {
-    audioFile: "15-laughter-echo.mp3",
-    text: "Your laughter... is an echo of a thousand jokes shared with friends."
-  },
-  {
-    audioFile: "16-wisdom-echo.mp3",
-    text: "Your wisdom... is an echo of mistakes made, and lessons learned."
-  },
-  {
-    audioFile: "",
-    text: ""
-  },
-  {
-    audioFile: "17-echo-not-distant.mp3",
-    text: "An echo is not a distant, faded copy... It proves... you are there."
-  },
-  {
-    audioFile: "",
-    text: ""
-  },
-  {
-    audioFile: "18-become-your-echo.mp3",
-    text: "Here, you will become your echo for our future self to hear."
+    audioFile: "ob-vo-8.mp3",
+    text: "Here, you will become your echo for your future self to hear.",
+    duration: 5
   }
 ];
 
@@ -107,6 +63,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
   const [audioLevel, setAudioLevel] = useState(0);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [audioError, setAudioError] = useState(false);
 
   // Mobile detection
   useEffect(() => {
@@ -119,7 +76,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Enhanced background particles
+  // Enhanced background particles with depth layers
   const Particle = () => {
     const style = useMemo(() => {
       const size = Math.random() * 3 + 0.5;
@@ -180,7 +137,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     [particleCount, isMobile]
   );
 
-  // Aurora borealis color palette
+  // Aurora borealis color palette with smooth gradients
   const auroraColors = [
     { r: 50, g: 255, b: 50 },     // Bright green 
     { r: 100, g: 255, b: 100 },   // Light green
@@ -220,7 +177,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     }
   };
 
-  // Audio level monitoring
+  // Audio level monitoring for real-time orb reactivity
   useEffect(() => {
     let animationId: number;
     
@@ -244,7 +201,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     };
   }, [isAudioPlaying]);
 
-  // Enhanced Siri-like fluid orb animation
+  // Enhanced Siri-like fluid orb animation with 3D spherical movement
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -319,7 +276,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
 
     (window as any).orbJump = jumpToRandomPosition;
 
-    // Enhanced blob layers for fluid effect
+    // Enhanced blob layers for detailed fluid effect
     const blobLayers = [
       {
         baseRadius: 75,
@@ -621,28 +578,38 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
 
     const handlePlay = () => {
       setIsAudioPlaying(true);
+      setAudioError(false);
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume();
       }
     };
 
     const handlePause = () => setIsAudioPlaying(false);
+    
     const handleEnded = () => {
       setIsAudioPlaying(false);
       // Auto-advance to next section when audio ends
       if (step < captionSections.length - 1) {
-        setStep(step + 1);
+        setTimeout(() => setStep(step + 1), 500); // Brief pause between sections
       }
+    };
+
+    const handleError = () => {
+      console.log(`Audio file not found: ${captionSections[step]?.audioFile}`);
+      setAudioError(true);
+      setIsAudioPlaying(false);
     };
 
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
 
     return () => {
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
     };
   }, [step]);
 
@@ -668,22 +635,25 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       
       // Play after a short delay to ensure it's loaded
       setTimeout(() => {
-        audioRef.current?.play().catch(console.error);
-      }, 100);
+        audioRef.current?.play().catch((error) => {
+          console.log(`Could not play audio: ${currentSection.audioFile}`, error);
+          setAudioError(true);
+        });
+      }, 200);
     }
   }, [step]);
 
-  // Ambient background music
+  // Ambient background music (very low volume)
   useEffect(() => {
     const bg = new Audio("/ambient-music.mp3");
     bg.loop = true;
-    bg.volume = 0.05; // Very low volume
+    bg.volume = 0.05; // Very low volume to not interfere with voice
     bg.play().catch(() => {});
     return () => { bg.pause(); };
   }, []);
 
   const handleTap = () => {
-    // Trigger orb jump
+    // Trigger orb jump animation
     if ((window as any).orbJump) {
       (window as any).orbJump();
     }
@@ -692,7 +662,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     setIsTapped(true);
     setTimeout(() => setIsTapped(false), 300);
     
-    // Tap sound
+    // Tap sound effect
     if (tapAudioRef.current) {
       tapAudioRef.current.currentTime = 0;
       tapAudioRef.current.play();
@@ -718,7 +688,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       className="fixed inset-0 flex items-center justify-center bg-[#f0f2f5] cursor-pointer overflow-hidden"
       onClick={handleTap}
     >
-      {/* Enhanced background particles */}
+      {/* Enhanced background particles with depth */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow:'hidden' }}>
         {circles.map((circle, index) => (
           <div 
@@ -747,9 +717,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
           y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
         }}
       >
-        {/* Multi-layered spherical container */}
+        {/* Multi-layered spherical container with glass effects */}
         <div className={`relative ${orbSize}`}>
-          {/* Primary glass sphere */}
+          {/* Primary glass sphere with detailed gradients */}
           <div 
             className="absolute inset-0 rounded-full overflow-hidden"
             style={{
@@ -782,6 +752,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
               `
             }}
           >
+            {/* Enhanced fluid canvas with heavy blur */}
             <canvas 
               ref={canvasRef} 
               width={canvasSize} 
@@ -848,7 +819,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
             }}
           />
 
-          {/* Gradually shifting atmospheric glow */}
+          {/* Gradually shifting atmospheric glow - enhanced with audio reactivity */}
           <motion.div 
             className="absolute inset-0 rounded-full pointer-events-none"
             animate={{
@@ -885,7 +856,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       <audio ref={audioRef} preload="auto" />
       <audio ref={tapAudioRef} src="/tap-sound.mp3" preload="auto" />
 
-      {/* Enhanced captions */}
+      {/* Enhanced captions with improved blur effects */}
       <AnimatePresence mode="wait">
         {currentCaption && (
           <motion.div
@@ -918,6 +889,31 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
               <p className="text-lg leading-relaxed text-gray-800 font-light text-body">
                 {currentCaption}
               </p>
+              
+              {/* Audio status indicator */}
+              {audioError && (
+                <div className="mt-3 text-sm text-amber-600 font-medium">
+                  Audio file not found - using visual-only mode
+                </div>
+              )}
+              
+              {/* Progress indicator */}
+              <div className="mt-4 flex justify-center">
+                <div className="flex space-x-2">
+                  {captionSections.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        index === step 
+                          ? 'bg-purple-500 w-6' 
+                          : index < step 
+                          ? 'bg-purple-300' 
+                          : 'bg-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -932,7 +928,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
           textShadow: '0 1px 3px rgba(255, 255, 255, 0.8)'
         }}
       >
-        {step < captionSections.length - 1 ? 'Tap to continue' : 'Tap to finish'} • Watch the orb dance! 🌟
+        {step < captionSections.length - 1 ? 'Tap to continue' : 'Tap to begin your journey'} • Step {step + 1} of {captionSections.length} ✨
       </motion.div>
     </div>
   );
