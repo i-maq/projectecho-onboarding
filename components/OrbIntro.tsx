@@ -44,24 +44,20 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
   // Enhanced background particles component with perfect circles and better depth
   const Particle = () => {
     const style = useMemo(() => {
-      // Create perfect circles by using same value for width and height
-      const size = Math.random() * 3 + 0.5; // Size range: 0.5px to 3.5px
-      
-      // Enhanced depth of field blur - more gradual levels
+      const size = Math.random() * 3 + 0.5;
       const depthLevel = Math.random();
       let blurAmount = 0;
       
       if (depthLevel < 0.3) {
-        blurAmount = 0; // Sharp foreground particles
+        blurAmount = 0;
       } else if (depthLevel < 0.6) {
-        blurAmount = 0.5; // Slightly blurred mid-ground
+        blurAmount = 0.5;
       } else if (depthLevel < 0.8) {
-        blurAmount = 1; // Medium blur background
+        blurAmount = 1;
       } else {
-        blurAmount = 1.5; // Heavy blur far background
+        blurAmount = 1.5;
       }
       
-      // Opacity based on depth (farther = more transparent)
       const opacity = depthLevel < 0.3 ? 0.8 : 
                      depthLevel < 0.6 ? 0.6 : 
                      depthLevel < 0.8 ? 0.4 : 0.3;
@@ -71,19 +67,18 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         top: `${Math.random() * 100}%`,
         left: `${Math.random() * 100}%`, 
         width: `${size}px`,
-        height: `${size}px`, // Same as width for perfect circles
+        height: `${size}px`,
         backgroundColor: `rgba(0, 0, 50, ${opacity})`,
-        borderRadius: '50%', // Ensures perfect circle
+        borderRadius: '50%',
         filter: `blur(${blurAmount}px)`,
         animation: `random-float-animation ${Math.random() * 35 + 15}s infinite linear`,
-        zIndex: Math.floor(depthLevel * 5), // Layer particles by depth
+        zIndex: Math.floor(depthLevel * 5),
       };
     }, []);
     
     return <div style={style}></div>;
   };
 
-  // Background pulse circles configuration
   const circles = useMemo(() => [
     { delay: '0s', duration: '8s' }, 
     { delay: '2s', duration: '8s' },
@@ -91,7 +86,6 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     { delay: '6s', duration: '8s' },
   ], []);
 
-  // Generate MORE particles for increased intensity (300 instead of 150)
   const particles = useMemo(() => Array.from({ length: 300 }).map((_, i) => <Particle key={i} />), []);
 
   // Aurora borealis color palette
@@ -136,10 +130,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     const updateAudioLevel = () => {
       if (analyserRef.current && dataArrayRef.current) {
         analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-        
-        // Calculate average volume
         const average = dataArrayRef.current.reduce((sum, value) => sum + value, 0) / dataArrayRef.current.length;
-        setAudioLevel(average / 255); // Normalize to 0-1
+        setAudioLevel(average / 255);
       }
       animationId = requestAnimationFrame(updateAudioLevel);
     };
@@ -155,7 +147,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     };
   }, [isAudioPlaying]);
 
-  // Orb animation with audio reactivity
+  // Enhanced Siri-like fluid orb animation
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -166,113 +158,180 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     let animationId: number;
     let time = 0;
 
-    // Blob parameters
-    const blobConfig = {
-      centerX: canvas.width / 2,
-      centerY: canvas.height / 2,
-      baseRadius: 80,
-      audioRadius: 40,
-      segments: 8,
-      noiseScale: 0.005,
-      timeScale: 0.02,
+    // Multiple blob layers for Siri-like effect
+    const blobLayers = [
+      {
+        baseRadius: 60,
+        segments: 12,
+        speed: 0.015,
+        noiseScale: 0.8,
+        opacity: 0.7,
+        offset: { x: 0, y: 0 }
+      },
+      {
+        baseRadius: 45,
+        segments: 10,
+        speed: 0.022,
+        noiseScale: 1.2,
+        opacity: 0.6,
+        offset: { x: 15, y: -10 }
+      },
+      {
+        baseRadius: 70,
+        segments: 14,
+        speed: 0.012,
+        noiseScale: 0.6,
+        opacity: 0.5,
+        offset: { x: -10, y: 8 }
+      },
+      {
+        baseRadius: 35,
+        segments: 8,
+        speed: 0.028,
+        noiseScale: 1.5,
+        opacity: 0.8,
+        offset: { x: 5, y: 12 }
+      }
+    ];
+
+    // Improved Perlin-like noise function
+    const smoothNoise = (x: number, y: number, t: number, scale: number) => {
+      const noise1 = Math.sin(x * 0.02 * scale + t) * Math.cos(y * 0.015 * scale + t * 0.7);
+      const noise2 = Math.sin(x * 0.03 * scale + t * 1.3) * Math.cos(y * 0.025 * scale + t * 0.9);
+      const noise3 = Math.sin(x * 0.01 * scale + t * 0.6) * Math.cos(y * 0.018 * scale + t * 1.1);
+      
+      return (noise1 + noise2 * 0.5 + noise3 * 0.3) / 1.8;
     };
 
-    // Simplified noise function
-    const noise = (x: number, y: number, t: number) => {
-      return Math.sin(x * 0.1 + t) * Math.cos(y * 0.1 + t * 0.7) * Math.sin(t * 0.3);
+    // Create smooth flowing movement
+    const getFlowOffset = (t: number, layer: number) => {
+      const flowSpeed = 0.008 + layer * 0.003;
+      return {
+        x: Math.sin(t * flowSpeed) * 8 + Math.cos(t * flowSpeed * 1.3) * 5,
+        y: Math.cos(t * flowSpeed * 0.8) * 6 + Math.sin(t * flowSpeed * 1.1) * 4
+      };
     };
 
-    const drawBlob = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Generate smooth bezier curve points for organic shapes
+    const generateBlobPoints = (layer: any, t: number, audioBoost: number) => {
+      const points = [];
+      const segments = layer.segments;
       
-      time += blobConfig.timeScale;
-      
-      // Audio-reactive scaling
-      const audioBoost = 1 + audioLevel * 0.8;
-      const currentRadius = blobConfig.baseRadius * audioBoost;
-      
-      // Create gradient
-      const gradient = ctx.createRadialGradient(
-        blobConfig.centerX, blobConfig.centerY, 0,
-        blobConfig.centerX, blobConfig.centerY, currentRadius * 2
-      );
-
-      // Aurora color mixing based on time and audio
-      const colorIndex = (time * 0.5 + audioLevel * 2) % auroraColors.length;
-      const color1 = auroraColors[Math.floor(colorIndex)];
-      const color2 = auroraColors[Math.floor(colorIndex + 1) % auroraColors.length];
-      
-      // Interpolate colors
-      const mix = colorIndex % 1;
-      const r = Math.floor(color1.r * (1 - mix) + color2.r * mix);
-      const g = Math.floor(color1.g * (1 - mix) + color2.g * mix);
-      const b = Math.floor(color1.b * (1 - mix) + color2.b * mix);
-
-      gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.9)`);
-      gradient.addColorStop(0.4, `rgba(${r}, ${g}, ${b}, 0.6)`);
-      gradient.addColorStop(0.7, `rgba(${Math.floor(r * 0.7)}, ${Math.floor(g * 0.8)}, ${Math.floor(b * 1.2)}, 0.3)`);
-      gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
-
-      ctx.fillStyle = gradient;
-
-      // Draw organic blob shape
-      ctx.beginPath();
-      
-      for (let i = 0; i <= blobConfig.segments; i++) {
-        const angle = (i / blobConfig.segments) * Math.PI * 2;
+      for (let i = 0; i <= segments; i++) {
+        const angle = (i / segments) * Math.PI * 2;
         
-        // Add noise for organic movement
-        const noiseValue = noise(
-          Math.cos(angle) * 100,
-          Math.sin(angle) * 100,
-          time + audioLevel * 5
+        // Multi-octave noise for more organic deformation
+        const noise1 = smoothNoise(
+          Math.cos(angle) * 50,
+          Math.sin(angle) * 50,
+          t * layer.speed,
+          layer.noiseScale
         );
         
-        const radiusVariation = currentRadius + noiseValue * 30 + audioLevel * 20;
-        
-        // Slight offset for floating movement
-        const offsetX = Math.sin(time * 0.3) * 15;
-        const offsetY = Math.cos(time * 0.4) * 10;
-        
-        const x = blobConfig.centerX + Math.cos(angle) * radiusVariation + offsetX;
-        const y = blobConfig.centerY + Math.sin(angle) * radiusVariation + offsetY;
+        const noise2 = smoothNoise(
+          Math.cos(angle) * 100,
+          Math.sin(angle) * 100,
+          t * layer.speed * 0.7,
+          layer.noiseScale * 0.5
+        );
 
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          // Smooth curves
-          const prevAngle = ((i - 1) / blobConfig.segments) * Math.PI * 2;
-          const prevNoiseValue = noise(
-            Math.cos(prevAngle) * 100,
-            Math.sin(prevAngle) * 100,
-            time + audioLevel * 5
-          );
-          const prevRadiusVariation = currentRadius + prevNoiseValue * 30 + audioLevel * 20;
-          const prevX = blobConfig.centerX + Math.cos(prevAngle) * prevRadiusVariation + offsetX;
-          const prevY = blobConfig.centerY + Math.sin(prevAngle) * prevRadiusVariation + offsetY;
-          
-          const cpX = (prevX + x) / 2;
-          const cpY = (prevY + y) / 2;
-          
-          ctx.quadraticCurveTo(cpX, cpY, x, y);
-        }
+        const combinedNoise = noise1 + noise2 * 0.3;
+        const radiusVariation = layer.baseRadius * audioBoost + combinedNoise * 15 + audioLevel * 12;
+        
+        // Flowing offset
+        const flowOffset = getFlowOffset(t, segments);
+        
+        const x = canvas.width / 2 + Math.cos(angle) * radiusVariation + layer.offset.x + flowOffset.x;
+        const y = canvas.height / 2 + Math.sin(angle) * radiusVariation + layer.offset.y + flowOffset.y;
+        
+        points.push({ x, y, angle });
+      }
+      
+      return points;
+    };
+
+    // Draw smooth blob using bezier curves
+    const drawSmoothBlob = (points: any[], color: string) => {
+      if (points.length < 3) return;
+      
+      ctx.beginPath();
+      
+      // Start from the first point
+      ctx.moveTo(points[0].x, points[0].y);
+      
+      // Create smooth curves using quadratic bezier curves
+      for (let i = 0; i < points.length - 1; i++) {
+        const current = points[i];
+        const next = points[(i + 1) % (points.length - 1)];
+        
+        // Control point for smooth curves
+        const controlX = (current.x + next.x) / 2;
+        const controlY = (current.y + next.y) / 2;
+        
+        // Add some curvature variation
+        const curvature = Math.sin(time * 0.02 + i * 0.5) * 3;
+        
+        ctx.quadraticCurveTo(
+          current.x + curvature, 
+          current.y + curvature, 
+          controlX, 
+          controlY
+        );
       }
       
       ctx.closePath();
+      ctx.fillStyle = color;
       ctx.fill();
-
-      // Add inner glow
-      ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.8)`;
-      ctx.shadowBlur = 30;
-      ctx.fill();
-      
-      // Reset shadow
-      ctx.shadowBlur = 0;
-
-      animationId = requestAnimationFrame(drawBlob);
     };
 
-    drawBlob();
+    const drawFrame = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      time += 1;
+      
+      // Audio-reactive scaling
+      const audioBoost = 1 + audioLevel * 0.4;
+      
+      // Draw multiple blob layers from back to front
+      blobLayers.forEach((layer, index) => {
+        const points = generateBlobPoints(layer, time, audioBoost);
+        
+        // Dynamic color mixing
+        const colorIndex = (time * 0.01 + index * 0.3 + audioLevel * 1.5) % auroraColors.length;
+        const color1 = auroraColors[Math.floor(colorIndex)];
+        const color2 = auroraColors[Math.floor(colorIndex + 1) % auroraColors.length];
+        
+        // Interpolate colors
+        const mix = colorIndex % 1;
+        const r = Math.floor(color1.r * (1 - mix) + color2.r * mix);
+        const g = Math.floor(color1.g * (1 - mix) + color2.g * mix);
+        const b = Math.floor(color1.b * (1 - mix) + color2.b * mix);
+        
+        // Create gradient for each layer
+        const gradient = ctx.createRadialGradient(
+          canvas.width / 2, canvas.height / 2, 0,
+          canvas.width / 2, canvas.height / 2, layer.baseRadius * audioBoost * 1.5
+        );
+        
+        const opacity = layer.opacity * (0.6 + audioLevel * 0.4);
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
+        gradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${opacity * 0.7})`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+        
+        // Add subtle glow
+        ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
+        ctx.shadowBlur = 20;
+        
+        drawSmoothBlob(points, gradient);
+        
+        // Reset shadow for next layer
+        ctx.shadowBlur = 0;
+      });
+
+      animationId = requestAnimationFrame(drawFrame);
+    };
+
+    drawFrame();
 
     return () => {
       if (animationId) {
@@ -381,49 +440,52 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       <motion.div
         className="relative z-10"
         animate={{ 
-          scale: isTapped ? 1.05 : 1,
-          rotateY: isAudioPlaying ? [0, 5, -5, 0] : 0
+          scale: isTapped ? 1.03 : 1,
+          y: isAudioPlaying ? [0, -2, 2, 0] : 0
         }}
         transition={{ 
           type: "spring", 
-          stiffness: 300, 
-          damping: 20,
-          rotateY: { duration: 8, repeat: Infinity, ease: "linear" }
+          stiffness: 400, 
+          damping: 25,
+          y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
         }}
       >
-        {/* Outer glass sphere with frosted rim */}
+        {/* Liquid glass sphere container */}
         <div className="relative w-96 h-96">
-          {/* Outer frosted ring */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 via-white/10 to-transparent backdrop-blur-xl border border-white/30 shadow-2xl" />
+          {/* Outer frosted glass shell */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/25 via-white/10 to-white/5 backdrop-blur-3xl border border-white/40 shadow-2xl" />
           
-          {/* Inner clear glass */}
-          <div className="absolute inset-4 rounded-full bg-gradient-to-br from-white/10 via-transparent to-white/5 backdrop-blur-sm border border-white/20" />
+          {/* Inner clear glass layer */}
+          <div className="absolute inset-3 rounded-full bg-gradient-to-br from-white/15 via-transparent to-white/8 backdrop-blur-xl border border-white/25" />
           
-          {/* Canvas for the blob */}
-          <div className="absolute inset-8 rounded-full overflow-hidden">
+          {/* Innermost content layer */}
+          <div className="absolute inset-6 rounded-full bg-gradient-to-br from-white/10 via-transparent to-white/5 backdrop-blur-lg overflow-hidden">
             <canvas 
               ref={canvasRef} 
-              width={320} 
-              height={320} 
-              className="w-full h-full filter blur-[1px]"
+              width={336} 
+              height={336} 
+              className="w-full h-full"
             />
           </div>
           
-          {/* Depth layers */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent via-white/5 to-white/10" />
-          <div className="absolute inset-0 rounded-full shadow-inner shadow-blue-500/20" />
+          {/* Glass depth and refraction effects */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent via-white/8 to-white/15 pointer-events-none" />
+          <div className="absolute inset-0 rounded-full shadow-inner shadow-blue-400/10" />
           
-          {/* Audio-reactive rim glow */}
+          {/* Subtle rim highlight */}
+          <div className="absolute inset-0 rounded-full ring-1 ring-white/30 ring-inset" />
+          
+          {/* Audio-reactive outer glow */}
           <motion.div 
-            className="absolute inset-0 rounded-full"
+            className="absolute inset-0 rounded-full pointer-events-none"
             animate={{
               boxShadow: [
-                `0 0 ${20 + audioLevel * 40}px rgba(59, 130, 246, ${0.3 + audioLevel * 0.4})`,
-                `0 0 ${25 + audioLevel * 45}px rgba(168, 85, 247, ${0.2 + audioLevel * 0.3})`,
-                `0 0 ${20 + audioLevel * 40}px rgba(34, 197, 94, ${0.3 + audioLevel * 0.4})`
+                `0 0 ${30 + audioLevel * 50}px rgba(59, 130, 246, ${0.2 + audioLevel * 0.3})`,
+                `0 0 ${35 + audioLevel * 55}px rgba(168, 85, 247, ${0.15 + audioLevel * 0.25})`,
+                `0 0 ${30 + audioLevel * 50}px rgba(34, 197, 94, ${0.2 + audioLevel * 0.3})`
               ]
             }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
       </motion.div>
@@ -432,7 +494,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       <audio ref={scriptAudioRef} src={audioSrc} preload="auto" />
       <audio ref={tapAudioRef} src="/tap-sound.mp3" preload="auto" />
 
-      {/* Captions with liquid glass styling */}
+      {/* Captions with enhanced liquid glass styling */}
       <AnimatePresence mode="wait">
         {captions[step] && (
           <motion.div
