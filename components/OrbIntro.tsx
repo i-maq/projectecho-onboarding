@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface OrbIntroProps {
@@ -40,6 +40,33 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
   const [isTapped, setIsTapped] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+
+  // Background particles component (restored from main page)
+  const Particle = () => {
+    const style = useMemo(() => ({
+      position: 'absolute' as 'absolute', 
+      top: `${Math.random() * 100}%`,
+      left: `${Math.random() * 100}%`, 
+      width: `${Math.random() * 2 + 1}px`,
+      height: `${Math.random() * 2 + 1}px`, 
+      backgroundColor: `rgba(0, 0, 50, ${Math.random() * 0.4 + 0.1})`,
+      borderRadius: '50%', 
+      filter: `blur(${Math.random() > 0.5 ? 1 : 0}px)`,
+      animation: `random-float-animation ${Math.random() * 30 + 20}s infinite linear`,
+    }), []);
+    return <div style={style}></div>;
+  };
+
+  // Background pulse circles configuration
+  const circles = useMemo(() => [
+    { delay: '0s', duration: '8s' }, 
+    { delay: '2s', duration: '8s' },
+    { delay: '4s', duration: '8s' }, 
+    { delay: '6s', duration: '8s' },
+  ], []);
+
+  // Generate particles
+  const particles = useMemo(() => Array.from({ length: 150 }).map((_, i) => <Particle key={i} />), []);
 
   // Aurora borealis color palette
   const auroraColors = [
@@ -306,15 +333,27 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 cursor-pointer overflow-hidden"
+      className="fixed inset-0 flex items-center justify-center bg-[#f0f2f5] cursor-pointer overflow-hidden"
       onClick={handleTap}
     >
-      {/* Subtle background elements */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-green-500/5 animate-pulse-slow" />
-      
+      {/* Background particles and floating elements (restored) */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow:'hidden' }}>
+        {circles.map((circle, index) => (
+          <div 
+            key={index} 
+            className='pulse-circle-light' 
+            style={{ 
+              animationDuration: circle.duration, 
+              animationDelay: circle.delay 
+            }} 
+          />
+        ))}
+        {particles}
+      </div>
+
       {/* Main orb container */}
       <motion.div
-        className="relative"
+        className="relative z-10"
         animate={{ 
           scale: isTapped ? 1.05 : 1,
           rotateY: isAudioPlaying ? [0, 5, -5, 0] : 0
@@ -376,7 +415,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, y: -20, filter: "blur(5px)" }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="absolute bottom-16 w-full px-6 max-w-3xl text-center"
+            className="absolute bottom-16 w-full px-6 max-w-3xl text-center z-10"
           >
             <div className="bg-white/20 backdrop-blur-2xl border border-white/30 rounded-2xl p-8 shadow-2xl">
               <p className="text-lg leading-relaxed text-gray-800 font-medium">
@@ -389,7 +428,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
 
       {/* Tap instruction */}
       <motion.div 
-        className="absolute bottom-4 text-sm text-gray-600 font-medium"
+        className="absolute bottom-4 text-sm text-gray-600 font-medium z-10"
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
