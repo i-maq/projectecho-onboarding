@@ -34,15 +34,69 @@
   }
 }
 
-/* --- KEYFRAME ANIMATIONS (The missing piece) --- */
+/* --- KEYFRAME ANIMATIONS --- */
 @keyframes pulse-animation {
   0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
   50% { opacity: 0.75; }
   100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
 }
+
+/* --- ENHANCED CLICK PULSE ANIMATION --- */
 @keyframes click-pulse-animation {
-  from { transform: translate(-50%,-50%) scale(0); opacity: .8; }
-  to { transform: translate(-50%,-50%) scale(4); opacity: 0; }
+  0% { 
+    transform: translate(-50%, -50%) scale(0); 
+    opacity: 0.9;
+    box-shadow: 
+      0 0 0 rgba(139, 92, 246, 0.8),
+      0 0 0 rgba(255, 255, 255, 0.6);
+  }
+  25% { 
+    transform: translate(-50%, -50%) scale(1.2); 
+    opacity: 0.7;
+    box-shadow: 
+      0 0 20px rgba(139, 92, 246, 0.6),
+      0 0 40px rgba(255, 255, 255, 0.4);
+  }
+  50% { 
+    transform: translate(-50%, -50%) scale(2.5); 
+    opacity: 0.5;
+    box-shadow: 
+      0 0 30px rgba(139, 92, 246, 0.4),
+      0 0 60px rgba(255, 255, 255, 0.3);
+  }
+  75% { 
+    transform: translate(-50%, -50%) scale(3.5); 
+    opacity: 0.2;
+    box-shadow: 
+      0 0 40px rgba(139, 92, 246, 0.2),
+      0 0 80px rgba(255, 255, 255, 0.2);
+  }
+  100% { 
+    transform: translate(-50%, -50%) scale(4.5); 
+    opacity: 0;
+    box-shadow: 
+      0 0 50px rgba(139, 92, 246, 0),
+      0 0 100px rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes click-pulse-inner {
+  0% { 
+    transform: translate(-50%, -50%) scale(0); 
+    opacity: 1;
+  }
+  30% { 
+    transform: translate(-50%, -50%) scale(0.8); 
+    opacity: 0.8;
+  }
+  60% { 
+    transform: translate(-50%, -50%) scale(1.5); 
+    opacity: 0.4;
+  }
+  100% { 
+    transform: translate(-50%, -50%) scale(2.2); 
+    opacity: 0;
+  }
 }
 
 /* --- UI Components --- */
@@ -113,13 +167,64 @@
   font-size: 0.875rem;
 }
 
-/* --- On-Click Animation Effect --- */
+/* --- ENHANCED ON-CLICK ANIMATION EFFECT --- */
 .click-pulse {
-  position: fixed; width: 150px; height: 150px; border-radius: 50%;
-  background-color: rgba(0, 0, 50, 0.2);
+  position: fixed; 
+  width: 120px; 
+  height: 120px; 
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.4) 30%,
+    rgba(139, 92, 246, 0.3) 60%,
+    rgba(139, 92, 246, 0.1) 100%
+  );
   transform: translate(-50%, -50%) scale(0);
-  animation: click-pulse-animation 0.7s ease-out;
-  pointer-events: none; z-index: 100;
+  animation: click-pulse-animation 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  pointer-events: none; 
+  z-index: 100;
+  box-shadow: 
+    0 0 20px rgba(139, 92, 246, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.6);
+}
+
+/* Secondary pulse layer for depth */
+.click-pulse::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(139, 92, 246, 0.6) 0%,
+    rgba(139, 92, 246, 0.3) 50%,
+    transparent 100%
+  );
+  transform: translate(-50%, -50%) scale(0);
+  animation: click-pulse-inner 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Sparkle effect layer */
+.click-pulse::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.4) 40%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%) scale(0);
+  animation: click-pulse-inner 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* --- GLOBAL ANIMATION DEFINITIONS --- */
