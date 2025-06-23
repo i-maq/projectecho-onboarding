@@ -258,11 +258,11 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     // Make jump function available globally
     (window as any).orbJump = jumpToRandomPosition;
 
-    // Enhanced blob layers for detailed fluid effect
+    // Enhanced blob layers for detailed fluid effect with MORE SEGMENTS for smoother curves
     const blobLayers = [
       {
         baseRadius: 75,
-        segments: 18,
+        segments: 32, // DOUBLED for smoother curves
         speed: 0.012,
         noiseScale: 0.8,
         opacity: 0.9,
@@ -270,7 +270,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       },
       {
         baseRadius: 60,
-        segments: 16,
+        segments: 28, // INCREASED for smoother curves
         speed: 0.018,
         noiseScale: 1.1,
         opacity: 0.8,
@@ -278,7 +278,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       },
       {
         baseRadius: 85,
-        segments: 20,
+        segments: 36, // INCREASED for smoother curves
         speed: 0.009,
         noiseScale: 0.6,
         opacity: 0.7,
@@ -286,7 +286,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       },
       {
         baseRadius: 45,
-        segments: 14,
+        segments: 24, // INCREASED for smoother curves
         speed: 0.024,
         noiseScale: 1.4,
         opacity: 0.95,
@@ -294,7 +294,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       },
       {
         baseRadius: 95,
-        segments: 22,
+        segments: 40, // INCREASED for smoother curves
         speed: 0.006,
         noiseScale: 0.4,
         opacity: 0.6,
@@ -302,7 +302,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       },
       {
         baseRadius: 35,
-        segments: 12,
+        segments: 20, // INCREASED for smoother curves
         speed: 0.030,
         noiseScale: 1.8,
         opacity: 1.0,
@@ -332,7 +332,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       };
     };
 
-    // Generate detailed blob points
+    // Generate detailed blob points with enhanced smoothness
     const generateBlobPoints = (layer: any, t: number, audioBoost: number) => {
       const points = [];
       const segments = layer.segments;
@@ -383,11 +383,14 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       return points;
     };
 
-    // Enhanced smooth blob drawing with better blending
+    // Enhanced smooth blob drawing with HEAVY BLUR and better blending
     const drawSmoothBlob = (points: any[], color: string, layer: any) => {
       if (points.length < 3) return;
       
       ctx.save();
+      
+      // CRITICAL: Apply heavy blur to the entire drawing context
+      ctx.filter = 'blur(8px) saturate(1.4) brightness(1.2)'; // INCREASED BLUR
       
       // Create spherical clipping mask
       ctx.beginPath();
@@ -397,27 +400,21 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
       
-      // Enhanced smooth curves with more control points
+      // Enhanced smooth curves with more control points and better smoothing
       for (let i = 0; i < points.length - 1; i++) {
         const current = points[i];
         const next = points[(i + 1) % (points.length - 1)];
         const nextnext = points[(i + 2) % (points.length - 1)];
+        const prev = points[i > 0 ? i - 1 : points.length - 2];
         
-        const controlX1 = (current.x + next.x) / 2;
-        const controlY1 = (current.y + next.y) / 2;
-        const controlX2 = (next.x + nextnext.x) / 2;
-        const controlY2 = (next.y + nextnext.y) / 2;
+        // Enhanced control points for smoother curves
+        const tension = 0.4; // Curve tension
+        const controlX1 = current.x + (next.x - prev.x) * tension;
+        const controlY1 = current.y + (next.y - prev.y) * tension;
+        const controlX2 = next.x - (nextnext.x - current.x) * tension;
+        const controlY2 = next.y - (nextnext.y - current.y) * tension;
         
-        const curvature = Math.sin(time * 0.02 + i * 0.5) * 6;
-        
-        ctx.bezierCurveTo(
-          current.x + curvature, 
-          current.y + curvature,
-          controlX1,
-          controlY1,
-          next.x,
-          next.y
-        );
+        ctx.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, next.x, next.y);
       }
       
       ctx.closePath();
@@ -427,11 +424,17 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       ctx.fillStyle = color;
       ctx.fill();
       
-      // Add secondary glow effect
+      // CRITICAL: Add multiple blur layers for smoother effect
       ctx.globalCompositeOperation = 'screen';
       ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.filter = 'blur(4px)';
+      ctx.lineWidth = 4; // INCREASED line width
+      ctx.filter = 'blur(12px) saturate(1.6)'; // HEAVY BLUR for stroke
+      ctx.stroke();
+      
+      // Additional heavy blur layer for ultra-smooth effect
+      ctx.globalCompositeOperation = 'soft-light';
+      ctx.lineWidth = 8;
+      ctx.filter = 'blur(20px) saturate(2.0)'; // ULTRA HEAVY BLUR
       ctx.stroke();
       
       ctx.restore();
@@ -439,6 +442,9 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
 
     const drawFrame = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // CRITICAL: Apply heavy blur to the entire canvas context
+      ctx.filter = 'blur(4px) saturate(1.8) brightness(1.3) contrast(1.1)'; // BASE BLUR
       
       time += 1;
       updateOrbPosition();
@@ -466,7 +472,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         const g = Math.floor(color1.g * (1 - mix) + color2.g * mix + color3.g * mix * 0.2);
         const b = Math.floor(color1.b * (1 - mix) + color2.b * mix + color3.b * mix * 0.2);
         
-        // Enhanced radial gradient with more stops
+        // Enhanced radial gradient with more stops for smoother blending
         const gradient = ctx.createRadialGradient(
           orbPosition.x, orbPosition.y, 0,
           orbPosition.x, orbPosition.y, layer.baseRadius * audioBoost * 2.5
@@ -476,13 +482,15 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         const jumpGlow = jumpState.isJumping ? 0.5 : 0;
         const opacity = Math.min(baseOpacity + jumpGlow, 1.0);
         
-        // Multi-stop gradient for better depth
+        // Multi-stop gradient for better depth and smoother blending
         gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
-        gradient.addColorStop(0.2, `rgba(${r}, ${g}, ${b}, ${opacity * 0.95})`);
-        gradient.addColorStop(0.4, `rgba(${r}, ${g}, ${b}, ${opacity * 0.8})`);
-        gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${opacity * 0.6})`);
-        gradient.addColorStop(0.8, `rgba(${r}, ${g}, ${b}, ${opacity * 0.3})`);
-        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${opacity * 0.1})`);
+        gradient.addColorStop(0.15, `rgba(${r}, ${g}, ${b}, ${opacity * 0.95})`);
+        gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${opacity * 0.85})`);
+        gradient.addColorStop(0.45, `rgba(${r}, ${g}, ${b}, ${opacity * 0.7})`);
+        gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${opacity * 0.5})`);
+        gradient.addColorStop(0.75, `rgba(${r}, ${g}, ${b}, ${opacity * 0.3})`);
+        gradient.addColorStop(0.9, `rgba(${r}, ${g}, ${b}, ${opacity * 0.15})`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${opacity * 0.05})`);
         
         drawSmoothBlob(points, gradient, layer);
       });
@@ -654,15 +662,15 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
               `
             }}
           >
-            {/* Enhanced fluid canvas with better filtering */}
+            {/* CRITICAL: Enhanced fluid canvas with HEAVY BLUR filtering */}
             <canvas 
               ref={canvasRef} 
               width={canvasSize} 
               height={canvasSize} 
               className="w-full h-full rounded-full"
               style={{
-                filter: 'saturate(1.6) brightness(1.3) contrast(1.15) blur(0.5px)',
-                opacity: 0.92,
+                filter: 'saturate(1.8) brightness(1.4) contrast(1.2) blur(6px)', // INCREASED BLUR
+                opacity: 0.95,
                 mixBlendMode: 'screen'
               }}
             />
