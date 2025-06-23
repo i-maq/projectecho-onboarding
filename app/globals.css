@@ -59,25 +59,31 @@
 }
 
 .neumorphic-button-light {
-  background: #8b5cf6; /* Purple background to match screenshot */
+  background: #eef2f9; /* Back to soft white neumorphic background */
   border: none; 
   border-radius: 12px;
   padding: 15px 30px; 
   font-size: 16px; 
   font-family: var(--font-poppins);
   font-weight: 600; /* Semi-bold for buttons */
-  color: white; /* White text on purple background */
-  box-shadow: 4px 4px 12px rgba(139, 92, 246, 0.4); /* Soft purple shadow on bottom-right */
+  color: #3f4a59; /* Dark text on light background */
+  box-shadow: 
+    -8px -8px 15px #ffffff,  /* White glow on top-left (neumorphic highlight) */
+    4px 4px 12px rgba(139, 92, 246, 0.4); /* Purple shadow on bottom-right */
   transition: all 0.2s ease-in-out; 
   cursor: pointer;
 }
 .neumorphic-button-light:hover {
   transform: translateY(-1px); /* Subtle lift on hover */
-  box-shadow: 6px 6px 16px rgba(139, 92, 246, 0.5); /* Slightly stronger shadow on hover */
+  box-shadow: 
+    -10px -10px 20px #ffffff,  /* Enhanced white glow on hover */
+    6px 6px 16px rgba(139, 92, 246, 0.5); /* Stronger purple shadow on hover */
 }
 .neumorphic-button-light:active {
   transform: translateY(0); /* Return to original position when pressed */
-  box-shadow: 2px 2px 8px rgba(139, 92, 246, 0.6); /* Smaller shadow when pressed */
+  box-shadow: 
+    inset -4px -4px 8px #ffffff,  /* Inset white highlight when pressed */
+    inset 2px 2px 6px rgba(139, 92, 246, 0.6); /* Inset purple shadow when pressed */
 }
 
 /* --- Typography Utilities --- */
