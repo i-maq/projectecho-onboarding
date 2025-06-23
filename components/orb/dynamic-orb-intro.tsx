@@ -64,6 +64,10 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [audioError, setAudioError] = useState(false);
+  
+  // NEW: Word highlighting state
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [sectionStartTime, setSectionStartTime] = useState(0);
 
   // Mobile detection
   useEffect(() => {
@@ -203,6 +207,31 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       }
     };
   }, [isAudioPlaying]);
+
+  // NEW: Word highlighting timer
+  useEffect(() => {
+    if (!isAudioPlaying || audioError) return;
+
+    const currentSection = captionSections[step];
+    if (!currentSection) return;
+
+    const words = currentSection.text.split(' ');
+    const totalDuration = currentSection.duration * 1000; // Convert to milliseconds
+    const wordDuration = totalDuration / words.length;
+
+    const updateCurrentWord = () => {
+      const elapsed = Date.now() - sectionStartTime;
+      const newWordIndex = Math.floor(elapsed / wordDuration);
+      
+      if (newWordIndex < words.length && newWordIndex !== currentWordIndex) {
+        setCurrentWordIndex(newWordIndex);
+      }
+    };
+
+    const interval = setInterval(updateCurrentWord, 100); // Update every 100ms for smooth highlighting
+
+    return () => clearInterval(interval);
+  }, [isAudioPlaying, step, currentWordIndex, sectionStartTime, audioError]);
 
   // Enhanced Siri-like fluid orb animation with 3D spherical movement
   useEffect(() => {
@@ -582,6 +611,8 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     const handlePlay = () => {
       setIsAudioPlaying(true);
       setAudioError(false);
+      setSectionStartTime(Date.now()); // Reset timing for word highlighting
+      setCurrentWordIndex(0); // Reset to first word
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume();
       }
@@ -636,6 +667,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       audioRef.current.src = `/audio/onboarding/${currentSection.audioFile}`;
       audioRef.current.load();
       
+      // Reset word highlighting for new section
+      setCurrentWordIndex(0);
+      
       // Play after a short delay to ensure it's loaded
       setTimeout(() => {
         audioRef.current?.play().catch((error) => {
@@ -677,6 +711,37 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     } else {
       onAdvance();
     }
+  };
+
+  // NEW: Render words with highlighting
+  const renderHighlightedText = () => {
+    const currentSection = captionSections[step];
+    if (!currentSection) return '';
+
+    const words = currentSection.text.split(' ');
+    
+    return words.map((word, index) => (
+      <span
+        key={index}
+        className={`word-highlight ${index === currentWordIndex ? 'active-word' : ''}`}
+        style={{
+          transition: 'all 0.2s ease-in-out',
+          ...(index === currentWordIndex ? {
+            transform: 'scale(1.08)',
+            textShadow: `
+              0 0 8px rgba(139, 92, 246, 0.6),
+              0 0 16px rgba(139, 92, 246, 0.4),
+              0 0 24px rgba(139, 92, 246, 0.2)
+            `,
+            fontWeight: '600',
+            color: '#8B5CF6'
+          } : {})
+        }}
+      >
+        {word}
+        {index < words.length - 1 && ' '}
+      </span>
+    ));
   };
 
   // Get current caption
@@ -859,68 +924,59 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       <audio ref={audioRef} preload="auto" />
       <audio ref={tapAudioRef} src="/tap-sound.mp3" preload="auto" />
 
-      {/* Enhanced captions with improved blur effects */}
-      <AnimatePresence mode="wait">
-        {currentCaption && (
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, y: 30, filter: "blur(15px)", scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
-            exit={{ opacity: 0, y: -20, filter: "blur(8px)", scale: 1.02 }}
-            transition={{ duration: 0.9, ease: "easeOut" }}
-            className="absolute bottom-16 w-full px-6 max-w-3xl text-center z-10"
+      {/* STATIC Caption Container with Dynamic Word Highlighting */}
+      {currentCaption && (
+        <div className="absolute bottom-16 w-full px-6 max-w-3xl text-center z-10">
+          <div 
+            className="relative rounded-2xl p-8 shadow-2xl"
+            style={{
+              background: `
+                linear-gradient(135deg,
+                  rgba(255, 255, 255, 0.25) 0%,
+                  rgba(240, 248, 255, 0.2) 50%,
+                  rgba(230, 240, 255, 0.15) 100%)
+              `,
+              backdropFilter: 'blur(25px) saturate(1.4)',
+              WebkitBackdropFilter: 'blur(25px) saturate(1.4)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: `
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 8px 20px rgba(100, 150, 255, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4)
+              `
+            }}
           >
-            <div 
-              className="relative rounded-2xl p-8 shadow-2xl"
-              style={{
-                background: `
-                  linear-gradient(135deg,
-                    rgba(255, 255, 255, 0.25) 0%,
-                    rgba(240, 248, 255, 0.2) 50%,
-                    rgba(230, 240, 255, 0.15) 100%)
-                `,
-                backdropFilter: 'blur(25px) saturate(1.4)',
-                WebkitBackdropFilter: 'blur(25px) saturate(1.4)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                boxShadow: `
-                  0 20px 40px rgba(0, 0, 0, 0.1),
-                  0 8px 20px rgba(100, 150, 255, 0.15),
-                  inset 0 1px 0 rgba(255, 255, 255, 0.4)
-                `
-              }}
-            >
-              <p className="text-lg leading-relaxed text-gray-800 font-light text-body">
-                {currentCaption}
-              </p>
-              
-              {/* Audio status indicator */}
-              {audioError && (
-                <div className="mt-3 text-sm text-amber-600 font-medium">
-                  Audio file not found - using visual-only mode
-                </div>
-              )}
-              
-              {/* Progress indicator */}
-              <div className="mt-4 flex justify-center">
-                <div className="flex space-x-2">
-                  {captionSections.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        index === step 
-                          ? 'bg-purple-500 w-6' 
-                          : index < step 
-                          ? 'bg-purple-300' 
-                          : 'bg-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
+            <p className="text-lg leading-relaxed text-gray-800 font-light text-body">
+              {renderHighlightedText()}
+            </p>
+            
+            {/* Audio status indicator */}
+            {audioError && (
+              <div className="mt-3 text-sm text-amber-600 font-medium">
+                Audio file not found - using visual-only mode
+              </div>
+            )}
+            
+            {/* Progress indicator */}
+            <div className="mt-4 flex justify-center">
+              <div className="flex space-x-2">
+                {captionSections.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index === step 
+                        ? 'bg-purple-500 w-6' 
+                        : index < step 
+                        ? 'bg-purple-300' 
+                        : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
 
       {/* Enhanced tap instruction */}
       <motion.div 
