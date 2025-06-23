@@ -39,13 +39,20 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   }
   
   return (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="w-full h-full flex items-center justify-center px-6 py-8">
       <audio ref={musicRef} src="/ambient-music.mp3" preload="auto" />
       <audio ref={soundRef} src="/tap-sound.mp3" preload="auto" />
 
       <AnimatePresence mode="wait">
         {stage === 'language' && (
-          <motion.div key="language" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div 
+            key="language" 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-md mx-auto"
+          >
             <div className="glass-panel-light text-center">
               <h1 className="text-3xl font-bold mb-2 text-gray-800">Welcome</h1>
               <p className="text-gray-600 mb-8">Please select your language.</p>
@@ -59,15 +66,21 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         )}
 
         {stage === 'soundCheck' && (
-           <motion.div key="soundCheck" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div className="glass-panel-light text-center max-w-lg">
+          <motion.div 
+            key="soundCheck" 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-lg mx-auto"
+          >
+            <div className="glass-panel-light text-center">
               <h2 className="text-3xl font-bold mb-4 text-gray-800">A Cinematic Experience</h2>
               <p className="text-lg text-gray-600 mb-8">This experience is best enjoyed with sound.</p>
               <button onClick={handleSoundCheckNext} className="neumorphic-button-light">
                 Continue
               </button>
             </div>
-           </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
       
