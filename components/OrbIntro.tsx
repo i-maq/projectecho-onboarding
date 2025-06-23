@@ -779,7 +779,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         {particles}
       </div>
 
-      {/* Main orb container */}
+      {/* Main orb container with mobile padding */}
       <motion.div
         className="relative z-10"
         animate={{ 
@@ -793,8 +793,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
           y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
         }}
       >
-        {/* Liquid glass sphere container */}
-        <div className="relative w-96 h-96">
+        {/* 📱 NEW: Responsive orb sizing - smaller on mobile with padding */}
+        <div className="relative w-80 h-80 md:w-96 md:h-96">
           {/* Outer frosted glass shell */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/25 via-white/10 to-white/5 backdrop-blur-3xl border border-white/40 shadow-2xl" />
           
@@ -810,10 +810,11 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
                 transform: 'scale(1.05)'
               }}
             >
+              {/* 📱 NEW: Responsive canvas sizing */}
               <canvas 
                 ref={canvasRef} 
-                width={336} 
-                height={336} 
+                width={isMobile ? 272 : 336} 
+                height={isMobile ? 272 : 336} 
                 className="w-full h-full"
                 style={{
                   filter: 'blur(4px) contrast(1.2)',
