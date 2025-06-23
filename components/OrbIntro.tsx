@@ -40,8 +40,20 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
   const [isTapped, setIsTapped] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Enhanced background particles component with perfect circles and better depth
+  // 📱 Check for mobile/small screen
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768); // Mobile breakpoint
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Enhanced background particles component with mobile-friendly opacity
   const Particle = () => {
     const style = useMemo(() => {
       const size = Math.random() * 3 + 0.5;
@@ -58,9 +70,19 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         blurAmount = 1.5;
       }
       
-      const opacity = depthLevel < 0.3 ? 0.8 : 
-                     depthLevel < 0.6 ? 0.6 : 
-                     depthLevel < 0.8 ? 0.4 : 0.3;
+      // 📱 NEW: Reduced opacity for mobile - much lighter particles
+      let opacity;
+      if (isMobile) {
+        // Mobile: Much lighter particles, max opacity 0.4
+        opacity = depthLevel < 0.3 ? 0.4 : 
+                 depthLevel < 0.6 ? 0.3 : 
+                 depthLevel < 0.8 ? 0.2 : 0.15;
+      } else {
+        // Desktop: Slightly reduced from original, max opacity 0.6
+        opacity = depthLevel < 0.3 ? 0.6 : 
+                 depthLevel < 0.6 ? 0.45 : 
+                 depthLevel < 0.8 ? 0.3 : 0.2;
+      }
       
       return {
         position: 'absolute' as 'absolute', 
@@ -74,7 +96,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         animation: `random-float-animation ${Math.random() * 35 + 15}s infinite linear`,
         zIndex: Math.floor(depthLevel * 5),
       };
-    }, []);
+    }, [isMobile]);
     
     return <div style={style}></div>;
   };
@@ -86,7 +108,15 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     { delay: '6s', duration: '8s' },
   ], []);
 
-  const particles = useMemo(() => Array.from({ length: 300 }).map((_, i) => <Particle key={i} />), []);
+  // 📱 NEW: Responsive particle count - fewer particles on mobile
+  const particleCount = useMemo(() => {
+    return isMobile ? 150 : 300; // 50% fewer particles on mobile
+  }, [isMobile]);
+
+  const particles = useMemo(() => 
+    Array.from({ length: particleCount }).map((_, i) => <Particle key={i} />), 
+    [particleCount, isMobile]
+  );
 
   // Aurora borealis color palette
   const auroraColors = [
@@ -731,7 +761,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       className="fixed inset-0 flex items-center justify-center bg-[#f0f2f5] cursor-pointer overflow-hidden"
       onClick={handleTap}
     >
-      {/* Enhanced background particles and floating elements */}
+      {/* Enhanced background particles with mobile-friendly opacity */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow:'hidden' }}>
         {circles.map((circle, index) => (
           <div 
