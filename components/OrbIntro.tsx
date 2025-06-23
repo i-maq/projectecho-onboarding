@@ -759,6 +759,10 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     }
   };
 
+  // 📱 Responsive sizing based on screen size with padding
+  const orbSize = isMobile ? 'w-64 h-64' : 'w-96 h-96';
+  const canvasSize = isMobile ? 256 : 384;
+
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-[#f0f2f5] cursor-pointer overflow-hidden"
@@ -781,7 +785,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
 
       {/* Main orb container with mobile padding */}
       <motion.div
-        className="relative z-10"
+        className="relative z-10 mx-4 md:mx-0"
         animate={{ 
           scale: isTapped ? 1.03 : 1,
           y: isAudioPlaying ? [0, -2, 2, 0] : 0
@@ -793,69 +797,180 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
           y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
         }}
       >
-        {/* 📱 NEW: Responsive orb sizing - smaller on mobile with padding */}
-        <div className="relative w-80 h-80 md:w-96 md:h-96">
-          {/* Outer frosted glass shell */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/25 via-white/10 to-white/5 backdrop-blur-3xl border border-white/40 shadow-2xl" />
-          
-          {/* Inner clear glass layer */}
-          <div className="absolute inset-3 rounded-full bg-gradient-to-br from-white/15 via-transparent to-white/8 backdrop-blur-xl border border-white/25" />
-          
-          {/* Innermost content layer with enhanced blur for fluid fusion */}
-          <div className="absolute inset-6 rounded-full bg-gradient-to-br from-white/10 via-transparent to-white/5 backdrop-blur-lg overflow-hidden">
+        {/* 🔮 3D GLASS SPHERE WITH ENHANCED REFLECTIONS */}
+        <div className={`relative ${orbSize}`}>
+          {/* Main sphere base with 3D depth gradient */}
+          <div 
+            className="absolute inset-0 rounded-full"
+            style={{
+              background: `radial-gradient(ellipse 40% 35% at 30% 25%, 
+                rgba(255, 255, 255, 0.4) 0%,
+                rgba(255, 255, 255, 0.25) 20%,
+                rgba(255, 255, 255, 0.1) 35%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(200, 220, 255, 0.08) 70%,
+                rgba(150, 180, 255, 0.12) 85%,
+                rgba(100, 140, 255, 0.15) 100%)`,
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: `
+                0 8px 32px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+                0 0 60px rgba(100, 150, 255, 0.3)
+              `
+            }}
+          />
+
+          {/* Primary specular highlight (main light reflection) */}
+          <div 
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              top: '15%',
+              left: '20%',
+              width: '35%',
+              height: '25%',
+              background: `radial-gradient(ellipse, 
+                rgba(255, 255, 255, 0.8) 0%,
+                rgba(255, 255, 255, 0.6) 30%,
+                rgba(255, 255, 255, 0.3) 60%,
+                transparent 100%)`,
+              filter: 'blur(3px)',
+              transform: 'rotate(-15deg)'
+            }}
+          />
+
+          {/* Secondary highlight (environmental reflection) */}
+          <div 
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              top: '60%',
+              right: '25%',
+              width: '20%',
+              height: '15%',
+              background: `radial-gradient(ellipse, 
+                rgba(200, 220, 255, 0.4) 0%,
+                rgba(150, 200, 255, 0.2) 50%,
+                transparent 100%)`,
+              filter: 'blur(2px)',
+              transform: 'rotate(25deg)'
+            }}
+          />
+
+          {/* Caustic light patterns (light refraction through glass) */}
+          <div 
+            className="absolute inset-0 rounded-full pointer-events-none overflow-hidden"
+            style={{
+              background: `conic-gradient(from 45deg at 35% 30%, 
+                transparent 0deg,
+                rgba(255, 255, 255, 0.15) 60deg,
+                transparent 120deg,
+                rgba(200, 220, 255, 0.1) 180deg,
+                transparent 240deg,
+                rgba(255, 255, 255, 0.1) 300deg,
+                transparent 360deg)`,
+              filter: 'blur(8px)',
+              opacity: 0.7
+            }}
+          />
+
+          {/* Rim lighting (edge highlight defining sphere shape) */}
+          <div 
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse at center, 
+                transparent 70%,
+                rgba(255, 255, 255, 0.3) 85%,
+                rgba(255, 255, 255, 0.6) 95%,
+                rgba(255, 255, 255, 0.8) 98%,
+                transparent 100%)`,
+              filter: 'blur(1px)'
+            }}
+          />
+
+          {/* Inner depth layer with chromatic aberration effect */}
+          <div 
+            className="absolute inset-4 rounded-full overflow-hidden"
+            style={{
+              background: `radial-gradient(ellipse at 40% 35%, 
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(100, 200, 255, 0.08) 30%,
+                rgba(150, 100, 255, 0.06) 60%,
+                transparent 80%)`,
+              backdropFilter: 'blur(15px)',
+              WebkitBackdropFilter: 'blur(15px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: 'inset 0 0 30px rgba(100, 150, 255, 0.2)'
+            }}
+          >
+            {/* Content layer with enhanced fluid integration */}
             <div 
-              className="w-full h-full rounded-full overflow-hidden"
+              className="w-full h-full rounded-full overflow-hidden relative"
               style={{
-                filter: 'blur(8px) saturate(1.4) brightness(1.1)',
-                transform: 'scale(1.05)'
+                background: `radial-gradient(ellipse at 45% 40%, 
+                  rgba(255, 255, 255, 0.05) 0%,
+                  transparent 50%)`
               }}
             >
-              {/* 📱 NEW: Responsive canvas sizing */}
               <canvas 
                 ref={canvasRef} 
-                width={isMobile ? 272 : 336} 
-                height={isMobile ? 272 : 336} 
+                width={canvasSize} 
+                height={canvasSize} 
                 className="w-full h-full"
                 style={{
-                  filter: 'blur(4px) contrast(1.2)',
-                  opacity: 0.9
+                  filter: 'blur(6px) saturate(1.3) brightness(1.1) contrast(1.1)',
+                  transform: 'scale(1.1)',
+                  opacity: 0.85,
+                  mixBlendMode: 'multiply'
                 }}
               />
             </div>
           </div>
-          
-          {/* Additional soft blur overlay for seamless fusion */}
+
+          {/* Surface imperfections and micro-reflections */}
           <div 
-            className="absolute inset-6 rounded-full pointer-events-none"
+            className="absolute inset-0 rounded-full pointer-events-none"
             style={{
-              background: `radial-gradient(circle at center, 
-                rgba(100, 200, 255, 0.1) 0%, 
-                rgba(150, 100, 255, 0.08) 30%, 
-                rgba(200, 150, 255, 0.06) 60%, 
-                transparent 100%)`,
-              filter: 'blur(12px)',
-              mixBlendMode: 'soft-light'
+              background: `radial-gradient(ellipse 200% 100% at 20% 80%, 
+                transparent 0%,
+                rgba(255, 255, 255, 0.05) 40%,
+                transparent 70%),
+              radial-gradient(ellipse 150% 80% at 70% 20%, 
+                transparent 0%,
+                rgba(200, 220, 255, 0.08) 30%,
+                transparent 60%)`,
+              filter: 'blur(4px)'
             }}
           />
-          
-          {/* Glass depth and refraction effects */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent via-white/8 to-white/15 pointer-events-none" />
-          <div className="absolute inset-0 rounded-full shadow-inner shadow-blue-400/10" />
-          
-          {/* Subtle rim highlight */}
-          <div className="absolute inset-0 rounded-full ring-1 ring-white/30 ring-inset" />
-          
-          {/* Audio-reactive outer glow with softer edges */}
+
+          {/* Atmospheric glow with audio reactivity */}
           <motion.div 
             className="absolute inset-0 rounded-full pointer-events-none"
             animate={{
               boxShadow: [
-                `0 0 ${40 + audioLevel * 60}px ${15 + audioLevel * 20}px rgba(59, 130, 246, ${0.15 + audioLevel * 0.25})`,
-                `0 0 ${45 + audioLevel * 65}px ${18 + audioLevel * 22}px rgba(168, 85, 247, ${0.12 + audioLevel * 0.2})`,
-                `0 0 ${40 + audioLevel * 60}px ${15 + audioLevel * 20}px rgba(34, 197, 94, ${0.15 + audioLevel * 0.25})`
+                `0 0 ${60 + audioLevel * 80}px ${20 + audioLevel * 30}px rgba(100, 180, 255, ${0.2 + audioLevel * 0.3})`,
+                `0 0 ${70 + audioLevel * 90}px ${25 + audioLevel * 35}px rgba(150, 120, 255, ${0.15 + audioLevel * 0.25})`,
+                `0 0 ${60 + audioLevel * 80}px ${20 + audioLevel * 30}px rgba(80, 220, 150, ${0.2 + audioLevel * 0.3})`
               ]
             }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* Fresnel effect (view-angle dependent reflectivity) */}
+          <div 
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              background: `radial-gradient(ellipse at center, 
+                transparent 40%,
+                rgba(255, 255, 255, 0.1) 70%,
+                rgba(255, 255, 255, 0.25) 90%,
+                rgba(255, 255, 255, 0.4) 95%,
+                rgba(255, 255, 255, 0.6) 98%,
+                rgba(255, 255, 255, 0.8) 100%)`,
+              filter: 'blur(0.5px)',
+              opacity: 0.8
+            }}
           />
         </div>
       </motion.div>
