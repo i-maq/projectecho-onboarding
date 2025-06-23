@@ -2,7 +2,9 @@
 
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Lottie from 'lottie-react';
 import OrbIntro from '../OrbIntro';
+import headphonesAnimation from '/public/wired-outline-1055-earbud-wireless-earphones-hover-pinch.json';
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [stage, setStage] = useState<'language' | 'soundCheck' | 'intro'>('language');
@@ -74,6 +76,26 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             className="w-full max-w-lg mx-auto"
           >
             <div className="glass-panel-light text-center">
+              {/* Animated Headphone Icon */}
+              <motion.div 
+                className="flex justify-center mb-6"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <div className="w-24 h-24">
+                  <Lottie 
+                    animationData={headphonesAnimation}
+                    loop={true}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))'
+                    }}
+                  />
+                </div>
+              </motion.div>
+
               <h2 className="text-3xl font-extrabold mb-4 text-gray-800 text-title">Can You Hear Me?</h2>
               <p className="text-lg text-gray-600 mb-8 text-body">This experience is best enjoyed with sound.</p>
               <button onClick={handleSoundCheckNext} className="neumorphic-button-light text-button">
