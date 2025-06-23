@@ -73,15 +73,13 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         blurAmount = 1.5;
       }
       
-      // 📱 NEW: Reduced opacity for mobile - much lighter particles
+      // 📱 Reduced opacity for mobile - much lighter particles
       let opacity;
       if (isMobile) {
-        // Mobile: Much lighter particles, max opacity 0.4
         opacity = depthLevel < 0.3 ? 0.4 : 
                  depthLevel < 0.6 ? 0.3 : 
                  depthLevel < 0.8 ? 0.2 : 0.15;
       } else {
-        // Desktop: Slightly reduced from original, max opacity 0.6
         opacity = depthLevel < 0.3 ? 0.6 : 
                  depthLevel < 0.6 ? 0.45 : 
                  depthLevel < 0.8 ? 0.3 : 0.2;
@@ -111,9 +109,9 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     { delay: '6s', duration: '8s' },
   ], []);
 
-  // 📱 NEW: Responsive particle count - fewer particles on mobile
+  // 📱 Responsive particle count - fewer particles on mobile
   const particleCount = useMemo(() => {
-    return isMobile ? 150 : 300; // 50% fewer particles on mobile
+    return isMobile ? 150 : 300;
   }, [isMobile]);
 
   const particles = useMemo(() => 
@@ -260,47 +258,55 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     // Make jump function available globally
     (window as any).orbJump = jumpToRandomPosition;
 
-    // Enhanced blob layers for seamless spherical effect
+    // Enhanced blob layers for detailed fluid effect
     const blobLayers = [
       {
-        baseRadius: 85,  // Larger to fill more space
-        segments: 16,
+        baseRadius: 75,
+        segments: 18,
         speed: 0.012,
-        noiseScale: 0.6,
-        opacity: 0.8,
+        noiseScale: 0.8,
+        opacity: 0.9,
         offset: { x: 0, y: 0 }
       },
       {
-        baseRadius: 70,
-        segments: 14,
+        baseRadius: 60,
+        segments: 16,
         speed: 0.018,
-        noiseScale: 0.9,
-        opacity: 0.7,
-        offset: { x: 8, y: -5 }
+        noiseScale: 1.1,
+        opacity: 0.8,
+        offset: { x: 6, y: -4 }
       },
       {
-        baseRadius: 95,  // Even larger for edge filling
-        segments: 18,
+        baseRadius: 85,
+        segments: 20,
         speed: 0.009,
+        noiseScale: 0.6,
+        opacity: 0.7,
+        offset: { x: -5, y: 3 }
+      },
+      {
+        baseRadius: 45,
+        segments: 14,
+        speed: 0.024,
+        noiseScale: 1.4,
+        opacity: 0.95,
+        offset: { x: 2, y: 6 }
+      },
+      {
+        baseRadius: 95,
+        segments: 22,
+        speed: 0.006,
         noiseScale: 0.4,
         opacity: 0.6,
-        offset: { x: -6, y: 4 }
-      },
-      {
-        baseRadius: 55,
-        segments: 12,
-        speed: 0.024,
-        noiseScale: 1.2,
-        opacity: 0.9,
-        offset: { x: 3, y: 8 }
-      },
-      {
-        baseRadius: 110, // Largest layer to extend to edges
-        segments: 20,
-        speed: 0.006,
-        noiseScale: 0.3,
-        opacity: 0.5,
         offset: { x: 0, y: 0 }
+      },
+      {
+        baseRadius: 35,
+        segments: 12,
+        speed: 0.030,
+        noiseScale: 1.8,
+        opacity: 1.0,
+        offset: { x: 4, y: -2 }
       }
     ];
 
@@ -313,19 +319,20 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       const noise1 = Math.sin(phi * scale + t) * Math.cos(theta * scale * 1.3 + t * 0.7);
       const noise2 = Math.sin(phi * scale * 1.4 + t * 1.2) * Math.cos(theta * scale * 0.8 + t * 0.9);
       const noise3 = Math.sin(r * scale * 2 + t * 0.5) * Math.cos(phi * scale * 0.6 + t * 1.1);
+      const noise4 = Math.sin(theta * scale * 2.2 + t * 0.8) * Math.cos(r * scale * 1.5 + t * 1.3);
       
-      return (noise1 + noise2 * 0.6 + noise3 * 0.4) / 2;
+      return (noise1 + noise2 * 0.6 + noise3 * 0.4 + noise4 * 0.3) / 2.3;
     };
 
     const getFlowOffset = (t: number, layer: number) => {
-      const flowSpeed = 0.006 + layer * 0.002;
+      const flowSpeed = 0.008 + layer * 0.003;
       return {
-        x: Math.sin(t * flowSpeed) * 12 + Math.cos(t * flowSpeed * 1.5) * 8,
-        y: Math.cos(t * flowSpeed * 0.9) * 10 + Math.sin(t * flowSpeed * 1.2) * 6
+        x: Math.sin(t * flowSpeed) * 15 + Math.cos(t * flowSpeed * 1.5) * 10,
+        y: Math.cos(t * flowSpeed * 0.9) * 12 + Math.sin(t * flowSpeed * 1.2) * 8
       };
     };
 
-    // Generate blob points that extend to sphere edges
+    // Generate detailed blob points
     const generateBlobPoints = (layer: any, t: number, audioBoost: number) => {
       const points = [];
       const segments = layer.segments;
@@ -333,29 +340,39 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       for (let i = 0; i <= segments; i++) {
         const angle = (i / segments) * Math.PI * 2;
         
-        // Enhanced spherical noise
+        // Enhanced multi-layer spherical noise
         const noise1 = sphericalNoise(
-          Math.cos(angle) * 80,
-          Math.sin(angle) * 80,
+          Math.cos(angle) * 100,
+          Math.sin(angle) * 100,
           t * layer.speed,
           layer.noiseScale
         );
         
         const noise2 = sphericalNoise(
-          Math.cos(angle) * 140,
-          Math.sin(angle) * 140,
-          t * layer.speed * 0.8,
-          layer.noiseScale * 0.6
+          Math.cos(angle) * 160,
+          Math.sin(angle) * 160,
+          t * layer.speed * 0.7,
+          layer.noiseScale * 0.5
         );
 
-        const combinedNoise = noise1 + noise2 * 0.4;
+        const noise3 = sphericalNoise(
+          Math.cos(angle) * 50,
+          Math.sin(angle) * 50,
+          t * layer.speed * 1.5,
+          layer.noiseScale * 1.2
+        );
+
+        const combinedNoise = noise1 + noise2 * 0.4 + noise3 * 0.2;
         
-        // Enhanced radius that can extend to sphere edges
-        let jumpBoost = jumpState.isJumping ? 1.3 + Math.sin(jumpState.jumpProgress * Math.PI) * 0.4 : 1;
+        // Enhanced radius with more dynamic variation
+        let jumpBoost = jumpState.isJumping ? 1.4 + Math.sin(jumpState.jumpProgress * Math.PI) * 0.6 : 1;
         
-        const radiusVariation = layer.baseRadius * audioBoost * jumpBoost + combinedNoise * 25 + audioLevel * 18;
+        const radiusVariation = layer.baseRadius * audioBoost * jumpBoost + 
+                              combinedNoise * 30 + 
+                              audioLevel * 25 +
+                              Math.sin(t * 0.02 + angle * 3) * 8;
         
-        const flowOffset = getFlowOffset(t, segments);
+        const flowOffset = getFlowOffset(t, i);
         
         const x = orbPosition.x + Math.cos(angle) * radiusVariation + layer.offset.x + flowOffset.x;
         const y = orbPosition.y + Math.sin(angle) * radiusVariation + layer.offset.y + flowOffset.y;
@@ -366,44 +383,56 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       return points;
     };
 
-    // Enhanced smooth blob drawing with edge blending
+    // Enhanced smooth blob drawing with better blending
     const drawSmoothBlob = (points: any[], color: string, layer: any) => {
       if (points.length < 3) return;
       
       ctx.save();
       
-      // Create clipping mask for spherical shape
+      // Create spherical clipping mask
       ctx.beginPath();
-      ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2 - 2, 0, Math.PI * 2);
+      ctx.arc(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) / 2 - 1, 0, Math.PI * 2);
       ctx.clip();
       
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
       
-      // Enhanced smooth curves
+      // Enhanced smooth curves with more control points
       for (let i = 0; i < points.length - 1; i++) {
         const current = points[i];
         const next = points[(i + 1) % (points.length - 1)];
+        const nextnext = points[(i + 2) % (points.length - 1)];
         
-        const controlX = (current.x + next.x) / 2;
-        const controlY = (current.y + next.y) / 2;
+        const controlX1 = (current.x + next.x) / 2;
+        const controlY1 = (current.y + next.y) / 2;
+        const controlX2 = (next.x + nextnext.x) / 2;
+        const controlY2 = (next.y + nextnext.y) / 2;
         
-        const curvature = Math.sin(time * 0.015 + i * 0.4) * 5;
+        const curvature = Math.sin(time * 0.02 + i * 0.5) * 6;
         
-        ctx.quadraticCurveTo(
+        ctx.bezierCurveTo(
           current.x + curvature, 
-          current.y + curvature, 
-          controlX, 
-          controlY
+          current.y + curvature,
+          controlX1,
+          controlY1,
+          next.x,
+          next.y
         );
       }
       
       ctx.closePath();
       
-      // Enhanced blending for seamless sphere effect
-      ctx.globalCompositeOperation = 'screen';
+      // Enhanced blending with multiple composition modes
+      ctx.globalCompositeOperation = layer.baseRadius < 50 ? 'screen' : 'multiply';
       ctx.fillStyle = color;
       ctx.fill();
+      
+      // Add secondary glow effect
+      ctx.globalCompositeOperation = 'screen';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.filter = 'blur(4px)';
+      ctx.stroke();
       
       ctx.restore();
     };
@@ -414,43 +443,46 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       time += 1;
       updateOrbPosition();
       
-      // Enhanced audio reactivity with spherical expansion
-      let jumpIntensity = jumpState.isJumping ? 1.2 + Math.sin(jumpState.jumpProgress * Math.PI * 2) * 0.3 : 1;
-      const audioBoost = (1 + audioLevel * 0.5) * jumpIntensity;
+      // Enhanced audio reactivity
+      let jumpIntensity = jumpState.isJumping ? 1.3 + Math.sin(jumpState.jumpProgress * Math.PI * 2) * 0.4 : 1;
+      const audioBoost = (1 + audioLevel * 0.7) * jumpIntensity;
       
-      // Draw layers from largest to smallest for better blending
+      // Sort layers for proper depth rendering
       const sortedLayers = [...blobLayers].sort((a, b) => b.baseRadius - a.baseRadius);
       
       sortedLayers.forEach((layer, index) => {
         const points = generateBlobPoints(layer, time, audioBoost);
         
-        // Enhanced dynamic color mixing for spherical depth
-        let jumpColorShift = jumpState.isJumping ? jumpState.jumpProgress * 2.5 : 0;
+        // Enhanced dynamic color mixing
+        let jumpColorShift = jumpState.isJumping ? jumpState.jumpProgress * 3 : 0;
         
-        const colorIndex = (time * 0.008 + index * 0.4 + audioLevel * 2 + jumpColorShift) % auroraColors.length;
+        const colorIndex = (time * 0.01 + index * 0.6 + audioLevel * 3 + jumpColorShift) % auroraColors.length;
         const color1 = auroraColors[Math.floor(colorIndex)];
         const color2 = auroraColors[Math.floor(colorIndex + 1) % auroraColors.length];
+        const color3 = auroraColors[Math.floor(colorIndex + 2) % auroraColors.length];
         
         const mix = colorIndex % 1;
-        const r = Math.floor(color1.r * (1 - mix) + color2.r * mix);
-        const g = Math.floor(color1.g * (1 - mix) + color2.g * mix);
-        const b = Math.floor(color1.b * (1 - mix) + color2.b * mix);
+        const r = Math.floor(color1.r * (1 - mix) + color2.r * mix + color3.r * mix * 0.2);
+        const g = Math.floor(color1.g * (1 - mix) + color2.g * mix + color3.g * mix * 0.2);
+        const b = Math.floor(color1.b * (1 - mix) + color2.b * mix + color3.b * mix * 0.2);
         
-        // Spherical gradient from center outward
+        // Enhanced radial gradient with more stops
         const gradient = ctx.createRadialGradient(
           orbPosition.x, orbPosition.y, 0,
-          orbPosition.x, orbPosition.y, layer.baseRadius * audioBoost * 2
+          orbPosition.x, orbPosition.y, layer.baseRadius * audioBoost * 2.5
         );
         
-        const baseOpacity = layer.opacity * (0.4 + audioLevel * 0.6);
-        const jumpGlow = jumpState.isJumping ? 0.4 : 0;
-        const opacity = baseOpacity + jumpGlow;
+        const baseOpacity = layer.opacity * (0.3 + audioLevel * 0.7);
+        const jumpGlow = jumpState.isJumping ? 0.5 : 0;
+        const opacity = Math.min(baseOpacity + jumpGlow, 1.0);
         
-        // Enhanced spherical gradient for edge extension
+        // Multi-stop gradient for better depth
         gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
-        gradient.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${opacity * 0.9})`);
-        gradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${opacity * 0.6})`);
-        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${opacity * 0.2})`);
+        gradient.addColorStop(0.2, `rgba(${r}, ${g}, ${b}, ${opacity * 0.95})`);
+        gradient.addColorStop(0.4, `rgba(${r}, ${g}, ${b}, ${opacity * 0.8})`);
+        gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${opacity * 0.6})`);
+        gradient.addColorStop(0.8, `rgba(${r}, ${g}, ${b}, ${opacity * 0.3})`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${opacity * 0.1})`);
         
         drawSmoothBlob(points, gradient, layer);
       });
@@ -573,83 +605,153 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         {particles}
       </div>
 
-      {/* Borderless spherical orb with extended fluid effect */}
+      {/* Enhanced detailed spherical orb */}
       <motion.div
         className="relative z-10 mx-4 md:mx-0"
         animate={{ 
-          scale: isTapped ? 1.03 : 1,
-          y: isAudioPlaying ? [0, -2, 2, 0] : 0
+          scale: isTapped ? 1.04 : 1,
+          y: isAudioPlaying ? [0, -3, 3, 0] : 0
         }}
         transition={{ 
           type: "spring", 
-          stiffness: 400, 
-          damping: 25,
-          y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
+          stiffness: 350, 
+          damping: 20,
+          y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
         }}
       >
-        {/* Seamless spherical container */}
+        {/* Multi-layered spherical container with enhanced depth */}
         <div className={`relative ${orbSize}`}>
-          {/* Pure spherical shape without borders */}
+          {/* Primary glass sphere with detailed effects */}
           <div 
             className="absolute inset-0 rounded-full overflow-hidden"
             style={{
-              background: `radial-gradient(circle at 35% 25%, 
-                rgba(255, 255, 255, 0.2) 0%,
-                rgba(255, 255, 255, 0.1) 20%,
-                rgba(200, 220, 255, 0.08) 40%,
-                rgba(150, 180, 255, 0.06) 60%,
-                rgba(100, 140, 255, 0.04) 80%,
-                transparent 100%)`,
-              backdropFilter: 'blur(15px)',
-              WebkitBackdropFilter: 'blur(15px)',
+              background: `
+                radial-gradient(circle at 30% 20%, 
+                  rgba(255, 255, 255, 0.4) 0%,
+                  rgba(255, 255, 255, 0.25) 15%,
+                  rgba(220, 235, 255, 0.2) 30%,
+                  rgba(180, 210, 255, 0.15) 45%,
+                  rgba(140, 180, 255, 0.1) 60%,
+                  rgba(100, 150, 255, 0.08) 75%,
+                  rgba(80, 120, 255, 0.05) 90%,
+                  transparent 100%),
+                radial-gradient(circle at 70% 80%, 
+                  rgba(150, 100, 255, 0.15) 0%,
+                  rgba(120, 150, 255, 0.1) 30%,
+                  transparent 60%),
+                linear-gradient(135deg,
+                  rgba(255, 255, 255, 0.1) 0%,
+                  rgba(200, 220, 255, 0.05) 50%,
+                  rgba(150, 180, 255, 0.02) 100%)
+              `,
+              backdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
+              WebkitBackdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
               boxShadow: `
-                0 0 60px rgba(100, 150, 255, 0.3),
-                inset 0 0 60px rgba(255, 255, 255, 0.1)
+                0 0 80px rgba(100, 150, 255, 0.4),
+                0 0 40px rgba(150, 200, 255, 0.3),
+                inset 0 0 80px rgba(255, 255, 255, 0.15),
+                inset 0 0 40px rgba(200, 220, 255, 0.1)
               `
             }}
           >
-            {/* Fluid effect extends to edges */}
+            {/* Enhanced fluid canvas with better filtering */}
             <canvas 
               ref={canvasRef} 
               width={canvasSize} 
               height={canvasSize} 
               className="w-full h-full rounded-full"
               style={{
-                filter: 'saturate(1.4) brightness(1.2) contrast(1.1)',
-                opacity: 0.95,
+                filter: 'saturate(1.6) brightness(1.3) contrast(1.15) blur(0.5px)',
+                opacity: 0.92,
                 mixBlendMode: 'screen'
               }}
             />
           </div>
 
-          {/* Subtle spherical highlight without border */}
+          {/* Enhanced spherical highlights and reflections */}
           <div 
             className="absolute rounded-full pointer-events-none"
             style={{
-              top: '10%',
-              left: '15%',
-              width: '40%',
-              height: '30%',
-              background: `radial-gradient(ellipse, 
-                rgba(255, 255, 255, 0.4) 0%,
-                rgba(255, 255, 255, 0.2) 40%,
-                transparent 70%)`,
-              filter: 'blur(8px)',
-              transform: 'rotate(-20deg)'
+              top: '8%',
+              left: '12%',
+              width: '45%',
+              height: '35%',
+              background: `
+                radial-gradient(ellipse 100% 80%, 
+                  rgba(255, 255, 255, 0.6) 0%,
+                  rgba(255, 255, 255, 0.4) 25%,
+                  rgba(240, 250, 255, 0.25) 50%,
+                  rgba(220, 235, 255, 0.1) 75%,
+                  transparent 100%)
+              `,
+              filter: 'blur(6px)',
+              transform: 'rotate(-25deg)'
             }}
           />
 
-          {/* Enhanced atmospheric glow */}
+          {/* Secondary highlight for more depth */}
+          <div 
+            className="absolute rounded-full pointer-events-none"
+            style={{
+              top: '60%',
+              right: '15%',
+              width: '25%',
+              height: '20%',
+              background: `
+                radial-gradient(ellipse, 
+                  rgba(180, 220, 255, 0.3) 0%,
+                  rgba(150, 200, 255, 0.15) 50%,
+                  transparent 80%)
+              `,
+              filter: 'blur(8px)',
+              transform: 'rotate(15deg)'
+            }}
+          />
+
+          {/* Inner rim lighting effect */}
+          <div 
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              background: `
+                radial-gradient(circle, 
+                  transparent 85%,
+                  rgba(255, 255, 255, 0.2) 90%,
+                  rgba(200, 220, 255, 0.3) 95%,
+                  rgba(150, 180, 255, 0.2) 100%)
+              `,
+              filter: 'blur(2px)'
+            }}
+          />
+
+          {/* Dynamic atmospheric glow with audio reactivity */}
           <motion.div 
             className="absolute inset-0 rounded-full pointer-events-none"
             animate={{
               boxShadow: [
-                `0 0 ${80 + audioLevel * 100}px ${30 + audioLevel * 40}px rgba(100, 180, 255, ${0.3 + audioLevel * 0.4})`,
-                `0 0 ${90 + audioLevel * 110}px ${35 + audioLevel * 45}px rgba(150, 120, 255, ${0.25 + audioLevel * 0.35})`,
-                `0 0 ${80 + audioLevel * 100}px ${30 + audioLevel * 40}px rgba(80, 220, 150, ${0.3 + audioLevel * 0.4})`
+                `0 0 ${100 + audioLevel * 120}px ${40 + audioLevel * 50}px rgba(100, 180, 255, ${0.35 + audioLevel * 0.45})`,
+                `0 0 ${110 + audioLevel * 130}px ${45 + audioLevel * 55}px rgba(150, 120, 255, ${0.3 + audioLevel * 0.4})`,
+                `0 0 ${95 + audioLevel * 115}px ${35 + audioLevel * 45}px rgba(80, 220, 150, ${0.4 + audioLevel * 0.5})`,
+                `0 0 ${105 + audioLevel * 125}px ${42 + audioLevel * 52}px rgba(120, 200, 255, ${0.32 + audioLevel * 0.42})`
               ]
             }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* Outer atmospheric halo */}
+          <motion.div 
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              transform: 'scale(1.3)',
+              opacity: 0.6
+            }}
+            animate={{
+              boxShadow: [
+                `0 0 ${150 + audioLevel * 80}px ${20 + audioLevel * 30}px rgba(100, 150, 255, ${0.2 + audioLevel * 0.25})`,
+                `0 0 ${160 + audioLevel * 90}px ${25 + audioLevel * 35}px rgba(150, 100, 255, ${0.15 + audioLevel * 0.2})`,
+                `0 0 ${140 + audioLevel * 75}px ${18 + audioLevel * 28}px rgba(80, 200, 180, ${0.25 + audioLevel * 0.3})`
+              ]
+            }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
       </motion.div>
@@ -658,18 +760,36 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       <audio ref={scriptAudioRef} src={audioSrc} preload="auto" />
       <audio ref={tapAudioRef} src="/tap-sound.mp3" preload="auto" />
 
-      {/* Captions */}
+      {/* Enhanced captions with better blur effects */}
       <AnimatePresence mode="wait">
         {captions[step] && (
           <motion.div
             key={step}
-            initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -20, filter: "blur(5px)" }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            initial={{ opacity: 0, y: 30, filter: "blur(15px)", scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
+            exit={{ opacity: 0, y: -20, filter: "blur(8px)", scale: 1.02 }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
             className="absolute bottom-16 w-full px-6 max-w-3xl text-center z-10"
           >
-            <div className="bg-white/20 backdrop-blur-2xl border border-white/30 rounded-2xl p-8 shadow-2xl">
+            <div 
+              className="relative rounded-2xl p-8 shadow-2xl"
+              style={{
+                background: `
+                  linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.25) 0%,
+                    rgba(240, 248, 255, 0.2) 50%,
+                    rgba(230, 240, 255, 0.15) 100%)
+                `,
+                backdropFilter: 'blur(25px) saturate(1.4)',
+                WebkitBackdropFilter: 'blur(25px) saturate(1.4)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: `
+                  0 20px 40px rgba(0, 0, 0, 0.1),
+                  0 8px 20px rgba(100, 150, 255, 0.15),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.4)
+                `
+              }}
+            >
               <p className="text-lg leading-relaxed text-gray-800 font-medium">
                 {captions[step]}
               </p>
@@ -678,11 +798,14 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         )}
       </AnimatePresence>
 
-      {/* Tap instruction */}
+      {/* Enhanced tap instruction */}
       <motion.div 
         className="absolute bottom-4 text-sm text-gray-600 font-medium z-10"
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 2, repeat: Infinity }}
+        style={{
+          textShadow: '0 1px 3px rgba(255, 255, 255, 0.8)'
+        }}
       >
         Tap to continue • Watch the orb bounce! 🌟
       </motion.div>
