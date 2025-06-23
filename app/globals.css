@@ -2,6 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* --- FONT CONFIGURATION --- */
+@layer base {
+  :root {
+    --font-poppins: 'Poppins', sans-serif;
+  }
+  
+  /* Default text styling - Poppins Light */
+  body {
+    font-family: var(--font-poppins);
+    font-weight: 300; /* Poppins Light */
+  }
+  
+  /* Headers and titles - Poppins Extrabold */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-poppins);
+    font-weight: 800; /* Poppins Extrabold */
+  }
+  
+  /* Button text - Medium weight for readability */
+  button {
+    font-family: var(--font-poppins);
+    font-weight: 500;
+  }
+  
+  /* Input placeholders - Light */
+  input::placeholder,
+  textarea::placeholder {
+    font-family: var(--font-poppins);
+    font-weight: 300;
+  }
+}
+
 /* --- KEYFRAME ANIMATIONS (The missing piece) --- */
 @keyframes pulse-animation {
   0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
@@ -22,12 +54,22 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   padding: 2rem;
+  font-family: var(--font-poppins);
+  font-weight: 300;
 }
+
 .neumorphic-button-light {
-  background: #eef2f9; border: none; border-radius: 12px;
-  padding: 15px 30px; font-size: 16px; font-weight: 600;
-  color: #3f4a59; box-shadow: 8px 8px 15px #d1d9e6, -8px -8px 15px #ffffff;
-  transition: all 0.2s ease-in-out; cursor: pointer;
+  background: #eef2f9; 
+  border: none; 
+  border-radius: 12px;
+  padding: 15px 30px; 
+  font-size: 16px; 
+  font-family: var(--font-poppins);
+  font-weight: 600; /* Semi-bold for buttons */
+  color: #3f4a59; 
+  box-shadow: 8px 8px 15px #d1d9e6, -8px -8px 15px #ffffff;
+  transition: all 0.2s ease-in-out; 
+  cursor: pointer;
 }
 .neumorphic-button-light:hover {
   transform: translateY(-2px);
@@ -38,6 +80,33 @@
   transform: translateY(0);
 }
 
+/* --- Typography Utilities --- */
+.text-title {
+  font-family: var(--font-poppins);
+  font-weight: 800; /* Extrabold */
+}
+
+.text-heading {
+  font-family: var(--font-poppins);
+  font-weight: 800; /* Extrabold */
+}
+
+.text-body {
+  font-family: var(--font-poppins);
+  font-weight: 300; /* Light */
+}
+
+.text-button {
+  font-family: var(--font-poppins);
+  font-weight: 600; /* Semi-bold */
+}
+
+.text-caption {
+  font-family: var(--font-poppins);
+  font-weight: 300; /* Light */
+  font-size: 0.875rem;
+}
+
 /* --- On-Click Animation Effect --- */
 .click-pulse {
   position: fixed; width: 150px; height: 150px; border-radius: 50%;
@@ -46,8 +115,8 @@
   animation: click-pulse-animation 0.7s ease-out;
   pointer-events: none; z-index: 100;
 }
-/* --- GLOBAL ANIMATION DEFINITIONS --- */
 
+/* --- GLOBAL ANIMATION DEFINITIONS --- */
 @keyframes random-float-animation {
   0% { transform: translateY(0px) translateX(0px); }
   100% { transform: translateY(-110vh) translateX(20px); }
@@ -59,7 +128,7 @@
   100% { transform: translate(20px, -110vh); opacity: 0; }
 }
 
-/* Slow‐pulse for the orb’s gradient backlight */
+/* Slow‐pulse for the orb's gradient backlight */
 @keyframes pulse-slow {
   0%, 100% { opacity: 0.4; }
   50%      { opacity: 0.6; }

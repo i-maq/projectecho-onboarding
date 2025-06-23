@@ -54,12 +54,12 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             className="w-full max-w-md mx-auto"
           >
             <div className="glass-panel-light text-center">
-              <h1 className="text-3xl font-bold mb-2 text-gray-800">Welcome</h1>
-              <p className="text-gray-600 mb-8">Please select your language.</p>
+              <h1 className="text-3xl font-extrabold mb-2 text-gray-800 text-title">Welcome</h1>
+              <p className="text-gray-600 mb-8 text-body">Please select your language.</p>
               <div className="space-y-4">
-                <button onClick={handleLanguageSelect} className="w-full neumorphic-button-light h-12">English</button>
-                <button onClick={handleLanguageSelect} className="w-full neumorphic-button-light h-12">Español</button>
-                <button onClick={handleLanguageSelect} className="w-full neumorphic-button-light h-12">Français</button>
+                <button onClick={handleLanguageSelect} className="w-full neumorphic-button-light h-12 text-button">English</button>
+                <button onClick={handleLanguageSelect} className="w-full neumorphic-button-light h-12 text-button">Español</button>
+                <button onClick={handleLanguageSelect} className="w-full neumorphic-button-light h-12 text-button">Français</button>
               </div>
             </div>
           </motion.div>
@@ -74,9 +74,9 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             className="w-full max-w-lg mx-auto"
           >
             <div className="glass-panel-light text-center">
-              <h2 className="text-3xl font-bold mb-4 text-gray-800">A Cinematic Experience</h2>
-              <p className="text-lg text-gray-600 mb-8">This experience is best enjoyed with sound.</p>
-              <button onClick={handleSoundCheckNext} className="neumorphic-button-light">
+              <h2 className="text-3xl font-extrabold mb-4 text-gray-800 text-title">A Cinematic Experience</h2>
+              <p className="text-lg text-gray-600 mb-8 text-body">This experience is best enjoyed with sound.</p>
+              <button onClick={handleSoundCheckNext} className="neumorphic-button-light text-button">
                 Continue
               </button>
             </div>

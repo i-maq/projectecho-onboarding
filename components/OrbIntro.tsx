@@ -878,7 +878,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
                 `
               }}
             >
-              <p className="text-lg leading-relaxed text-gray-800 font-medium">
+              <p className="text-lg leading-relaxed text-gray-800 font-light text-body">
                 {captions[step]}
               </p>
             </div>
@@ -888,7 +888,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
 
       {/* Enhanced tap instruction */}
       <motion.div 
-        className="absolute bottom-4 text-sm text-gray-600 font-medium z-10"
+        className="absolute bottom-4 text-sm text-gray-600 font-light z-10 text-caption"
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 2, repeat: Infinity }}
         style={{

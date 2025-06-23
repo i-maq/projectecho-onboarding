@@ -47,8 +47,8 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
       className="w-full max-w-md"
     >
       <div className="glass-panel-light text-center">
-        <h1 className="text-5xl font-bold mb-2 text-gray-800">Echo</h1>
-        <p className="text-gray-600 mb-8">
+        <h1 className="text-5xl font-extrabold mb-2 text-gray-800 text-title">Echo</h1>
+        <p className="text-gray-600 mb-8 text-body">
           {isLogin 
             ? 'Sign in to access your personal legacy' 
             : 'Create an account to begin your story'
@@ -60,7 +60,7 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
             placeholder="Email"
             value={formData.email} 
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800"
+            className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800 text-body"
             required
           />
           <input
@@ -68,13 +68,13 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
             placeholder="Password"
             value={formData.password} 
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800"
+            className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800 text-body"
             required
             minLength={6}
           />
           <button 
             type="submit" 
-            className="w-full neumorphic-button-light h-12" 
+            className="w-full neumorphic-button-light h-12 text-button" 
             disabled={isLoading}
           >
             {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Create Account')}
@@ -84,7 +84,7 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
           <button 
             type="button" 
             onClick={() => setIsLogin(!isLogin)} 
-            className="text-sm text-gray-500 hover:text-purple-600 transition-colors"
+            className="text-sm text-gray-500 hover:text-purple-600 transition-colors text-caption"
           >
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
           </button>

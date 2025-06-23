@@ -115,9 +115,9 @@ export function Dashboard() {
           className="flex justify-between items-center mb-8"
         >
           <div className="flex items-center space-x-4">
-            <h1 className="text-4xl font-bold text-gray-800">Echo</h1>
+            <h1 className="text-4xl font-extrabold text-gray-800 text-title">Echo</h1>
           </div>
-          <button onClick={logout} className="neumorphic-button-light">
+          <button onClick={logout} className="neumorphic-button-light text-button">
             <LogOut className="h-4 w-4 mr-2" />
             Logout
           </button>
@@ -127,28 +127,28 @@ export function Dashboard() {
           {/* Memory Input Column */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
             <div className="glass-panel-light !bg-white/60 !border-white/20 !shadow-xl">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center mb-4">
+              <h2 className="text-xl font-extrabold text-gray-800 flex items-center mb-4 text-heading">
                 <Sparkles className="h-5 w-5 text-purple-600 mr-2" />
                 Echo asks:
               </h2>
               <div className="bg-purple-100 border border-purple-200 rounded-lg p-4 mb-6">
-                <p className="font-medium text-purple-800">{currentPrompt}</p>
+                <p className="font-medium text-purple-800 text-body">{currentPrompt}</p>
               </div>
               
               <textarea
                 placeholder="Share your memory..."
                 value={currentMemory}
                 onChange={(e) => setCurrentMemory(e.target.value)}
-                className="w-full min-h-[150px] p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none resize-none text-gray-800"
+                className="w-full min-h-[150px] p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none resize-none text-gray-800 text-body font-light"
               />
               <div className="flex justify-between mt-4">
-                <button onClick={generateNewPrompt} className="neumorphic-button-light">
+                <button onClick={generateNewPrompt} className="neumorphic-button-light text-button">
                   New Prompt
                 </button>
                 <button 
                   onClick={saveMemory} 
                   disabled={!currentMemory.trim() || isLoading} 
-                  className="neumorphic-button-light !bg-purple-600 !text-white !shadow-lg"
+                  className="neumorphic-button-light !bg-purple-600 !text-white !shadow-lg text-button"
                 >
                   {isLoading ? 'Saving...' : 'Save Memory'}
                 </button>
@@ -159,7 +159,7 @@ export function Dashboard() {
           {/* Memory Timeline Column */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>
             <div className="glass-panel-light !bg-white/60 !border-white/20 !shadow-xl h-full">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center mb-4">
+              <h2 className="text-xl font-extrabold text-gray-800 flex items-center mb-4 text-heading">
                 <Book className="h-5 w-5 text-purple-600 mr-2" />
                 Your Memories
               </h2>
@@ -172,15 +172,15 @@ export function Dashboard() {
                     transition={{ delay: index * 0.1 }}
                     className="bg-white/70 border border-gray-200 rounded-lg p-4"
                   >
-                    <p className="text-gray-700 leading-relaxed">{echo.content}</p>
-                    <p className="text-xs text-gray-500 mt-2">
+                    <p className="text-gray-700 leading-relaxed text-body">{echo.content}</p>
+                    <p className="text-xs text-gray-500 mt-2 text-caption">
                       {format(new Date(echo.created_at), 'MMMM d, yyyy \'at\' h:mm a')}
                     </p>
                   </motion.div>
                 )) : (
                   <div className="text-center py-20">
                     <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">No memories yet.</p>
+                    <p className="text-gray-500 text-body">No memories yet.</p>
                   </div>
                 )}
               </div>
