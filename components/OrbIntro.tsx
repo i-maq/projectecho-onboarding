@@ -147,7 +147,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     };
   }, [isAudioPlaying]);
 
-  // Enhanced Siri-like fluid orb animation with bouncing movement
+  // Enhanced Siri-like fluid orb animation with tap-to-jump movement
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -158,20 +158,155 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     let animationId: number;
     let time = 0;
 
-    // Bouncing orb physics
+    // 🌟 NEW: Tap-to-jump orb position system
     const orbPosition = { x: canvas.width / 2, y: canvas.height / 2 };
-    const orbVelocity = { 
-      x: (Math.random() - 0.5) * 0.4, // Slow initial velocity
-      y: (Math.random() - 0.5) * 0.4 
-    };
+    const targetPosition = { x: canvas.width / 2, y: canvas.height / 2 };
+    let isJumping = false;
+    let jumpProgress = 0;
+    const jumpDuration = 0.8; // Duration in seconds for jump animation
+    const jumpStartTime = { value: 0 };
+
+    // 🌈 NEW: Trail system for beautiful glowing path
+    const trailPoints: Array<{ x: number; y: number; age: number; intensity: number }> = [];
+    const maxTrailLength = 25;
+    const trailFadeTime = 1.5; // Time in seconds for trail to fade
+
     const orbBounds = {
-      left: 80,   // Boundary margin from edges
+      left: 80,
       right: canvas.width - 80,
       top: 80,
       bottom: canvas.height - 80
     };
-    const friction = 0.998; // Slight friction for more natural movement
-    const bounceDeceleration = 0.85; // Energy loss on bounce
+
+    // ✨ NEW: Generate random jump target within orb bounds
+    const generateRandomTarget = () => {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const maxRadius = Math.min(orbBounds.right - centerX, orbBounds.bottom - centerY) * 0.8;
+      
+      // Generate random position within circular bounds
+      const angle = Math.random() * Math.PI * 2;
+      const radius = Math.random() * maxRadius;
+      
+      return {
+        x: centerX + Math.cos(angle) * radius,
+        y: centerY + Math.sin(angle) * radius
+      };
+    };
+
+    // 🎯 NEW: Jump to random position (called on tap)
+    const jumpToRandomPosition = () => {
+      const newTarget = generateRandomTarget();
+      targetPosition.x = newTarget.x;
+      targetPosition.y = newTarget.y;
+      isJumping = true;
+      jumpProgress = 0;
+      jumpStartTime.value = time;
+    };
+
+    // 🚀 NEW: Smooth easing function for jump animation
+    const easeOutQuart = (t: number): number => {
+      return 1 - Math.pow(1 - t, 4);
+    };
+
+    // 🌟 NEW: Update orb position with smooth jumping
+    const updateOrbPosition = () => {
+      if (isJumping) {
+        const elapsed = (time - jumpStartTime.value) / 60; // Convert to seconds (assuming 60fps)
+        jumpProgress = Math.min(elapsed / jumpDuration, 1);
+        
+        if (jumpProgress >= 1) {
+          // Jump completed
+          isJumping = false;
+          orbPosition.x = targetPosition.x;
+          orbPosition.y = targetPosition.y;
+        } else {
+          // Smooth interpolation with easing
+          const eased = easeOutQuart(jumpProgress);
+          const startX = orbPosition.x;
+          const startY = orbPosition.y;
+          
+          // Calculate start position if this is first frame of jump
+          if (jumpProgress === 0) {
+            jumpStartTime.value = time;
+          }
+          
+          orbPosition.x = startX + (targetPosition.x - startX) * eased;
+          orbPosition.y = startY + (targetPosition.y - startY) * eased;
+        }
+      }
+
+      // 🌈 NEW: Add current position to trail
+      if (time % 2 === 0) { // Add trail point every 2 frames for performance
+        trailPoints.push({
+          x: orbPosition.x,
+          y: orbPosition.y,
+          age: 0,
+          intensity: isJumping ? 1.2 : 0.8
+        });
+      }
+
+      // 🌈 NEW: Update and clean up trail points
+      for (let i = trailPoints.length - 1; i >= 0; i--) {
+        trailPoints[i].age += 1/60; // Increment age (assuming 60fps)
+        
+        if (trailPoints[i].age > trailFadeTime || trailPoints.length > maxTrailLength) {
+          trailPoints.splice(i, 1);
+        }
+      }
+    };
+
+    // 🌈 NEW: Draw beautiful glowing trail
+    const drawTrail = () => {
+      if (trailPoints.length < 2) return;
+
+      // Draw trail as connected glowing segments
+      for (let i = 1; i < trailPoints.length; i++) {
+        const current = trailPoints[i];
+        const previous = trailPoints[i - 1];
+        
+        const fadeAmount = 1 - (current.age / trailFadeTime);
+        const alpha = fadeAmount * 0.6 * current.intensity;
+        const width = fadeAmount * 8 + 2;
+        
+        if (alpha > 0.05) {
+          // Create gradient for trail segment
+          const gradient = ctx.createLinearGradient(
+            previous.x, previous.y,
+            current.x, current.y
+          );
+          
+          // Use aurora colors for trail
+          const colorIndex = (time * 0.02 + i * 0.1) % auroraColors.length;
+          const color = auroraColors[Math.floor(colorIndex)];
+          
+          gradient.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha * 0.5})`);
+          gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`);
+          
+          // Draw trail segment with glow effect
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = width;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          
+          // Add soft glow
+          ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.4)`;
+          ctx.shadowBlur = width * 2;
+          
+          ctx.beginPath();
+          ctx.moveTo(previous.x, previous.y);
+          ctx.lineTo(current.x, current.y);
+          ctx.stroke();
+          
+          ctx.restore();
+        }
+      }
+    };
+
+    // Make jump function available globally for tap handler
+    (window as any).orbJump = jumpToRandomPosition;
 
     // Multiple blob layers for Siri-like effect
     const blobLayers = [
@@ -208,56 +343,6 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         offset: { x: 5, y: 12 }
       }
     ];
-
-    // Update orb position with bouncing physics
-    const updateOrbPosition = () => {
-      // Apply gravity-like subtle force toward center
-      const centerPull = 0.001;
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const distanceFromCenter = Math.sqrt(
-        Math.pow(orbPosition.x - centerX, 2) + Math.pow(orbPosition.y - centerY, 2)
-      );
-      
-      if (distanceFromCenter > 0) {
-        const pullX = (centerX - orbPosition.x) / distanceFromCenter * centerPull;
-        const pullY = (centerY - orbPosition.y) / distanceFromCenter * centerPull;
-        orbVelocity.x += pullX;
-        orbVelocity.y += pullY;
-      }
-
-      // Add slight random movement for organic feel
-      orbVelocity.x += (Math.random() - 0.5) * 0.02;
-      orbVelocity.y += (Math.random() - 0.5) * 0.02;
-
-      // Apply friction
-      orbVelocity.x *= friction;
-      orbVelocity.y *= friction;
-
-      // Update position
-      orbPosition.x += orbVelocity.x;
-      orbPosition.y += orbVelocity.y;
-
-      // Boundary collision with soft bouncing
-      if (orbPosition.x <= orbBounds.left || orbPosition.x >= orbBounds.right) {
-        orbVelocity.x = -orbVelocity.x * bounceDeceleration;
-        orbPosition.x = Math.max(orbBounds.left, Math.min(orbBounds.right, orbPosition.x));
-      }
-      
-      if (orbPosition.y <= orbBounds.top || orbPosition.y >= orbBounds.bottom) {
-        orbVelocity.y = -orbVelocity.y * bounceDeceleration;
-        orbPosition.y = Math.max(orbBounds.top, Math.min(orbBounds.bottom, orbPosition.y));
-      }
-
-      // Keep minimum velocity to prevent complete stopping
-      const minVel = 0.1;
-      const currentSpeed = Math.sqrt(orbVelocity.x * orbVelocity.x + orbVelocity.y * orbVelocity.y);
-      if (currentSpeed < minVel && currentSpeed > 0) {
-        const multiplier = minVel / currentSpeed;
-        orbVelocity.x *= multiplier;
-        orbVelocity.y *= multiplier;
-      }
-    };
 
     // Improved Perlin-like noise function
     const smoothNoise = (x: number, y: number, t: number, scale: number) => {
@@ -301,12 +386,15 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         );
 
         const combinedNoise = noise1 + noise2 * 0.3;
-        const radiusVariation = layer.baseRadius * audioBoost + combinedNoise * 15 + audioLevel * 12;
+        
+        // 🚀 NEW: Add jumping excitement to radius variation
+        const jumpBoost = isJumping ? 1.2 + Math.sin(jumpProgress * Math.PI) * 0.3 : 1;
+        const radiusVariation = layer.baseRadius * audioBoost * jumpBoost + combinedNoise * 15 + audioLevel * 12;
         
         // Flowing offset for internal movement
         const flowOffset = getFlowOffset(t, segments);
         
-        // Use the bouncing orb position as the center instead of canvas center
+        // Use the jumping orb position as the center
         const x = orbPosition.x + Math.cos(angle) * radiusVariation + layer.offset.x + flowOffset.x;
         const y = orbPosition.y + Math.sin(angle) * radiusVariation + layer.offset.y + flowOffset.y;
         
@@ -355,18 +443,23 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       
       time += 1;
       
-      // Update orb bouncing position
+      // 🌟 NEW: Update orb position with jumping logic
       updateOrbPosition();
       
-      // Audio-reactive scaling
-      const audioBoost = 1 + audioLevel * 0.4;
+      // 🌈 NEW: Draw trailing path first (behind orb)
+      drawTrail();
+      
+      // Audio-reactive scaling with jump excitement
+      const jumpIntensity = isJumping ? 1.1 + Math.sin(jumpProgress * Math.PI * 2) * 0.2 : 1;
+      const audioBoost = (1 + audioLevel * 0.4) * jumpIntensity;
       
       // Draw multiple blob layers from back to front
       blobLayers.forEach((layer, index) => {
         const points = generateBlobPoints(layer, time, audioBoost);
         
-        // Dynamic color mixing
-        const colorIndex = (time * 0.01 + index * 0.3 + audioLevel * 1.5) % auroraColors.length;
+        // Dynamic color mixing with jump effect
+        const jumpColorShift = isJumping ? jumpProgress * 2 : 0;
+        const colorIndex = (time * 0.01 + index * 0.3 + audioLevel * 1.5 + jumpColorShift) % auroraColors.length;
         const color1 = auroraColors[Math.floor(colorIndex)];
         const color2 = auroraColors[Math.floor(colorIndex + 1) % auroraColors.length];
         
@@ -376,20 +469,24 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         const g = Math.floor(color1.g * (1 - mix) + color2.g * mix);
         const b = Math.floor(color1.b * (1 - mix) + color2.b * mix);
         
-        // Create gradient for each layer centered on the bouncing orb position
+        // Create gradient for each layer centered on the orb position
         const gradient = ctx.createRadialGradient(
           orbPosition.x, orbPosition.y, 0,
           orbPosition.x, orbPosition.y, layer.baseRadius * audioBoost * 1.5
         );
         
-        const opacity = layer.opacity * (0.6 + audioLevel * 0.4);
+        const baseOpacity = layer.opacity * (0.6 + audioLevel * 0.4);
+        const jumpGlow = isJumping ? 0.3 : 0;
+        const opacity = baseOpacity + jumpGlow;
+        
         gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
         gradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${opacity * 0.7})`);
         gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
         
-        // Add subtle glow
+        // Add enhanced glow during jumps
+        const glowIntensity = isJumping ? 30 + jumpProgress * 20 : 20;
         ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = glowIntensity;
         
         drawSmoothBlob(points, gradient);
         
@@ -406,6 +503,8 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       if (animationId) {
         cancelAnimationFrame(animationId);
       }
+      // Clean up global function
+      delete (window as any).orbJump;
     };
   }, [audioLevel]);
 
@@ -463,6 +562,11 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
   }, []);
 
   const handleTap = () => {
+    // 🌟 NEW: Trigger orb jump on tap!
+    if ((window as any).orbJump) {
+      (window as any).orbJump();
+    }
+    
     // Visual feedback
     setIsTapped(true);
     setTimeout(() => setIsTapped(false), 300);
@@ -609,13 +713,13 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         )}
       </AnimatePresence>
 
-      {/* Tap instruction */}
+      {/* Enhanced tap instruction with interaction hint */}
       <motion.div 
         className="absolute bottom-4 text-sm text-gray-600 font-medium z-10"
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        Tap to continue
+        Tap to continue • Watch the orb dance ✨
       </motion.div>
     </div>
   );
