@@ -9,12 +9,12 @@ interface OrbIntroProps {
 
 const captions = [
   "Hey you... or should I say Hey, me.",
-  "I'm you, from years in the future." 
+  "I'm you, from years in the future.",
   "How many? I can't say without giving too much away.",
-  "I'm not as sharp as you–as I once was."
-  "My memories are beginning to fade." 
+  "I'm not as sharp as you–as I once was.",
+  "My memories are beginning to fade.",
   "Some of the moments I've cherished are becoming... hazy.",
-  "I don't want to forget." 
+  "I don't want to forget.",
   "Everything we've done, everything we've loved, everything we've lost.",
   "It was all beautiful, and it can't be forgotten.",
   "You've got to help me–help you remember all of this, so that by the time you are me, nothing is forgotten.",
