@@ -24,8 +24,11 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
     setTimeout(() => setStage('soundCheck'), 700);
   };
 
-  const handleSoundCheckNext = () => {
-    setStage('intro');
+  const handleSoundCheckNext = (event: React.MouseEvent<HTMLButtonElement>) => {
+    // Add the same click pulse and sound effects as language buttons
+    soundRef.current?.play();
+    setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
+    setTimeout(() => setStage('intro'), 300); // Shorter delay for snappier feel
   };
 
   if (stage === 'intro') {
