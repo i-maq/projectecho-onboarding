@@ -147,7 +147,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     };
   }, [isAudioPlaying]);
 
-  // Enhanced Siri-like fluid orb animation with tap-to-jump movement
+  // Enhanced Siri-like fluid orb animation with tap-to-jump movement AND EDGE BOUNCE
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -158,15 +158,28 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     let animationId: number;
     let time = 0;
 
-    // 🌟 NEW: Tap-to-jump orb position system
+    // 🌟 Enhanced orb position system with bounce mechanics
     const orbPosition = { x: canvas.width / 2, y: canvas.height / 2 };
     const targetPosition = { x: canvas.width / 2, y: canvas.height / 2 };
-    let isJumping = false;
-    let jumpProgress = 0;
+    
+    // 🎾 NEW: Bounce system variables
+    const bounceState = {
+      isJumping: false,
+      isBouncing: false,
+      jumpProgress: 0,
+      bounceProgress: 0,
+      jumpStartTime: 0,
+      bounceStartTime: 0,
+      bounceDirection: { x: 0, y: 0 }, // Direction to bounce back
+      bounceIntensity: 0,
+      originalTarget: { x: 0, y: 0 }, // Store original target before bounce correction
+    };
+    
     const jumpDuration = 0.8; // Duration in seconds for jump animation
-    const jumpStartTime = { value: 0 };
+    const bounceDuration = 0.4; // Duration for bounce-back effect
+    const bounceDistance = 15; // How far to bounce back from edge
 
-    // 🌈 NEW: Trail system for beautiful glowing path
+    // 🌈 Trail system for beautiful glowing path
     const trailPoints: Array<{ x: number; y: number; age: number; intensity: number }> = [];
     const maxTrailLength = 25;
     const trailFadeTime = 1.5; // Time in seconds for trail to fade
@@ -178,77 +191,166 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       bottom: canvas.height - 80
     };
 
-    // ✨ NEW: Generate random jump target within orb bounds
+    // 🎾 NEW: Enhanced edge detection with bounce calculation
+    const checkEdgeProximity = (pos: { x: number; y: number }) => {
+      const edgeThreshold = 60; // Distance from edge to trigger bounce
+      const bounceInfo = { shouldBounce: false, direction: { x: 0, y: 0 }, intensity: 0 };
+      
+      // Check each edge and calculate bounce direction
+      if (pos.x <= orbBounds.left + edgeThreshold) {
+        bounceInfo.shouldBounce = true;
+        bounceInfo.direction.x = 1; // Bounce right
+        bounceInfo.intensity = Math.max(bounceInfo.intensity, (edgeThreshold - (pos.x - orbBounds.left)) / edgeThreshold);
+      }
+      
+      if (pos.x >= orbBounds.right - edgeThreshold) {
+        bounceInfo.shouldBounce = true;
+        bounceInfo.direction.x = -1; // Bounce left
+        bounceInfo.intensity = Math.max(bounceInfo.intensity, (edgeThreshold - (orbBounds.right - pos.x)) / edgeThreshold);
+      }
+      
+      if (pos.y <= orbBounds.top + edgeThreshold) {
+        bounceInfo.shouldBounce = true;
+        bounceInfo.direction.y = 1; // Bounce down
+        bounceInfo.intensity = Math.max(bounceInfo.intensity, (edgeThreshold - (pos.y - orbBounds.top)) / edgeThreshold);
+      }
+      
+      if (pos.y >= orbBounds.bottom - edgeThreshold) {
+        bounceInfo.shouldBounce = true;
+        bounceInfo.direction.y = -1; // Bounce up
+        bounceInfo.intensity = Math.max(bounceInfo.intensity, (edgeThreshold - (orbBounds.bottom - pos.y)) / edgeThreshold);
+      }
+      
+      return bounceInfo;
+    };
+
+    // ✨ NEW: Generate random target with smart edge avoidance
     const generateRandomTarget = () => {
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      const maxRadius = Math.min(orbBounds.right - centerX, orbBounds.bottom - centerY) * 0.8;
+      const maxRadius = Math.min(orbBounds.right - centerX, orbBounds.bottom - centerY) * 0.75; // Slightly smaller to reduce edge hits
       
       // Generate random position within circular bounds
       const angle = Math.random() * Math.PI * 2;
       const radius = Math.random() * maxRadius;
       
-      return {
+      const newTarget = {
         x: centerX + Math.cos(angle) * radius,
         y: centerY + Math.sin(angle) * radius
       };
+      
+      // Ensure target is within safe bounds
+      newTarget.x = Math.max(orbBounds.left + 40, Math.min(orbBounds.right - 40, newTarget.x));
+      newTarget.y = Math.max(orbBounds.top + 40, Math.min(orbBounds.bottom - 40, newTarget.y));
+      
+      return newTarget;
     };
 
-    // 🎯 NEW: Jump to random position (called on tap)
+    // 🎯 NEW: Enhanced jump system with bounce detection
     const jumpToRandomPosition = () => {
+      if (bounceState.isJumping || bounceState.isBouncing) return; // Prevent overlapping animations
+      
       const newTarget = generateRandomTarget();
+      
+      // Store original target and current position
+      bounceState.originalTarget = { ...newTarget };
       targetPosition.x = newTarget.x;
       targetPosition.y = newTarget.y;
-      isJumping = true;
-      jumpProgress = 0;
-      jumpStartTime.value = time;
+      
+      // Initialize jump
+      bounceState.isJumping = true;
+      bounceState.jumpProgress = 0;
+      bounceState.jumpStartTime = time;
+      bounceState.isBouncing = false;
     };
 
-    // 🚀 NEW: Smooth easing function for jump animation
+    // 🚀 Smooth easing functions
     const easeOutQuart = (t: number): number => {
       return 1 - Math.pow(1 - t, 4);
     };
+    
+    // 🎾 NEW: Bounce easing with elastic feel
+    const easeOutBounce = (t: number): number => {
+      if (t < 1 / 2.75) {
+        return 7.5625 * t * t;
+      } else if (t < 2 / 2.75) {
+        return 7.5625 * (t -= 1.5 / 2.75) * t + 0.75;
+      } else if (t < 2.5 / 2.75) {
+        return 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375;
+      } else {
+        return 7.5625 * (t -= 2.625 / 2.75) * t + 0.984375;
+      }
+    };
 
-    // 🌟 NEW: Update orb position with smooth jumping
+    // 🌟 NEW: Enhanced orb position update with bounce mechanics
     const updateOrbPosition = () => {
-      if (isJumping) {
-        const elapsed = (time - jumpStartTime.value) / 60; // Convert to seconds (assuming 60fps)
-        jumpProgress = Math.min(elapsed / jumpDuration, 1);
+      const deltaTime = 1 / 60; // Assuming 60fps
+      
+      // Handle jumping phase
+      if (bounceState.isJumping) {
+        const elapsed = (time - bounceState.jumpStartTime) / 60; // Convert to seconds
+        bounceState.jumpProgress = Math.min(elapsed / jumpDuration, 1);
         
-        if (jumpProgress >= 1) {
-          // Jump completed
-          isJumping = false;
+        if (bounceState.jumpProgress >= 1) {
+          // Jump completed - check for edge proximity and initiate bounce if needed
           orbPosition.x = targetPosition.x;
           orbPosition.y = targetPosition.y;
+          bounceState.isJumping = false;
+          
+          // 🎾 NEW: Check if we need to bounce from edge
+          const edgeInfo = checkEdgeProximity(orbPosition);
+          if (edgeInfo.shouldBounce) {
+            // Initiate bounce effect
+            bounceState.isBouncing = true;
+            bounceState.bounceProgress = 0;
+            bounceState.bounceStartTime = time;
+            bounceState.bounceDirection = { ...edgeInfo.direction };
+            bounceState.bounceIntensity = edgeInfo.intensity;
+          }
         } else {
-          // Smooth interpolation with easing
-          const eased = easeOutQuart(jumpProgress);
+          // Smooth interpolation during jump
+          const eased = easeOutQuart(bounceState.jumpProgress);
           const startX = orbPosition.x;
           const startY = orbPosition.y;
-          
-          // Calculate start position if this is first frame of jump
-          if (jumpProgress === 0) {
-            jumpStartTime.value = time;
-          }
           
           orbPosition.x = startX + (targetPosition.x - startX) * eased;
           orbPosition.y = startY + (targetPosition.y - startY) * eased;
         }
       }
+      
+      // 🎾 NEW: Handle bounce phase
+      if (bounceState.isBouncing) {
+        const elapsed = (time - bounceState.bounceStartTime) / 60;
+        bounceState.bounceProgress = Math.min(elapsed / bounceDuration, 1);
+        
+        if (bounceState.bounceProgress >= 1) {
+          // Bounce completed
+          bounceState.isBouncing = false;
+        } else {
+          // Apply bounce offset with elastic easing
+          const bounceEased = easeOutBounce(bounceState.bounceProgress);
+          const bounceOffset = bounceDistance * bounceState.bounceIntensity * (1 - bounceEased);
+          
+          // Apply bounce in the calculated direction
+          orbPosition.x = targetPosition.x + (bounceState.bounceDirection.x * bounceOffset);
+          orbPosition.y = targetPosition.y + (bounceState.bounceDirection.y * bounceOffset);
+        }
+      }
 
-      // 🌈 NEW: Add current position to trail
+      // 🌈 Add current position to trail
       if (time % 2 === 0) { // Add trail point every 2 frames for performance
+        const intensity = bounceState.isJumping ? 1.2 : bounceState.isBouncing ? 1.5 : 0.8;
         trailPoints.push({
           x: orbPosition.x,
           y: orbPosition.y,
           age: 0,
-          intensity: isJumping ? 1.2 : 0.8
+          intensity: intensity
         });
       }
 
-      // 🌈 NEW: Update and clean up trail points
+      // 🌈 Update and clean up trail points
       for (let i = trailPoints.length - 1; i >= 0; i--) {
-        trailPoints[i].age += 1/60; // Increment age (assuming 60fps)
+        trailPoints[i].age += deltaTime;
         
         if (trailPoints[i].age > trailFadeTime || trailPoints.length > maxTrailLength) {
           trailPoints.splice(i, 1);
@@ -256,7 +358,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       }
     };
 
-    // 🌈 NEW: Draw beautiful glowing trail
+    // 🌈 Enhanced trail drawing with bounce effects
     const drawTrail = () => {
       if (trailPoints.length < 2) return;
 
@@ -267,7 +369,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         
         const fadeAmount = 1 - (current.age / trailFadeTime);
         const alpha = fadeAmount * 0.6 * current.intensity;
-        const width = fadeAmount * 8 + 2;
+        const width = fadeAmount * (8 + (current.intensity - 0.8) * 4) + 2; // Wider trail during bounces
         
         if (alpha > 0.05) {
           // Create gradient for trail segment
@@ -276,14 +378,20 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
             current.x, current.y
           );
           
-          // Use aurora colors for trail
+          // Use aurora colors for trail with bounce enhancement
           const colorIndex = (time * 0.02 + i * 0.1) % auroraColors.length;
           const color = auroraColors[Math.floor(colorIndex)];
           
-          gradient.addColorStop(0, `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha * 0.5})`);
-          gradient.addColorStop(1, `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`);
+          // 🎾 NEW: Enhanced colors during bounce
+          const bounceBoost = bounceState.isBouncing ? 1.3 : 1;
+          const r = Math.min(255, color.r * bounceBoost);
+          const g = Math.min(255, color.g * bounceBoost);
+          const b = Math.min(255, color.b * bounceBoost);
           
-          // Draw trail segment with glow effect
+          gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha * 0.5})`);
+          gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${alpha})`);
+          
+          // Draw trail segment with enhanced glow during bounce
           ctx.save();
           ctx.globalCompositeOperation = 'screen';
           ctx.strokeStyle = gradient;
@@ -291,9 +399,10 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           
-          // Add soft glow
-          ctx.shadowColor = `rgba(${color.r}, ${color.g}, ${color.b}, 0.4)`;
-          ctx.shadowBlur = width * 2;
+          // 🎾 NEW: Enhanced glow during bounce
+          const glowIntensity = bounceState.isBouncing ? width * 3 : width * 2;
+          ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.4)`;
+          ctx.shadowBlur = glowIntensity;
           
           ctx.beginPath();
           ctx.moveTo(previous.x, previous.y);
@@ -387,8 +496,14 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
 
         const combinedNoise = noise1 + noise2 * 0.3;
         
-        // 🚀 NEW: Add jumping excitement to radius variation
-        const jumpBoost = isJumping ? 1.2 + Math.sin(jumpProgress * Math.PI) * 0.3 : 1;
+        // 🚀 NEW: Enhanced radius variation with bounce effects
+        let jumpBoost = bounceState.isJumping ? 1.2 + Math.sin(bounceState.jumpProgress * Math.PI) * 0.3 : 1;
+        
+        // 🎾 NEW: Extra excitement during bounce
+        if (bounceState.isBouncing) {
+          jumpBoost *= 1.1 + Math.sin(bounceState.bounceProgress * Math.PI * 2) * 0.2;
+        }
+        
         const radiusVariation = layer.baseRadius * audioBoost * jumpBoost + combinedNoise * 15 + audioLevel * 12;
         
         // Flowing offset for internal movement
@@ -443,31 +558,49 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       
       time += 1;
       
-      // 🌟 NEW: Update orb position with jumping logic
+      // 🌟 NEW: Update orb position with enhanced bounce mechanics
       updateOrbPosition();
       
-      // 🌈 NEW: Draw trailing path first (behind orb)
+      // 🌈 Draw enhanced trailing path first (behind orb)
       drawTrail();
       
-      // Audio-reactive scaling with jump excitement
-      const jumpIntensity = isJumping ? 1.1 + Math.sin(jumpProgress * Math.PI * 2) * 0.2 : 1;
+      // 🎾 NEW: Enhanced audio-reactive scaling with bounce effects
+      let jumpIntensity = bounceState.isJumping ? 1.1 + Math.sin(bounceState.jumpProgress * Math.PI * 2) * 0.2 : 1;
+      
+      // Extra excitement during bounce with elastic feel
+      if (bounceState.isBouncing) {
+        jumpIntensity *= 1.15 + Math.sin(bounceState.bounceProgress * Math.PI * 3) * 0.15;
+      }
+      
       const audioBoost = (1 + audioLevel * 0.4) * jumpIntensity;
       
       // Draw multiple blob layers from back to front
       blobLayers.forEach((layer, index) => {
         const points = generateBlobPoints(layer, time, audioBoost);
         
-        // Dynamic color mixing with jump effect
-        const jumpColorShift = isJumping ? jumpProgress * 2 : 0;
+        // 🎾 NEW: Enhanced dynamic color mixing with bounce effects
+        let jumpColorShift = bounceState.isJumping ? bounceState.jumpProgress * 2 : 0;
+        if (bounceState.isBouncing) {
+          jumpColorShift += bounceState.bounceProgress * 3; // More dramatic color shift during bounce
+        }
+        
         const colorIndex = (time * 0.01 + index * 0.3 + audioLevel * 1.5 + jumpColorShift) % auroraColors.length;
         const color1 = auroraColors[Math.floor(colorIndex)];
         const color2 = auroraColors[Math.floor(colorIndex + 1) % auroraColors.length];
         
         // Interpolate colors
         const mix = colorIndex % 1;
-        const r = Math.floor(color1.r * (1 - mix) + color2.r * mix);
-        const g = Math.floor(color1.g * (1 - mix) + color2.g * mix);
-        const b = Math.floor(color1.b * (1 - mix) + color2.b * mix);
+        let r = Math.floor(color1.r * (1 - mix) + color2.r * mix);
+        let g = Math.floor(color1.g * (1 - mix) + color2.g * mix);
+        let b = Math.floor(color1.b * (1 - mix) + color2.b * mix);
+        
+        // 🎾 NEW: Boost colors during bounce
+        if (bounceState.isBouncing) {
+          const bounceBoost = 1 + bounceState.bounceIntensity * 0.3;
+          r = Math.min(255, r * bounceBoost);
+          g = Math.min(255, g * bounceBoost);
+          b = Math.min(255, b * bounceBoost);
+        }
         
         // Create gradient for each layer centered on the orb position
         const gradient = ctx.createRadialGradient(
@@ -476,15 +609,19 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         );
         
         const baseOpacity = layer.opacity * (0.6 + audioLevel * 0.4);
-        const jumpGlow = isJumping ? 0.3 : 0;
-        const opacity = baseOpacity + jumpGlow;
+        const jumpGlow = bounceState.isJumping ? 0.3 : 0;
+        const bounceGlow = bounceState.isBouncing ? 0.4 * bounceState.bounceIntensity : 0; // 🎾 NEW
+        const opacity = baseOpacity + jumpGlow + bounceGlow;
         
         gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
         gradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${opacity * 0.7})`);
         gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
         
-        // Add enhanced glow during jumps
-        const glowIntensity = isJumping ? 30 + jumpProgress * 20 : 20;
+        // 🎾 NEW: Enhanced glow during jumps and bounces
+        let glowIntensity = 20;
+        if (bounceState.isJumping) glowIntensity += 30 + bounceState.jumpProgress * 20;
+        if (bounceState.isBouncing) glowIntensity += 40 * bounceState.bounceIntensity;
+        
         ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
         ctx.shadowBlur = glowIntensity;
         
@@ -562,7 +699,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
   }, []);
 
   const handleTap = () => {
-    // 🌟 NEW: Trigger orb jump on tap!
+    // 🌟 Trigger orb jump on tap!
     if ((window as any).orbJump) {
       (window as any).orbJump();
     }
@@ -713,13 +850,13 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
         )}
       </AnimatePresence>
 
-      {/* Enhanced tap instruction with interaction hint */}
+      {/* Enhanced tap instruction with bounce hint */}
       <motion.div 
         className="absolute bottom-4 text-sm text-gray-600 font-medium z-10"
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        Tap to continue • Watch the orb dance ✨
+        Tap to continue • Watch the orb bounce! 🎾✨
       </motion.div>
     </div>
   );
