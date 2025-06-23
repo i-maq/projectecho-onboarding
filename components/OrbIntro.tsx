@@ -267,57 +267,57 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
     const blobLayers = [
       {
         baseRadius: 75,
-        segments: 32, // DOUBLED for smoother curves
+        segments: 32,
         speed: 0.012,
         noiseScale: 0.8,
         opacity: 0.9,
         offset: { x: 0, y: 0 },
-        colorOffset: 0 // For color variation per layer
+        colorPhase: 0 // 🎨 Individual color phases for each layer
       },
       {
         baseRadius: 60,
-        segments: 28, // INCREASED for smoother curves
+        segments: 28,
         speed: 0.018,
         noiseScale: 1.1,
         opacity: 0.8,
         offset: { x: 6, y: -4 },
-        colorOffset: 2.5 // Different color progression
+        colorPhase: 1.2 // 🎨 Different phase for variety
       },
       {
         baseRadius: 85,
-        segments: 36, // INCREASED for smoother curves
+        segments: 36,
         speed: 0.009,
         noiseScale: 0.6,
         opacity: 0.7,
         offset: { x: -5, y: 3 },
-        colorOffset: 5.0 // Different color progression
+        colorPhase: 2.8 // 🎨 Different phase for variety
       },
       {
         baseRadius: 45,
-        segments: 24, // INCREASED for smoother curves
+        segments: 24,
         speed: 0.024,
         noiseScale: 1.4,
         opacity: 0.95,
         offset: { x: 2, y: 6 },
-        colorOffset: 7.5 // Different color progression
+        colorPhase: 4.5 // 🎨 Different phase for variety
       },
       {
         baseRadius: 95,
-        segments: 40, // INCREASED for smoother curves
+        segments: 40,
         speed: 0.006,
         noiseScale: 0.4,
         opacity: 0.6,
         offset: { x: 0, y: 0 },
-        colorOffset: 10.0 // Different color progression
+        colorPhase: 5.7 // 🎨 Different phase for variety
       },
       {
         baseRadius: 35,
-        segments: 20, // INCREASED for smoother curves
+        segments: 20,
         speed: 0.030,
         noiseScale: 1.8,
         opacity: 1.0,
         offset: { x: 4, y: -2 },
-        colorOffset: 12.5 // Different color progression
+        colorPhase: 7.1 // 🎨 Different phase for variety
       }
     ];
 
@@ -394,36 +394,82 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       return points;
     };
 
-    // 🌈 ENHANCED color selection for better variety and vibrancy
+    // 🌈 ✨ COMPLETELY REDESIGNED - Smooth Gradual Color System ✨ 🌈
+    const smoothColorInterpolation = (color1: any, color2: any, factor: number) => {
+      // Smooth cubic interpolation for more natural transitions
+      const easedFactor = factor * factor * (3 - 2 * factor); // Smoothstep function
+      
+      return {
+        r: Math.round(color1.r + (color2.r - color1.r) * easedFactor),
+        g: Math.round(color1.g + (color2.g - color1.g) * easedFactor),
+        b: Math.round(color1.b + (color2.b - color1.b) * easedFactor)
+      };
+    };
+
     const getLayerColors = (layer: any, t: number, index: number) => {
-      // More dynamic color cycling with layer-specific offsets
-      const baseColorIndex = (t * 0.008 + layer.colorOffset + audioLevel * 2) % auroraColors.length;
-      const jumpColorShift = jumpState.isJumping ? jumpState.jumpProgress * 2 : 0;
+      // 🐌 MUCH SLOWER color cycling for gradual transitions (reduced from 0.008 to 0.0015)
+      const colorTime = t * 0.0015 + layer.colorPhase;
       
-      // Get multiple colors for rich blending
-      const colorIndex1 = Math.floor(baseColorIndex + jumpColorShift) % auroraColors.length;
-      const colorIndex2 = Math.floor(baseColorIndex + jumpColorShift + 3) % auroraColors.length;
-      const colorIndex3 = Math.floor(baseColorIndex + jumpColorShift + 6) % auroraColors.length;
+      // 🎭 Gentle jump influence instead of dramatic shifts
+      const jumpInfluence = jumpState.isJumping ? 
+        Math.sin(jumpState.jumpProgress * Math.PI) * 0.3 : 0; // Reduced from 2 to 0.3
       
-      const color1 = auroraColors[colorIndex1];
-      const color2 = auroraColors[colorIndex2];
-      const color3 = auroraColors[colorIndex3];
+      // 🎵 Subtle audio reactivity for color (reduced impact)
+      const audioInfluence = audioLevel * 0.8; // Reduced from 2 to 0.8
       
-      // Enhanced color mixing for richer results
-      const mix1 = (baseColorIndex % 1);
-      const mix2 = ((baseColorIndex + 3) % 1);
+      // 🌊 Final color position with very gradual movement
+      const colorPosition = colorTime + jumpInfluence + audioInfluence;
       
-      const r = Math.floor(
-        color1.r * (1 - mix1) + color2.r * mix1 * 0.7 + color3.r * mix2 * 0.3
-      );
-      const g = Math.floor(
-        color1.g * (1 - mix1) + color2.g * mix1 * 0.7 + color3.g * mix2 * 0.3
-      );
-      const b = Math.floor(
-        color1.b * (1 - mix1) + color2.b * mix1 * 0.7 + color3.b * mix2 * 0.3
-      );
+      // 🎨 Get continuous color indices for smooth blending
+      const colorIndex1 = colorPosition % auroraColors.length;
+      const colorIndex2 = (colorPosition + 3) % auroraColors.length;
+      const colorIndex3 = (colorPosition + 6) % auroraColors.length;
       
-      return { r, g, b };
+      // 🔢 Extract integer and fractional parts for smooth interpolation
+      const baseIndex1 = Math.floor(colorIndex1);
+      const baseIndex2 = Math.floor(colorIndex2);
+      const baseIndex3 = Math.floor(colorIndex3);
+      const fraction1 = colorIndex1 - baseIndex1;
+      const fraction2 = colorIndex2 - baseIndex2;
+      const fraction3 = colorIndex3 - baseIndex3;
+      
+      // 🎨 Get the four colors for smooth blending
+      const color1a = auroraColors[baseIndex1 % auroraColors.length];
+      const color1b = auroraColors[(baseIndex1 + 1) % auroraColors.length];
+      const color2a = auroraColors[baseIndex2 % auroraColors.length];
+      const color2b = auroraColors[(baseIndex2 + 1) % auroraColors.length];
+      const color3a = auroraColors[baseIndex3 % auroraColors.length];
+      const color3b = auroraColors[(baseIndex3 + 1) % auroraColors.length];
+      
+      // 🌈 Smooth interpolation between adjacent colors
+      const interpolatedColor1 = smoothColorInterpolation(color1a, color1b, fraction1);
+      const interpolatedColor2 = smoothColorInterpolation(color2a, color2b, fraction2);
+      const interpolatedColor3 = smoothColorInterpolation(color3a, color3b, fraction3);
+      
+      // 🎭 Gentle blending of multiple colors (reduced intensity)
+      const primaryWeight = 0.6;   // Increased primary color weight for stability
+      const secondaryWeight = 0.25; // Reduced secondary weight
+      const tertiaryWeight = 0.15;  // Reduced tertiary weight
+      
+      const finalColor = {
+        r: Math.round(
+          interpolatedColor1.r * primaryWeight + 
+          interpolatedColor2.r * secondaryWeight + 
+          interpolatedColor3.r * tertiaryWeight
+        ),
+        g: Math.round(
+          interpolatedColor1.g * primaryWeight + 
+          interpolatedColor2.g * secondaryWeight + 
+          interpolatedColor3.g * tertiaryWeight
+        ),
+        b: Math.round(
+          interpolatedColor1.b * primaryWeight + 
+          interpolatedColor2.b * secondaryWeight + 
+          interpolatedColor3.b * tertiaryWeight
+        )
+      };
+      
+      return finalColor;
     };
 
     // Enhanced smooth blob drawing with HEAVY BLUR and better blending
@@ -433,7 +479,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       ctx.save();
       
       // CRITICAL: Apply heavy blur to the entire drawing context
-      ctx.filter = 'blur(8px) saturate(1.4) brightness(1.2)'; // INCREASED BLUR
+      ctx.filter = 'blur(8px) saturate(1.4) brightness(1.2)';
       
       // Create spherical clipping mask
       ctx.beginPath();
@@ -462,7 +508,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       
       ctx.closePath();
       
-      // Get vibrant colors for this layer
+      // 🌈 Get smooth, gradually changing colors for this layer
       const colors = getLayerColors(layer, t, layerIndex);
       
       // Enhanced radial gradient with more stops for smoother blending
@@ -475,7 +521,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       const jumpGlow = jumpState.isJumping ? 0.5 : 0;
       const opacity = Math.min(baseOpacity + jumpGlow, 1.0);
       
-      // Multi-stop gradient for better depth and smoother blending with VIBRANT COLORS
+      // Multi-stop gradient for better depth and smoother blending with SMOOTH COLORS
       gradient.addColorStop(0, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity})`);
       gradient.addColorStop(0.15, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.95})`);
       gradient.addColorStop(0.3, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.85})`);
@@ -490,18 +536,18 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       ctx.fillStyle = gradient;
       ctx.fill();
       
-      // CRITICAL: Add multiple blur layers for smoother effect with VIBRANT COLORS
+      // CRITICAL: Add multiple blur layers for smoother effect with SMOOTH COLORS
       ctx.globalCompositeOperation = 'screen';
       ctx.strokeStyle = `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.8})`;
-      ctx.lineWidth = 4; // INCREASED line width
-      ctx.filter = 'blur(12px) saturate(1.6)'; // HEAVY BLUR for stroke
+      ctx.lineWidth = 4;
+      ctx.filter = 'blur(12px) saturate(1.6)';
       ctx.stroke();
       
       // Additional heavy blur layer for ultra-smooth effect
       ctx.globalCompositeOperation = 'soft-light';
       ctx.lineWidth = 8;
       ctx.strokeStyle = `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.6})`;
-      ctx.filter = 'blur(20px) saturate(2.0)'; // ULTRA HEAVY BLUR
+      ctx.filter = 'blur(20px) saturate(2.0)';
       ctx.stroke();
       
       ctx.restore();
@@ -511,7 +557,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // CRITICAL: Apply heavy blur to the entire canvas context
-      ctx.filter = 'blur(4px) saturate(1.8) brightness(1.3) contrast(1.1)'; // BASE BLUR
+      ctx.filter = 'blur(4px) saturate(1.8) brightness(1.3) contrast(1.1)';
       
       time += 1;
       updateOrbPosition();
@@ -702,7 +748,7 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
               height={canvasSize} 
               className="w-full h-full rounded-full"
               style={{
-                filter: 'saturate(1.8) brightness(1.4) contrast(1.2) blur(6px)', // INCREASED BLUR
+                filter: 'saturate(1.8) brightness(1.4) contrast(1.2) blur(6px)',
                 opacity: 0.95,
                 mixBlendMode: 'screen'
               }}
@@ -764,21 +810,21 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
             }}
           />
 
-          {/* Dynamic atmospheric glow with audio reactivity */}
+          {/* 🌈 ENHANCED - Gradually shifting atmospheric glow with much smoother transitions */}
           <motion.div 
             className="absolute inset-0 rounded-full pointer-events-none"
             animate={{
               boxShadow: [
                 `0 0 ${100 + audioLevel * 120}px ${40 + audioLevel * 50}px rgba(100, 255, 100, ${0.35 + audioLevel * 0.45})`,
-                `0 0 ${110 + audioLevel * 130}px ${45 + audioLevel * 55}px rgba(200, 100, 255, ${0.3 + audioLevel * 0.4})`,
-                `0 0 ${95 + audioLevel * 115}px ${35 + audioLevel * 45}px rgba(80, 220, 150, ${0.4 + audioLevel * 0.5})`,
-                `0 0 ${105 + audioLevel * 125}px ${42 + audioLevel * 52}px rgba(150, 200, 255, ${0.32 + audioLevel * 0.42})`
+                `0 0 ${110 + audioLevel * 130}px ${45 + audioLevel * 55}px rgba(150, 200, 255, ${0.3 + audioLevel * 0.4})`,
+                `0 0 ${105 + audioLevel * 125}px ${42 + audioLevel * 52}px rgba(200, 100, 255, ${0.32 + audioLevel * 0.42})`,
+                `0 0 ${95 + audioLevel * 115}px ${35 + audioLevel * 45}px rgba(80, 220, 150, ${0.4 + audioLevel * 0.5})`
               ]
             }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} // 🐌 Much slower transitions
           />
 
-          {/* Outer atmospheric halo */}
+          {/* 🌈 ENHANCED - Gradually shifting outer atmospheric halo */}
           <motion.div 
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{
@@ -788,11 +834,12 @@ export const OrbIntro: React.FC<OrbIntroProps> = ({ audioSrc, onAdvance }) => {
             animate={{
               boxShadow: [
                 `0 0 ${150 + audioLevel * 80}px ${20 + audioLevel * 30}px rgba(50, 255, 50, ${0.2 + audioLevel * 0.25})`,
+                `0 0 ${155 + audioLevel * 85}px ${22 + audioLevel * 32}px rgba(100, 200, 255, ${0.18 + audioLevel * 0.22})`,
                 `0 0 ${160 + audioLevel * 90}px ${25 + audioLevel * 35}px rgba(200, 50, 255, ${0.15 + audioLevel * 0.2})`,
-                `0 0 ${140 + audioLevel * 75}px ${18 + audioLevel * 28}px rgba(80, 200, 180, ${0.25 + audioLevel * 0.3})`
+                `0 0 ${145 + audioLevel * 82}px ${19 + audioLevel * 29}px rgba(80, 200, 180, ${0.22 + audioLevel * 0.28})`
               ]
             }}
-            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }} // 🐌 Even slower outer transitions
           />
         </div>
       </motion.div>
