@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-// Use service role key for server-side operations
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+import { authenticateUser, generateToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,26 +12,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Sign in with Supabase Auth
-    const { data, error } = await supabaseAdmin.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const user = await authenticateUser(email, password);
 
-    if (error || !data.user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    // Return session data
+    const token = generateToken(user);
+
     return NextResponse.json({ 
-      user: { 
-        id: data.user.id, 
-        email: data.user.email 
-      },
-      session: data.session
+      token, 
+      user: { id: user.id, email: user.email } 
     });
   } catch (error) {
     console.error('Login error:', error);

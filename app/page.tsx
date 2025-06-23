@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AuthForm } from '@/components/auth/auth-form';
 import { OnboardingFlow } from '@/components/onboarding/onboarding-flow';
 import { Dashboard } from '@/components/dashboard/dashboard';
-import { createClientComponentClient } from '@/lib/supabase';
 
 // --- This is our self-contained, reusable background component ---
 export const MasterBackground = () => {
@@ -51,50 +50,23 @@ export const MasterBackground = () => {
 // --- The main page component ---
 export default function HomePage() {
   const [currentStep, setCurrentStep] = useState<'auth' | 'onboarding' | 'dashboard' | 'loading'>('loading');
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    // Check for existing Supabase session
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const hasCompletedOnboarding = localStorage.getItem('onboardingComplete');
-      
-      if (session) {
-        // Store token for API calls
-        localStorage.setItem('token', session.access_token);
-        localStorage.setItem('supabase_session', JSON.stringify(session));
-        
-        if (hasCompletedOnboarding) {
-          setCurrentStep('dashboard');
-        } else {
-          setCurrentStep('onboarding');
-        }
+    // Check for existing token and user
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    const hasCompletedOnboarding = localStorage.getItem('onboardingComplete');
+    
+    if (token && user) {
+      if (hasCompletedOnboarding) {
+        setCurrentStep('dashboard');
       } else {
-        setCurrentStep('auth');
+        setCurrentStep('onboarding');
       }
-    };
-
-    checkSession();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        localStorage.setItem('token', session.access_token);
-        localStorage.setItem('supabase_session', JSON.stringify(session));
-        const hasCompletedOnboarding = localStorage.getItem('onboardingComplete');
-        setCurrentStep(hasCompletedOnboarding ? 'dashboard' : 'onboarding');
-      } else if (event === 'SIGNED_OUT') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('supabase_session');
-        localStorage.removeItem('onboardingComplete');
-        setCurrentStep('auth');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+    } else {
+      setCurrentStep('auth');
+    }
+  }, []);
   
   return (
     <main style={{

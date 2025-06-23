@@ -1,41 +1,20 @@
-import { Pool } from 'pg';
+import { createClient } from '@supabase/supabase-js';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-});
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-export default pool;
+// Use service role key for database operations
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Database initialization SQL
-export const initializeDatabase = async () => {
-  const client = await pool.connect();
-  
-  try {
-    // Create users table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+export { supabase };
 
-    // Create echoes table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS echoes (
-        id SERIAL PRIMARY KEY,
-        content TEXT NOT NULL,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    console.log('Database tables initialized successfully');
-  } catch (error) {
-    console.error('Error initializing database:', error);
-  } finally {
-    client.release();
-  }
+// Helper function to set user context for RLS
+export const setUserContext = async (userId: number) => {
+  await supabase.rpc('set_config', {
+    setting_name: 'app.current_user_id',
+    setting_value: userId.toString(),
+    is_local: true,
+  });
 };
+
+export default supabase;

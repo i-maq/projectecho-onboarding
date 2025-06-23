@@ -3,55 +3,33 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { createClientComponentClient } from '@/lib/supabase';
 
 export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
-  const supabase = createClientComponentClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (isLogin) {
-        // Sign in with Supabase
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
-        if (error) {
-          toast.error(error.message || 'Login failed');
-        } else if (data.user) {
-          // Store session in localStorage for API calls
-          if (data.session) {
-            localStorage.setItem('supabase_session', JSON.stringify(data.session));
-            localStorage.setItem('token', data.session.access_token);
-          }
-          toast.success('Welcome back!');
-          onSuccess();
-        }
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!');
+        onSuccess();
       } else {
-        // Sign up with Supabase
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (error) {
-          toast.error(error.message || 'Registration failed');
-        } else if (data.user) {
-          // Store session in localStorage for API calls
-          if (data.session) {
-            localStorage.setItem('supabase_session', JSON.stringify(data.session));
-            localStorage.setItem('token', data.session.access_token);
-          }
-          toast.success('Account created successfully!');
-          onSuccess();
-        }
+        toast.error(data.error || 'An error occurred');
       }
     } catch (error) {
       console.error('Auth error:', error);

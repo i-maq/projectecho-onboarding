@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { Sparkles, Send, Book, Calendar, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { createClientComponentClient } from '@/lib/supabase';
 
 interface Echo {
   id: string;
@@ -31,7 +30,6 @@ export function Dashboard() {
   const [currentMemory, setCurrentMemory] = useState('');
   const [currentPrompt, setCurrentPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
     fetchEchoes();
@@ -100,10 +98,9 @@ export function Dashboard() {
     }
   };
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+  const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('supabase_session');
+    localStorage.removeItem('user');
     localStorage.removeItem('onboardingComplete');
     window.location.reload();
   };

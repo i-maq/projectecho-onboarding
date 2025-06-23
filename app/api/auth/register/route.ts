@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-// Use service role key for server-side operations
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+import { createUser, generateToken } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,28 +19,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create user with Supabase Auth
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // Skip email confirmation for now
-    });
+    const user = await createUser(email, password);
 
-    if (error) {
-      console.error('Registration error:', error);
+    if (!user) {
       return NextResponse.json(
-        { error: error.message || 'User already exists or could not be created' },
+        { error: 'User already exists or could not be created' },
         { status: 400 }
       );
     }
 
-    // Return user data (Supabase handles the session)
+    const token = generateToken(user);
+
     return NextResponse.json({ 
-      user: { 
-        id: data.user.id, 
-        email: data.user.email 
-      },
-      message: 'User created successfully'
+      token, 
+      user: { id: user.id, email: user.email } 
     });
   } catch (error) {
     console.error('Registration error:', error);

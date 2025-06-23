@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import pool from './database';
+import { supabase } from './database';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
 
 export interface User {
   id: number;
@@ -31,46 +31,64 @@ export const verifyToken = (token: string): User | null => {
 };
 
 export const createUser = async (email: string, password: string): Promise<User | null> => {
-  const client = await pool.connect();
-  
   try {
+    // Check if user already exists
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existingUser) {
+      return null; // User already exists
+    }
+
     const hashedPassword = await hashPassword(password);
-    const result = await client.query(
-      'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email',
-      [email, hashedPassword]
-    );
     
-    return result.rows[0];
+    const { data, error } = await supabase
+      .from('users')
+      .insert([
+        {
+          email,
+          password: hashedPassword,
+        },
+      ])
+      .select('id, email')
+      .single();
+
+    if (error) {
+      console.error('Error creating user:', error);
+      return null;
+    }
+
+    return data;
   } catch (error) {
     console.error('Error creating user:', error);
     return null;
-  } finally {
-    client.release();
   }
 };
 
 export const authenticateUser = async (email: string, password: string): Promise<User | null> => {
-  const client = await pool.connect();
-  
   try {
-    const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
-    
-    if (result.rows.length === 0) {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, email, password')
+      .eq('email', email)
+      .single();
+
+    if (error || !user) {
       return null;
     }
-    
-    const user = result.rows[0];
+
     const isValid = await comparePassword(password, user.password);
-    
+
     if (!isValid) {
       return null;
     }
-    
+
     return { id: user.id, email: user.email };
   } catch (error) {
     console.error('Error authenticating user:', error);
     return null;
-  } finally {
-    client.release();
   }
 };

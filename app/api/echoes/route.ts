@@ -1,30 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-// Use service role key for server-side operations
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+import { verifyToken } from '@/lib/auth';
+import { supabase, setUserContext } from '@/lib/database';
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-
-    // Verify the JWT token with Supabase
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const user = verifyToken(token);
     
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Fetch echoes for the authenticated user
-    const { data: echoes, error } = await supabaseAdmin
+    // Set user context for RLS
+    await setUserContext(user.id);
+
+    const { data: echoes, error } = await supabase
       .from('echoes')
       .select('*')
       .eq('user_id', user.id)
@@ -44,17 +39,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-
-    // Verify the JWT token with Supabase
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const user = verifyToken(token);
     
-    if (authError || !user) {
+    if (!user) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
@@ -64,8 +57,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });
     }
 
-    // Insert new echo
-    const { data: echo, error } = await supabaseAdmin
+    // Set user context for RLS
+    await setUserContext(user.id);
+
+    const { data: echo, error } = await supabase
       .from('echoes')
       .insert([
         {
