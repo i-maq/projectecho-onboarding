@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, RotateCcw, Check, AlertCircle } from 'lucide-react';
+import { Camera, RotateCcw, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface CameraCaptureStepProps {
   personalData: any;
@@ -79,19 +80,69 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
     startCamera();
   }, [startCamera]);
 
+  const savePhotoToDatabase = async (photoData: string): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Please sign in again');
+        return false;
+      }
+
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          firstName: personalData.firstName,
+          lastName: personalData.lastName,
+          dateOfBirth: personalData.dateOfBirth,
+          age: personalData.age,
+          photoData: photoData
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save photo');
+      }
+
+      const savedProfile = await response.json();
+      console.log('Photo saved successfully:', savedProfile.id);
+      return true;
+    } catch (error) {
+      console.error('Error saving photo:', error);
+      toast.error('Failed to save your photo. Please try again.');
+      return false;
+    }
+  };
+
   const handleConfirmPhoto = async () => {
     if (!capturedPhoto) return;
     
     setIsProcessing(true);
     
-    // Simulate processing time for Echo creation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Store the photo data
-    localStorage.setItem('userPhoto', capturedPhoto);
-    
-    setIsProcessing(false);
-    onComplete(capturedPhoto);
+    try {
+      // Save photo to database
+      const saved = await savePhotoToDatabase(capturedPhoto);
+      
+      if (saved) {
+        // Simulate Echo creation processing time
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Store in localStorage for offline access
+        localStorage.setItem('userPhoto', capturedPhoto);
+        
+        toast.success('Your Echo avatar is being created!');
+        onComplete(capturedPhoto);
+      }
+    } catch (error) {
+      console.error('Error processing photo:', error);
+      toast.error('Failed to process your photo. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Cleanup camera when component unmounts
@@ -128,7 +179,7 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
           
           <p className="text-gray-600 mb-8 text-body max-w-lg mx-auto">
             {personalData?.firstName}, let's capture your likeness to create your Echo avatar. 
-            This will be used to generate an aged-up version of yourself for your future conversations.
+            This will be stored securely in your personal database and used to generate your aged-up Echo.
           </p>
 
           {/* Camera Interface */}
@@ -157,7 +208,8 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
 
                 <button
                   onClick={startCamera}
-                  className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8"
+                  disabled={isProcessing}
+                  className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 disabled:opacity-50"
                 >
                   <Camera className="h-5 w-5 mr-2" />
                   Start Camera
@@ -185,14 +237,16 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
                 <div className="flex gap-4 justify-center">
                   <button
                     onClick={stopCamera}
-                    className="neumorphic-button-light text-button px-6"
+                    disabled={isProcessing}
+                    className="neumorphic-button-light text-button px-6 disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   
                   <button
                     onClick={capturePhoto}
-                    className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8"
+                    disabled={isProcessing}
+                    className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 disabled:opacity-50"
                   >
                     <Camera className="h-5 w-5 mr-2" />
                     Capture Photo
@@ -217,14 +271,15 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
                   <p className="text-blue-800 text-sm text-body">
-                    This photo will be used to create your aged Echo avatar. Your photo is processed locally and stored securely.
+                    This photo will be securely stored in your database and used to create your aged Echo avatar.
                   </p>
                 </div>
 
                 <div className="flex gap-4 justify-center">
                   <button
                     onClick={retakePhoto}
-                    className="neumorphic-button-light text-button px-6"
+                    disabled={isProcessing}
+                    className="neumorphic-button-light text-button px-6 disabled:opacity-50"
                   >
                     <RotateCcw className="h-4 w-4 mr-2" />
                     Retake
@@ -237,7 +292,7 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
                   >
                     {isProcessing ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Creating Echo...
                       </>
                     ) : (
@@ -256,14 +311,14 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
           <div className="flex justify-between pt-8">
             <button
               onClick={onBack}
-              className="neumorphic-button-light text-button px-6"
               disabled={isProcessing}
+              className="neumorphic-button-light text-button px-6 disabled:opacity-50"
             >
               Back
             </button>
             
             <div className="text-sm text-gray-500 text-caption self-center">
-              Step 2 of 4
+              Step 2 of 2
             </div>
           </div>
         </div>

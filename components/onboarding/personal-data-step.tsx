@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, User, Sparkles } from 'lucide-react';
+import { Calendar, User, Sparkles, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface PersonalDataStepProps {
   onComplete: (data: PersonalData) => void;
@@ -24,6 +25,7 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
   });
   
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const calculateAge = (dateOfBirth: string): number => {
     const today = new Date();
@@ -64,23 +66,71 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const saveProfileToDatabase = async (personalData: PersonalData): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Please sign in again');
+        return false;
+      }
+
+      const response = await fetch('/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          firstName: personalData.firstName,
+          lastName: personalData.lastName,
+          dateOfBirth: personalData.dateOfBirth,
+          age: personalData.age
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save profile');
+      }
+
+      const savedProfile = await response.json();
+      console.log('Profile saved successfully:', savedProfile);
+      return true;
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error('Failed to save your information. Please try again.');
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      const age = calculateAge(formData.dateOfBirth);
-      const personalData: PersonalData = {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
-        dateOfBirth: formData.dateOfBirth,
-        age
-      };
-      
-      // Store in localStorage for now
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const age = calculateAge(formData.dateOfBirth);
+    const personalData: PersonalData = {
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      dateOfBirth: formData.dateOfBirth,
+      age
+    };
+
+    // Save to database
+    const saved = await saveProfileToDatabase(personalData);
+    
+    if (saved) {
+      // Also store in localStorage for offline access
       localStorage.setItem('personalData', JSON.stringify(personalData));
-      
+      toast.success(`Welcome, ${personalData.firstName}!`);
       onComplete(personalData);
     }
+
+    setIsSubmitting(false);
   };
 
   const isFormValid = () => {
@@ -130,9 +180,10 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
                 id="firstName"
                 value={formData.firstName}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                disabled={isSubmitting}
                 className={`w-full p-3 rounded-lg bg-white/70 border ${
                   errors.firstName ? 'border-red-400' : 'border-gray-300'
-                } focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:outline-none text-gray-800 text-body`}
+                } focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:outline-none text-gray-800 text-body disabled:opacity-50`}
                 placeholder="Enter your first name"
               />
               {errors.firstName && (
@@ -150,9 +201,10 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                disabled={isSubmitting}
                 className={`w-full p-3 rounded-lg bg-white/70 border ${
                   errors.lastName ? 'border-red-400' : 'border-gray-300'
-                } focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:outline-none text-gray-800 text-body`}
+                } focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:outline-none text-gray-800 text-body disabled:opacity-50`}
                 placeholder="Enter your last name"
               />
               {errors.lastName && (
@@ -171,9 +223,10 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
                 id="dateOfBirth"
                 value={formData.dateOfBirth}
                 onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                disabled={isSubmitting}
                 className={`w-full p-3 rounded-lg bg-white/70 border ${
                   errors.dateOfBirth ? 'border-red-400' : 'border-gray-300'
-                } focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:outline-none text-gray-800 text-body`}
+                } focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:outline-none text-gray-800 text-body disabled:opacity-50`}
                 max={new Date().toISOString().split('T')[0]}
                 min="1900-01-01"
               />
@@ -181,10 +234,14 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
                 <p className="mt-1 text-sm text-red-500 text-caption">{errors.dateOfBirth}</p>
               )}
               {formData.dateOfBirth && !errors.dateOfBirth && (
-                <p className="mt-1 text-sm text-purple-600 text-caption">
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-1 text-sm text-purple-600 text-caption"
+                >
                   <Sparkles className="inline h-3 w-3 mr-1" />
                   Age: {calculateAge(formData.dateOfBirth)} years old
-                </p>
+                </motion.p>
               )}
             </div>
 
@@ -193,21 +250,23 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
               <button
                 type="button"
                 onClick={onBack}
-                className="neumorphic-button-light text-button px-6"
+                disabled={isSubmitting}
+                className="neumorphic-button-light text-button px-6 disabled:opacity-50"
               >
                 Back
               </button>
               
               <button
                 type="submit"
-                disabled={!isFormValid()}
-                className={`neumorphic-button-light text-button px-8 ${
-                  !isFormValid() 
+                disabled={!isFormValid() || isSubmitting}
+                className={`neumorphic-button-light text-button px-8 flex items-center ${
+                  !isFormValid() || isSubmitting
                     ? 'opacity-50 cursor-not-allowed' 
                     : 'bg-purple-600 text-white shadow-lg hover:bg-purple-700'
                 }`}
               >
-                Continue
+                {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isSubmitting ? 'Saving...' : 'Continue'}
               </button>
             </div>
           </form>

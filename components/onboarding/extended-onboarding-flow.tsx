@@ -57,11 +57,8 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     
     // Mark onboarding as complete
     localStorage.setItem('onboardingComplete', 'true');
-    localStorage.setItem('personalData', JSON.stringify(personalData));
-    localStorage.setItem('userPhoto', photoData);
     
-    // For now, complete the onboarding
-    // Later this will lead to AI journaling setup
+    // Complete the onboarding - user data is now saved in Supabase
     onComplete();
   };
 
@@ -69,8 +66,8 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     setStage('personalData');
   };
 
-  const handleBackToSoundCheck = () => {
-    setStage('soundCheck');
+  const handleBackToOrbIntro = () => {
+    setStage('orbIntro');
   };
 
   return (
@@ -162,7 +159,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
           >
             <PersonalDataStep 
               onComplete={handlePersonalDataComplete}
-              onBack={handleBackToSoundCheck}
+              onBack={handleBackToOrbIntro}
             />
           </motion.div>
         )}
