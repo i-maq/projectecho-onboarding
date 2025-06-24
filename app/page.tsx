@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { AuthForm } from '@/components/auth/auth-form';
-import { OnboardingFlow } from '@/components/onboarding/onboarding-flow';
+import { ExtendedOnboardingFlow } from '@/components/onboarding/extended-onboarding-flow';
 import { Dashboard } from '@/components/dashboard/dashboard';
 
-// --- This is our self-contained, reusable background component ---
+// --- Enhanced background component with improved performance ---
 export const MasterBackground = () => {
   const Particle = () => {
     const style = useMemo(() => ({
@@ -28,6 +28,7 @@ export const MasterBackground = () => {
       { delay: '4s', duration: '8s' }, 
       { delay: '6s', duration: '8s' },
   ], []);
+  
   const particles = useMemo(() => Array.from({ length: 150 }).map((_, i) => <Particle key={i} />), []);
 
   return (
@@ -90,7 +91,7 @@ export default function HomePage() {
           <AuthForm onSuccess={() => setCurrentStep('onboarding')} />
         )}
         {currentStep === 'onboarding' && (
-          <OnboardingFlow onComplete={() => setCurrentStep('dashboard')} />
+          <ExtendedOnboardingFlow onComplete={() => setCurrentStep('dashboard')} />
         )}
         {currentStep === 'dashboard' && <Dashboard />}
       </div>
