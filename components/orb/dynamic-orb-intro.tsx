@@ -7,33 +7,52 @@ interface DynamicOrbIntroProps {
 }
 
 // Updated caption system matching your new script
-const captions = [
-  "Hey you... or should I say Hey, me.",
-  "I'm you, from years in the future.",
-  "How many? I can't say without giving too much away.",
-  "I'm not as sharp as you–as I once was.",
-  "My memories are beginning to fade.",
-  "Some of the moments I've cherished are becoming... hazy.",
-  "I don't want to forget.",
-  "Everything we've done, everything we've loved, everything we've lost.",
-  "It was all beautiful, and it can't be forgotten.",
-  "You've got to help me–help you remember all of this, so that by the time you are me, nothing is forgotten.",
-  "Think of who you are right now, in this moment.",
-  "You are not a single, solid thing.",
-  "You are a symphony of all the moments that came before.",
-  "",
-  "Your courage today... is an echo of a time you were scared, and pushed through anyway.",
-  "Your laughter... is an echo of a thousand jokes shared with friends.",
-  "Your wisdom... is an echo of mistakes made, and lessons learned.",
-  "",
-  "An echo is not a distant, faded copy... It proves... you are there.",
-  "",
-  "Here, you will become your echo for our future self to hear."
+const captionSections = [
+  {
+    audioFile: "ob-vo-1.mp3",
+    text: "Think of who you are right now, in this moment.",
+    duration: 12 // seconds
+  },
+  {
+    audioFile: "ob-vo-2.mp3", 
+    text: "You are not a single, solid thing.",
+    duration: 3
+  },
+  {
+    audioFile: "ob-vo-3.mp3",
+    text: "You are a symphony of all the moments that came before.",
+    duration: 4
+  },
+  {
+    audioFile: "ob-vo-4.mp3",
+    text: "Your courage today is an echo of a time you were scared, and pushed through anyway.",
+    duration: 5
+  },
+  {
+    audioFile: "ob-vo-5.mp3",
+    text: "Your laughter is an echo of a thousand jokes shared with friends.",
+    duration: 5
+  },
+  {
+    audioFile: "ob-vo-6.mp3",
+    text: "Your wisdom is an echo of mistakes made, and lessons learned.",
+    duration: 5
+  },
+  {
+    audioFile: "ob-vo-7.mp3",
+    text: "An echo is not a distant, faded copy. It proves you are there.",
+    duration: 6
+  },
+  {
+    audioFile: "ob-vo-8.mp3",
+    text: "Here, you will become your echo for your future self to hear.",
+    duration: 5
+  }
 ];
 
 export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const scriptAudioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const tapAudioRef = useRef<HTMLAudioElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -44,11 +63,12 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
   const [audioLevel, setAudioLevel] = useState(0);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [audioError, setAudioError] = useState(false);
 
-  // 📱 Check for mobile/small screen
+  // Mobile detection
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768); // Mobile breakpoint
+      setIsMobile(window.innerWidth < 768);
     };
     
     checkScreenSize();
@@ -56,7 +76,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Enhanced background particles component with mobile-friendly opacity
+  // Enhanced background particles with depth layers
   const Particle = () => {
     const style = useMemo(() => {
       const size = Math.random() * 3 + 0.5;
@@ -73,7 +93,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
         blurAmount = 1.5;
       }
       
-      // 📱 Reduced opacity for mobile - much lighter particles
       let opacity;
       if (isMobile) {
         opacity = depthLevel < 0.3 ? 0.4 : 
@@ -109,7 +128,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     { delay: '6s', duration: '8s' },
   ], []);
 
-  // 📱 Responsive particle count - fewer particles on mobile
   const particleCount = useMemo(() => {
     return isMobile ? 150 : 300;
   }, [isMobile]);
@@ -119,7 +137,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     [particleCount, isMobile]
   );
 
-  // 🌈 ENHANCED Aurora borealis color palette with more vibrant greens and purples
+  // Aurora borealis color palette with smooth gradients
   const auroraColors = [
     { r: 50, g: 255, b: 50 },     // Bright green 
     { r: 100, g: 255, b: 100 },   // Light green
@@ -131,17 +149,20 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     { r: 0, g: 255, b: 150 },     // Cyan-green
     { r: 100, g: 150, b: 255 },   // Light blue
     { r: 50, g: 100, b: 255 },    // Deep blue
-    { r: 255, g: 150, b: 0 },     // Orange (for warm contrast)
+    { r: 255, g: 150, b: 0 },     // Orange
     { r: 255, g: 200, b: 100 },   // Warm yellow
   ];
 
   // Initialize audio analysis
   const initAudioAnalysis = async () => {
-    if (!scriptAudioRef.current) return;
+    if (!audioRef.current) return;
+    
+    // Prevent duplicate initialization
+    if (audioContextRef.current) return;
 
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const source = audioContext.createMediaElementSource(scriptAudioRef.current);
+      const source = audioContext.createMediaElementSource(audioRef.current);
       const analyser = audioContext.createAnalyser();
       
       analyser.fftSize = 256;
@@ -159,7 +180,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     }
   };
 
-  // Audio level monitoring
+  // Audio level monitoring for real-time orb reactivity
   useEffect(() => {
     let animationId: number;
     
@@ -183,7 +204,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     };
   }, [isAudioPlaying]);
 
-  // Enhanced Siri-like fluid orb animation with spherical movement
+  // Enhanced Siri-like fluid orb animation with 3D spherical movement
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -194,7 +215,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     let animationId: number;
     let time = 0;
 
-    // Enhanced orb position system with 3D sphere movement
     const orbPosition = { x: canvas.width / 2, y: canvas.height / 2 };
     const targetPosition = { x: canvas.width / 2, y: canvas.height / 2 };
     
@@ -206,20 +226,17 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     
     const jumpDuration = 0.8;
 
-    // Generate spherical target positions
     const generateSphericalTarget = () => {
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       const maxRadius = Math.min(canvas.width, canvas.height) * 0.35;
       
-      // 3D spherical coordinates
-      const theta = Math.random() * Math.PI * 2; // Azimuth
-      const phi = Math.acos(2 * Math.random() - 1); // Inclination for uniform distribution
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
       
-      // Project to 2D with spherical perspective
       const radius = Math.random() * maxRadius;
       const x = centerX + radius * Math.sin(phi) * Math.cos(theta);
-      const y = centerY + radius * Math.sin(phi) * Math.sin(theta) * 0.8; // Flatten slightly for better visual
+      const y = centerY + radius * Math.sin(phi) * Math.sin(theta) * 0.8;
       
       return { x, y };
     };
@@ -260,10 +277,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       }
     };
 
-    // Make jump function available globally
     (window as any).orbJump = jumpToRandomPosition;
 
-    // Enhanced blob layers for detailed fluid effect with MORE SEGMENTS for smoother curves
+    // Enhanced blob layers for detailed fluid effect
     const blobLayers = [
       {
         baseRadius: 75,
@@ -272,7 +288,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
         noiseScale: 0.8,
         opacity: 0.9,
         offset: { x: 0, y: 0 },
-        colorPhase: 0 // 🎨 Individual color phases for each layer
+        colorPhase: 0
       },
       {
         baseRadius: 60,
@@ -281,7 +297,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
         noiseScale: 1.1,
         opacity: 0.8,
         offset: { x: 6, y: -4 },
-        colorPhase: 1.2 // 🎨 Different phase for variety
+        colorPhase: 1.2
       },
       {
         baseRadius: 85,
@@ -290,7 +306,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
         noiseScale: 0.6,
         opacity: 0.7,
         offset: { x: -5, y: 3 },
-        colorPhase: 2.8 // 🎨 Different phase for variety
+        colorPhase: 2.8
       },
       {
         baseRadius: 45,
@@ -299,7 +315,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
         noiseScale: 1.4,
         opacity: 0.95,
         offset: { x: 2, y: 6 },
-        colorPhase: 4.5 // 🎨 Different phase for variety
+        colorPhase: 4.5
       },
       {
         baseRadius: 95,
@@ -308,7 +324,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
         noiseScale: 0.4,
         opacity: 0.6,
         offset: { x: 0, y: 0 },
-        colorPhase: 5.7 // 🎨 Different phase for variety
+        colorPhase: 5.7
       },
       {
         baseRadius: 35,
@@ -317,11 +333,10 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
         noiseScale: 1.8,
         opacity: 1.0,
         offset: { x: 4, y: -2 },
-        colorPhase: 7.1 // 🎨 Different phase for variety
+        colorPhase: 7.1
       }
     ];
 
-    // Enhanced 3D noise for spherical deformation
     const sphericalNoise = (x: number, y: number, t: number, scale: number) => {
       const r = Math.sqrt(x * x + y * y) * 0.01;
       const theta = Math.atan2(y, x);
@@ -343,7 +358,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       };
     };
 
-    // Generate detailed blob points with enhanced smoothness
     const generateBlobPoints = (layer: any, t: number, audioBoost: number) => {
       const points = [];
       const segments = layer.segments;
@@ -351,7 +365,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       for (let i = 0; i <= segments; i++) {
         const angle = (i / segments) * Math.PI * 2;
         
-        // Enhanced multi-layer spherical noise
         const noise1 = sphericalNoise(
           Math.cos(angle) * 100,
           Math.sin(angle) * 100,
@@ -375,7 +388,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
 
         const combinedNoise = noise1 + noise2 * 0.4 + noise3 * 0.2;
         
-        // Enhanced radius with more dynamic variation
         let jumpBoost = jumpState.isJumping ? 1.4 + Math.sin(jumpState.jumpProgress * Math.PI) * 0.6 : 1;
         
         const radiusVariation = layer.baseRadius * audioBoost * jumpBoost + 
@@ -394,10 +406,8 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       return points;
     };
 
-    // 🌈 ✨ COMPLETELY REDESIGNED - Smooth Gradual Color System ✨ 🌈
     const smoothColorInterpolation = (color1: any, color2: any, factor: number) => {
-      // Smooth cubic interpolation for more natural transitions
-      const easedFactor = factor * factor * (3 - 2 * factor); // Smoothstep function
+      const easedFactor = factor * factor * (3 - 2 * factor);
       
       return {
         r: Math.round(color1.r + (color2.r - color1.r) * easedFactor),
@@ -407,25 +417,19 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     };
 
     const getLayerColors = (layer: any, t: number, index: number) => {
-      // 🐌 MUCH SLOWER color cycling for gradual transitions (reduced from 0.008 to 0.0015)
       const colorTime = t * 0.0015 + layer.colorPhase;
       
-      // 🎭 Gentle jump influence instead of dramatic shifts
       const jumpInfluence = jumpState.isJumping ? 
-        Math.sin(jumpState.jumpProgress * Math.PI) * 0.3 : 0; // Reduced from 2 to 0.3
+        Math.sin(jumpState.jumpProgress * Math.PI) * 0.3 : 0;
       
-      // 🎵 Subtle audio reactivity for color (reduced impact)
-      const audioInfluence = audioLevel * 0.8; // Reduced from 2 to 0.8
+      const audioInfluence = audioLevel * 0.8;
       
-      // 🌊 Final color position with very gradual movement
       const colorPosition = colorTime + jumpInfluence + audioInfluence;
       
-      // 🎨 Get continuous color indices for smooth blending
       const colorIndex1 = colorPosition % auroraColors.length;
       const colorIndex2 = (colorPosition + 3) % auroraColors.length;
       const colorIndex3 = (colorPosition + 6) % auroraColors.length;
       
-      // 🔢 Extract integer and fractional parts for smooth interpolation
       const baseIndex1 = Math.floor(colorIndex1);
       const baseIndex2 = Math.floor(colorIndex2);
       const baseIndex3 = Math.floor(colorIndex3);
@@ -433,7 +437,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       const fraction2 = colorIndex2 - baseIndex2;
       const fraction3 = colorIndex3 - baseIndex3;
       
-      // 🎨 Get the four colors for smooth blending
       const color1a = auroraColors[baseIndex1 % auroraColors.length];
       const color1b = auroraColors[(baseIndex1 + 1) % auroraColors.length];
       const color2a = auroraColors[baseIndex2 % auroraColors.length];
@@ -441,15 +444,13 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       const color3a = auroraColors[baseIndex3 % auroraColors.length];
       const color3b = auroraColors[(baseIndex3 + 1) % auroraColors.length];
       
-      // 🌈 Smooth interpolation between adjacent colors
       const interpolatedColor1 = smoothColorInterpolation(color1a, color1b, fraction1);
       const interpolatedColor2 = smoothColorInterpolation(color2a, color2b, fraction2);
       const interpolatedColor3 = smoothColorInterpolation(color3a, color3b, fraction3);
       
-      // 🎭 Gentle blending of multiple colors (reduced intensity)
-      const primaryWeight = 0.6;   // Increased primary color weight for stability
-      const secondaryWeight = 0.25; // Reduced secondary weight
-      const tertiaryWeight = 0.15;  // Reduced tertiary weight
+      const primaryWeight = 0.6;
+      const secondaryWeight = 0.25;
+      const tertiaryWeight = 0.15;
       
       const finalColor = {
         r: Math.round(
@@ -472,16 +473,13 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       return finalColor;
     };
 
-    // Enhanced smooth blob drawing with HEAVY BLUR and better blending
     const drawSmoothBlob = (points: any[], layer: any, layerIndex: number, t: number) => {
       if (points.length < 3) return;
       
       ctx.save();
       
-      // CRITICAL: Apply heavy blur to the entire drawing context
       ctx.filter = 'blur(8px) saturate(1.4) brightness(1.2)';
       
-      // Create spherical clipping mask
       ctx.beginPath();
       ctx.arc(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) / 2 - 1, 0, Math.PI * 2);
       ctx.clip();
@@ -489,15 +487,13 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
       
-      // Enhanced smooth curves with more control points and better smoothing
       for (let i = 0; i < points.length - 1; i++) {
         const current = points[i];
         const next = points[(i + 1) % (points.length - 1)];
         const nextnext = points[(i + 2) % (points.length - 1)];
         const prev = points[i > 0 ? i - 1 : points.length - 2];
         
-        // Enhanced control points for smoother curves
-        const tension = 0.4; // Curve tension
+        const tension = 0.4;
         const controlX1 = current.x + (next.x - prev.x) * tension;
         const controlY1 = current.y + (next.y - prev.y) * tension;
         const controlX2 = next.x - (nextnext.x - current.x) * tension;
@@ -508,10 +504,8 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       
       ctx.closePath();
       
-      // 🌈 Get smooth, gradually changing colors for this layer
       const colors = getLayerColors(layer, t, layerIndex);
       
-      // Enhanced radial gradient with more stops for smoother blending
       const gradient = ctx.createRadialGradient(
         orbPosition.x, orbPosition.y, 0,
         orbPosition.x, orbPosition.y, layer.baseRadius * 2.5
@@ -521,7 +515,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       const jumpGlow = jumpState.isJumping ? 0.5 : 0;
       const opacity = Math.min(baseOpacity + jumpGlow, 1.0);
       
-      // Multi-stop gradient for better depth and smoother blending with SMOOTH COLORS
       gradient.addColorStop(0, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity})`);
       gradient.addColorStop(0.15, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.95})`);
       gradient.addColorStop(0.3, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.85})`);
@@ -531,19 +524,16 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       gradient.addColorStop(0.9, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.15})`);
       gradient.addColorStop(1, `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.05})`);
       
-      // Enhanced blending with multiple composition modes
       ctx.globalCompositeOperation = layer.baseRadius < 50 ? 'screen' : 'multiply';
       ctx.fillStyle = gradient;
       ctx.fill();
       
-      // CRITICAL: Add multiple blur layers for smoother effect with SMOOTH COLORS
       ctx.globalCompositeOperation = 'screen';
       ctx.strokeStyle = `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.8})`;
       ctx.lineWidth = 4;
       ctx.filter = 'blur(12px) saturate(1.6)';
       ctx.stroke();
       
-      // Additional heavy blur layer for ultra-smooth effect
       ctx.globalCompositeOperation = 'soft-light';
       ctx.lineWidth = 8;
       ctx.strokeStyle = `rgba(${colors.r}, ${colors.g}, ${colors.b}, ${opacity * 0.6})`;
@@ -556,17 +546,14 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     const drawFrame = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // CRITICAL: Apply heavy blur to the entire canvas context
       ctx.filter = 'blur(4px) saturate(1.8) brightness(1.3) contrast(1.1)';
       
       time += 1;
       updateOrbPosition();
       
-      // Enhanced audio reactivity
       let jumpIntensity = jumpState.isJumping ? 1.3 + Math.sin(jumpState.jumpProgress * Math.PI * 2) * 0.4 : 1;
       const audioBoost = (1 + audioLevel * 0.7) * jumpIntensity;
       
-      // Sort layers for proper depth rendering
       const sortedLayers = [...blobLayers].sort((a, b) => b.baseRadius - a.baseRadius);
       
       sortedLayers.forEach((layer, index) => {
@@ -589,33 +576,49 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
 
   // Audio event handlers
   useEffect(() => {
-    const audio = scriptAudioRef.current;
+    const audio = audioRef.current;
     if (!audio) return;
 
     const handlePlay = () => {
       setIsAudioPlaying(true);
+      setAudioError(false);
       if (audioContextRef.current?.state === 'suspended') {
         audioContextRef.current.resume();
       }
     };
 
     const handlePause = () => setIsAudioPlaying(false);
-    const handleEnded = () => setIsAudioPlaying(false);
+    
+    const handleEnded = () => {
+      setIsAudioPlaying(false);
+      // Auto-advance to next section when audio ends
+      if (step < captionSections.length - 1) {
+        setTimeout(() => setStep(step + 1), 500); // Brief pause between sections
+      }
+    };
+
+    const handleError = () => {
+      console.log(`Audio file not found: ${captionSections[step]?.audioFile}`);
+      setAudioError(true);
+      setIsAudioPlaying(false);
+    };
 
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
 
     return () => {
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
     };
-  }, []);
+  }, [step]);
 
   // Initialize audio analysis when audio is loaded
   useEffect(() => {
-    const audio = scriptAudioRef.current;
+    const audio = audioRef.current;
     if (!audio) return;
 
     const handleCanPlay = () => {
@@ -626,22 +629,34 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     return () => audio.removeEventListener('canplaythrough', handleCanPlay);
   }, []);
 
-  // Ambient background music
+  // Load and play current audio section
+  useEffect(() => {
+    const currentSection = captionSections[step];
+    if (currentSection && currentSection.audioFile && audioRef.current) {
+      audioRef.current.src = `/audio/onboarding/${currentSection.audioFile}`;
+      audioRef.current.load();
+      
+      // Play after a short delay to ensure it's loaded
+      setTimeout(() => {
+        audioRef.current?.play().catch((error) => {
+          console.log(`Could not play audio: ${currentSection.audioFile}`, error);
+          setAudioError(true);
+        });
+      }, 200);
+    }
+  }, [step]);
+
+  // Ambient background music (very low volume)
   useEffect(() => {
     const bg = new Audio("/ambient-music.mp3");
     bg.loop = true;
-    bg.volume = 0.3;
+    bg.volume = 0.05; // Very low volume to not interfere with voice
     bg.play().catch(() => {});
     return () => { bg.pause(); };
   }, []);
 
-  // Play script audio on mount
-  useEffect(() => {
-    scriptAudioRef.current?.play();
-  }, []);
-
   const handleTap = () => {
-    // Trigger orb jump
+    // Trigger orb jump animation
     if ((window as any).orbJump) {
       (window as any).orbJump();
     }
@@ -650,25 +665,24 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     setIsTapped(true);
     setTimeout(() => setIsTapped(false), 300);
     
-    // Tap sound
+    // Tap sound effect
     if (tapAudioRef.current) {
       tapAudioRef.current.currentTime = 0;
       tapAudioRef.current.play();
     }
     
     // Advance or finish
-    if (step < captions.length - 1) {
+    if (step < captionSections.length - 1) {
       setStep(step + 1);
-      if (scriptAudioRef.current) {
-        scriptAudioRef.current.currentTime = 0;
-        scriptAudioRef.current.play();
-      }
     } else {
       onAdvance();
     }
   };
 
-  // Responsive sizing with mobile padding
+  // Get current caption
+  const currentCaption = captionSections[step] ? captionSections[step].text : '';
+
+  // Responsive sizing
   const orbSize = isMobile ? 'w-64 h-64' : 'w-96 h-96';
   const canvasSize = isMobile ? 256 : 384;
 
@@ -677,7 +691,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       className="fixed inset-0 flex items-center justify-center bg-[#f0f2f5] cursor-pointer overflow-hidden"
       onClick={handleTap}
     >
-      {/* Enhanced background particles */}
+      {/* Enhanced background particles with depth */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow:'hidden' }}>
         {circles.map((circle, index) => (
           <div 
@@ -706,9 +720,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
           y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
         }}
       >
-        {/* Multi-layered spherical container with enhanced depth */}
+        {/* Multi-layered spherical container with glass effects */}
         <div className={`relative ${orbSize}`}>
-          {/* Primary glass sphere with detailed effects */}
+          {/* Primary glass sphere with detailed gradients */}
           <div 
             className="absolute inset-0 rounded-full overflow-hidden"
             style={{
@@ -741,7 +755,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
               `
             }}
           >
-            {/* CRITICAL: Enhanced fluid canvas with HEAVY BLUR filtering */}
+            {/* Enhanced fluid canvas with heavy blur */}
             <canvas 
               ref={canvasRef} 
               width={canvasSize} 
@@ -755,7 +769,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
             />
           </div>
 
-          {/* Enhanced spherical highlights and reflections */}
+          {/* Spherical highlights and reflections */}
           <div 
             className="absolute rounded-full pointer-events-none"
             style={{
@@ -776,7 +790,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
             }}
           />
 
-          {/* Secondary highlight for more depth */}
           <div 
             className="absolute rounded-full pointer-events-none"
             style={{
@@ -795,7 +808,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
             }}
           />
 
-          {/* Inner rim lighting effect */}
           <div 
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{
@@ -810,7 +822,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
             }}
           />
 
-          {/* 🌈 ENHANCED - Gradually shifting atmospheric glow with much smoother transitions */}
+          {/* Gradually shifting atmospheric glow - enhanced with audio reactivity */}
           <motion.div 
             className="absolute inset-0 rounded-full pointer-events-none"
             animate={{
@@ -821,10 +833,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
                 `0 0 ${95 + audioLevel * 115}px ${35 + audioLevel * 45}px rgba(80, 220, 150, ${0.4 + audioLevel * 0.5})`
               ]
             }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} // 🐌 Much slower transitions
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
 
-          {/* 🌈 ENHANCED - Gradually shifting outer atmospheric halo */}
           <motion.div 
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{
@@ -839,63 +850,79 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
                 `0 0 ${145 + audioLevel * 82}px ${19 + audioLevel * 29}px rgba(80, 200, 180, ${0.22 + audioLevel * 0.28})`
               ]
             }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }} // 🐌 Even slower outer transitions
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
       </motion.div>
 
       {/* Audio elements */}
-      <audio ref={scriptAudioRef} src={"/audio/onboarding-intro.mp3"} preload="auto" />
+      <audio ref={audioRef} preload="auto" />
       <audio ref={tapAudioRef} src="/tap-sound.mp3" preload="auto" />
 
-      {/* Enhanced captions with better blur effects */}
-      <AnimatePresence mode="wait">
-        {captions[step] && (
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, y: 30, filter: "blur(15px)", scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
-            exit={{ opacity: 0, y: -20, filter: "blur(8px)", scale: 1.02 }}
-            transition={{ duration: 0.9, ease: "easeOut" }}
-            className="absolute bottom-16 w-full px-6 max-w-3xl text-center z-10"
+      {/* CLEAN Static Caption Container */}
+      {currentCaption && (
+        <div className="absolute bottom-16 w-full px-6 max-w-3xl text-center z-10">
+          <div 
+            className="relative rounded-2xl p-8 shadow-2xl"
+            style={{
+              background: `
+                linear-gradient(135deg,
+                  rgba(255, 255, 255, 0.25) 0%,
+                  rgba(240, 248, 255, 0.2) 50%,
+                  rgba(230, 240, 255, 0.15) 100%)
+              `,
+              backdropFilter: 'blur(25px) saturate(1.4)',
+              WebkitBackdropFilter: 'blur(25px) saturate(1.4)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: `
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 8px 20px rgba(100, 150, 255, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4)
+              `
+            }}
           >
-            <div 
-              className="relative rounded-2xl p-8 shadow-2xl"
-              style={{
-                background: `
-                  linear-gradient(135deg,
-                    rgba(255, 255, 255, 0.25) 0%,
-                    rgba(240, 248, 255, 0.2) 50%,
-                    rgba(230, 240, 255, 0.15) 100%)
-                `,
-                backdropFilter: 'blur(25px) saturate(1.4)',
-                WebkitBackdropFilter: 'blur(25px) saturate(1.4)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                boxShadow: `
-                  0 20px 40px rgba(0, 0, 0, 0.1),
-                  0 8px 20px rgba(100, 150, 255, 0.15),
-                  inset 0 1px 0 rgba(255, 255, 255, 0.4)
-                `
-              }}
-            >
-              <p className="text-lg leading-relaxed text-gray-800 font-medium">
-                {captions[step]}
-              </p>
+            <p className="text-lg leading-relaxed text-gray-800 font-light text-body">
+              {currentCaption}
+            </p>
+            
+            {/* Audio status indicator */}
+            {audioError && (
+              <div className="mt-3 text-sm text-amber-600 font-medium">
+                Audio file not found - using visual-only mode
+              </div>
+            )}
+            
+            {/* Progress indicator */}
+            <div className="mt-4 flex justify-center">
+              <div className="flex space-x-2">
+                {captionSections.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index === step 
+                        ? 'bg-purple-500 w-6' 
+                        : index < step 
+                        ? 'bg-purple-300' 
+                        : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
 
       {/* Enhanced tap instruction */}
       <motion.div 
-        className="absolute bottom-4 text-sm text-gray-600 font-medium z-10"
+        className="absolute bottom-4 text-sm text-gray-600 font-light z-10 text-caption"
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 2, repeat: Infinity }}
         style={{
           textShadow: '0 1px 3px rgba(255, 255, 255, 0.8)'
         }}
       >
-        Tap to continue • Watch the orb bounce! 🌟
+        {step < captionSections.length - 1 ? 'Tap to continue' : 'Tap to begin your journey'} • Step {step + 1} of {captionSections.length} ✨
       </motion.div>
     </div>
   );
