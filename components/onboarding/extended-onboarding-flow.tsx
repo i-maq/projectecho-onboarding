@@ -4,11 +4,12 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { DynamicOrbIntro } from '../orb/dynamic-orb-intro';
+import { DatabaseSetupCheck } from './database-setup-check';
 import { PersonalDataStep } from './personal-data-step';
 import { CameraCaptureStep } from './camera-capture-step';
 import headphonesAnimation from '/public/wired-outline-1055-earbud-wireless-earphones-hover-pinch.json';
 
-type OnboardingStage = 'language' | 'soundCheck' | 'orbIntro' | 'personalData' | 'cameraCapture' | 'complete';
+type OnboardingStage = 'language' | 'soundCheck' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'complete';
 
 interface PersonalData {
   firstName: string;
@@ -44,6 +45,10 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   };
 
   const handleOrbComplete = () => {
+    setStage('dbCheck');
+  };
+
+  const handleDatabaseReady = () => {
     setStage('personalData');
   };
 
@@ -66,8 +71,8 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     setStage('personalData');
   };
 
-  const handleBackToOrbIntro = () => {
-    setStage('orbIntro');
+  const handleBackToDatabaseCheck = () => {
+    setStage('dbCheck');
   };
 
   return (
@@ -148,6 +153,19 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
           </motion.div>
         )}
 
+        {stage === 'dbCheck' && (
+          <motion.div 
+            key="dbCheck"
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.5 }}
+            className="w-full h-full"
+          >
+            <DatabaseSetupCheck onContinue={handleDatabaseReady} />
+          </motion.div>
+        )}
+
         {stage === 'personalData' && (
           <motion.div 
             key="personalData"
@@ -159,7 +177,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
           >
             <PersonalDataStep 
               onComplete={handlePersonalDataComplete}
-              onBack={handleBackToOrbIntro}
+              onBack={handleBackToDatabaseCheck}
             />
           </motion.div>
         )}

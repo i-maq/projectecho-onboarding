@@ -7,8 +7,8 @@ if (!supabaseUrl || !supabaseServiceKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
 }
 
-// Use service role key for server-side database operations
-export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+// Admin client for server-side operations with RLS bypass
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
@@ -18,7 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 // Helper function to set user context for RLS
 export const setUserContext = async (userId: number) => {
   try {
-    await supabase.rpc('set_config', {
+    await supabaseAdmin.rpc('set_config', {
       setting_name: 'app.current_user_id',
       setting_value: userId.toString(),
       is_local: true,
@@ -27,5 +27,3 @@ export const setUserContext = async (userId: number) => {
     console.error('Error setting user context:', error);
   }
 };
-
-export default supabase;

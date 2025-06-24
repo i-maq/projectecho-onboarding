@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
-import { supabase, setUserContext } from '@/lib/database';
+import { supabaseAdmin, setUserContext } from '@/lib/supabase-admin';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     // Set user context for RLS policies
     await setUserContext(user.id);
 
-    const { data: profile, error } = await supabase
+    const { data: profile, error } = await supabaseAdmin
       .from('user_profiles')
       .select('*')
       .eq('user_id', user.id)
@@ -57,11 +57,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'All profile fields are required' }, { status: 400 });
     }
 
+    console.log('Attempting to save profile for user:', user.id);
+
     // Set user context for RLS policies
     await setUserContext(user.id);
 
     // Check if profile already exists
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile } = await supabaseAdmin
       .from('user_profiles')
       .select('id')
       .eq('user_id', user.id)
@@ -70,8 +72,9 @@ export async function POST(request: NextRequest) {
     let result;
 
     if (existingProfile) {
+      console.log('Updating existing profile:', existingProfile.id);
       // Update existing profile
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('user_profiles')
         .update({
           first_name: firstName,
@@ -87,8 +90,9 @@ export async function POST(request: NextRequest) {
 
       result = { data, error };
     } else {
+      console.log('Creating new profile for user:', user.id);
       // Create new profile
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('user_profiles')
         .insert([
           {
@@ -107,13 +111,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (result.error) {
-      console.error('Error saving profile:', result.error);
-      return NextResponse.json({ error: 'Failed to save profile' }, { status: 500 });
+      console.error('Database error saving profile:', result.error);
+      return NextResponse.json({ 
+        error: 'Failed to save profile', 
+        details: result.error.message 
+      }, { status: 500 });
     }
 
+    console.log('Profile saved successfully:', result.data.id);
     return NextResponse.json(result.data);
   } catch (error) {
     console.error('Error saving profile:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Internal server error', 
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
