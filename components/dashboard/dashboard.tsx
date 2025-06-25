@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Send, Book, Calendar, LogOut } from 'lucide-react';
+import { Sparkles, Book, Calendar, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { EchoAvatarPlayer } from './echo-avatar-player';

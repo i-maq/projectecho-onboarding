@@ -4,7 +4,7 @@ import { supabaseAdmin, setUserContext } from '@/lib/supabase-admin';
 import FormData from 'form-data';
 import axios from 'axios';
 
-const TAVUS_API_URL = 'https://api.tavus.io';
+const TAVUS_API_URL = process.env.TAVUS_API_URL || 'https://api.tavus.io';
 const TAVUS_API_KEY = process.env.TAVUS_API_KEY || 'b08e4c16d61747f995b612d7673dab64';
 
 // Create a replica from a video recording
@@ -58,6 +58,8 @@ export async function POST(request: NextRequest) {
     } else {
       tavusFormData.append('name', `User ${user.id} Echo`);
     }
+
+    console.log('Making request to Tavus API with key:', TAVUS_API_KEY.substring(0, 5) + '...');
 
     // Make request to Tavus API
     const tavusResponse = await axios.post(`${TAVUS_API_URL}/v1/replicas`, tavusFormData, {

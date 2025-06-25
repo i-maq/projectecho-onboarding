@@ -4,8 +4,6 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Video, RotateCcw, Check, AlertCircle, Loader2, Mic, MicOff, Play, Square, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { RecordRTCPromisesHandler } from 'recordrtc';
-import axios from 'axios';
 
 interface VideoCaptureStepProps {
   personalData: any;
@@ -26,7 +24,6 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const recorderRef = useRef<RecordRTCPromisesHandler | null>(null);
   
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -92,16 +89,33 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
     if (!streamRef.current) return;
     
     try {
-      const recorder = new RecordRTCPromisesHandler(streamRef.current, {
-        type: 'video',
-        mimeType: 'video/webm;codecs=vp9,opus',
-        disableLogs: true,
-        videoBitsPerSecond: 2500000, // 2.5 Mbps
-        frameRate: 30,
-      });
+      // Using normal recording API since RecordRTC might not be fully initialized
+      const chunks: BlobPart[] = [];
+      const mediaRecorder = new MediaRecorder(streamRef.current);
       
-      await recorder.startRecording();
-      recorderRef.current = recorder;
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+      
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        setRecordedVideo(blob);
+        setIsRecording(false);
+        
+        if (previewRef.current) {
+          const videoURL = URL.createObjectURL(blob);
+          previewRef.current.src = videoURL;
+          previewRef.current.onloadedmetadata = () => {
+            previewRef.current?.play().catch(err => {
+              console.error('Error playing video:', err);
+            });
+          };
+        }
+      };
+      
+      mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
       
@@ -111,42 +125,33 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
       }, 1000);
       
       // Auto-stop after 30 seconds to prevent large files
-      setTimeout(async () => {
-        if (isRecording) {
+      setTimeout(() => {
+        if (mediaRecorder.state !== 'inactive') {
           clearInterval(intervalId);
-          await stopRecording();
+          mediaRecorder.stop();
         }
       }, 30000);
       
+      // Clean up timer when recording stops
       return () => clearInterval(intervalId);
     } catch (error) {
       console.error('Error starting recording:', error);
       setError('Failed to start recording. Please try again.');
     }
-  }, [isRecording]);
+  }, []);
 
-  const stopRecording = useCallback(async () => {
-    if (!recorderRef.current) return;
+  const stopRecording = useCallback(() => {
+    if (!streamRef.current) return;
     
     try {
-      await recorderRef.current.stopRecording();
-      const blob = await recorderRef.current.getBlob();
+      const tracks = streamRef.current.getTracks();
+      tracks.forEach(track => {
+        if (track.readyState === 'live' && track.kind === 'video') {
+          track.stop();
+        }
+      });
       
-      setRecordedVideo(blob);
       setIsRecording(false);
-      
-      if (previewRef.current) {
-        const videoURL = URL.createObjectURL(blob);
-        previewRef.current.src = videoURL;
-        previewRef.current.onloadedmetadata = () => {
-          previewRef.current?.play().catch(err => {
-            console.error('Error playing video:', err);
-          });
-        };
-      }
-      
-      // Clean up recorder
-      recorderRef.current = null;
     } catch (err) {
       console.error('Error stopping recording:', err);
       setError('Failed to stop recording. Please try again.');
@@ -217,18 +222,20 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
       }
       
       // Upload to our API endpoint that will call Tavus
-      const response = await axios.post('/api/tavus/replica', formData, {
+      const response = await fetch('/api/tavus/replica', {
+        method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
-        }
+        },
+        body: formData
       });
       
-      if (response.status !== 200 && response.status !== 201) {
-        throw new Error('Failed to create replica');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create replica');
       }
       
-      const replicaData = response.data;
+      const replicaData = await response.json();
       setReplicaId(replicaData.id);
       setReplicaStatus(replicaData.status);
       
@@ -257,25 +264,31 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
         return;
       }
       
-      const response = await axios.get(`/api/tavus/replica?id=${id}`, {
+      const response = await fetch(`/api/tavus/replica?id=${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
-      const replicaData = response.data;
+      if (!response.ok) {
+        throw new Error('Failed to check replica status');
+      }
+      
+      const replicaData = await response.json();
       setReplicaStatus(replicaData.status);
       
       // If ready, complete the onboarding step
       if (replicaData.status === 'ready') {
         if (statusCheckInterval) {
           clearInterval(statusCheckInterval);
+          setStatusCheckInterval(null);
         }
         toast.success('Your Echo avatar is ready!');
         setTimeout(() => onComplete(id), 2000);
       } else if (replicaData.status === 'failed') {
         if (statusCheckInterval) {
           clearInterval(statusCheckInterval);
+          setStatusCheckInterval(null);
         }
         toast.error('Failed to create your Echo avatar. Please try again.');
       }
@@ -291,15 +304,11 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
       if (statusCheckInterval) {
         clearInterval(statusCheckInterval);
       }
-      if (recorderRef.current) {
-        recorderRef.current.stopRecording().catch(console.error);
-        recorderRef.current = null;
-      }
-      if (recordedVideo) {
-        URL.revokeObjectURL(previewRef.current?.src || '');
+      if (previewRef.current && previewRef.current.src.startsWith('blob:')) {
+        URL.revokeObjectURL(previewRef.current.src);
       }
     };
-  }, [stopCamera, statusCheckInterval, recordedVideo]);
+  }, [stopCamera, statusCheckInterval]);
   
   // Format recording time as MM:SS
   const formatTime = (seconds: number): string => {

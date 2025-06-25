@@ -3,7 +3,7 @@ import { verifyToken } from '@/lib/auth';
 import { supabaseAdmin, setUserContext } from '@/lib/supabase-admin';
 import axios from 'axios';
 
-const TAVUS_API_URL = 'https://api.tavus.io';
+const TAVUS_API_URL = process.env.TAVUS_API_URL || 'https://api.tavus.io';
 const TAVUS_API_KEY = process.env.TAVUS_API_KEY || 'b08e4c16d61747f995b612d7673dab64';
 
 // Generate a new video with a replica

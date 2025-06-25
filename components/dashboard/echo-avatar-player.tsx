@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, Volume2, VolumeX, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import axios from 'axios';
 
 interface EchoAvatarPlayerProps {
   replicaId?: string;
@@ -59,17 +58,24 @@ export function EchoAvatarPlayer({ replicaId, prompt, autoplay = false, classNam
       }
       
       // Generate video with the replica
-      const response = await axios.post('/api/tavus/video', {
-        replicaId: actualReplicaId,
-        script: text
-      }, {
+      const response = await fetch('/api/tavus/video', {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+          replicaId: actualReplicaId,
+          script: text
+        })
       });
       
-      const videoData = response.data;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate video');
+      }
+      
+      const videoData = await response.json();
       setVideoId(videoData.id);
       
       // If video is immediately ready (unlikely, but possible)
@@ -103,13 +109,17 @@ export function EchoAvatarPlayer({ replicaId, prompt, autoplay = false, classNam
         return;
       }
       
-      const response = await axios.get(`/api/tavus/video?id=${id}`, {
+      const response = await fetch(`/api/tavus/video?id=${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
-      const videoData = response.data;
+      if (!response.ok) {
+        throw new Error('Failed to check video status');
+      }
+      
+      const videoData = await response.json();
       
       // If the video is ready, set the URL
       if (videoData.status === 'ready' && videoData.url) {
