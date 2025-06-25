@@ -139,7 +139,9 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
         const videoURL = URL.createObjectURL(blob);
         previewRef.current.src = videoURL;
         previewRef.current.onloadedmetadata = () => {
-          previewRef.current?.play().catch(e => console.error("Preview playback failed", e));
+          previewRef.current?.play().catch(err => {
+            console.error('Error playing video:', err);
+          });
         };
       }
       

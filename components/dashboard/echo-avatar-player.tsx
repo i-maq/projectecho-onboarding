@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, Volume2, VolumeX, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,7 +22,7 @@ export function EchoAvatarPlayer({ replicaId, prompt, autoplay = false, classNam
   const [videoId, setVideoId] = useState<string | null>(null);
   const [statusCheckInterval, setStatusCheckInterval] = useState<NodeJS.Timeout | null>(null);
   
-  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // If a specific replica ID is provided, use it
   // Otherwise, get it from localStorage
