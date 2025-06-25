@@ -7,10 +7,9 @@ import { DynamicOrbIntro } from '../orb/dynamic-orb-intro';
 import { DatabaseSetupCheck } from './database-setup-check';
 import { PersonalDataStep } from './personal-data-step';
 import { CameraCaptureStep } from './camera-capture-step';
-import { VideoCaptureStep } from '../avatar/video-capture-step';
 import headphonesAnimation from '/public/wired-outline-1055-earbud-wireless-earphones-hover-pinch.json';
 
-type OnboardingStage = 'language' | 'soundCheck' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'videoCapture' | 'complete';
+type OnboardingStage = 'language' | 'soundCheck' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'complete';
 
 interface PersonalData {
   firstName: string;
@@ -23,7 +22,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const [stage, setStage] = useState<OnboardingStage>('language');
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
-  const [replicaId, setReplicaId] = useState<string | null>(null);
   const [clickPulse, setClickPulse] = useState<{ x: number, y: number, key: number } | null>(null);
   
   const musicRef = useRef<HTMLAudioElement | null>(null);
@@ -61,26 +59,16 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
 
   const handleCameraCaptureComplete = (photoData: string) => {
     setUserPhoto(photoData);
-    setStage('videoCapture');
-  };
-
-  const handleVideoCaptureComplete = (replicaId: string) => {
-    setReplicaId(replicaId);
     
     // Mark onboarding as complete
     localStorage.setItem('onboardingComplete', 'true');
-    localStorage.setItem('replicaId', replicaId);
     
-    // Complete the onboarding - all user data and replica are now saved
+    // Complete the onboarding - user data is now saved in Supabase
     onComplete();
   };
 
   const handleBackToPersonalData = () => {
     setStage('personalData');
-  };
-
-  const handleBackToCameraCapture = () => {
-    setStage('cameraCapture');
   };
 
   const handleBackToDatabaseCheck = () => {
@@ -207,23 +195,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
               personalData={personalData}
               onComplete={handleCameraCaptureComplete}
               onBack={handleBackToPersonalData}
-            />
-          </motion.div>
-        )}
-
-        {stage === 'videoCapture' && personalData && (
-          <motion.div 
-            key="videoCapture"
-            initial={{ opacity: 0, x: 100 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.5 }}
-            className="w-full h-full"
-          >
-            <VideoCaptureStep 
-              personalData={personalData}
-              onComplete={handleVideoCaptureComplete}
-              onBack={handleBackToCameraCapture}
             />
           </motion.div>
         )}
