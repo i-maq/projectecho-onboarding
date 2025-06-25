@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Video, RotateCcw, Check, AlertCircle, Loader2, Mic, MicOff, Play, Square, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import RecordRTC, { RecordRTCPromisesHandler } from 'recordrtc';
+import { RecordRTCPromisesHandler } from 'recordrtc';
 import axios from 'axios';
 
 interface VideoCaptureStepProps {
@@ -119,8 +119,8 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
       }, 30000);
       
       return () => clearInterval(intervalId);
-    } catch (err) {
-      console.error('Error starting recording:', err);
+    } catch (error) {
+      console.error('Error starting recording:', error);
       setError('Failed to start recording. Please try again.');
     }
   }, [isRecording]);

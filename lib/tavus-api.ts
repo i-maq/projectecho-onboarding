@@ -1,7 +1,7 @@
 import axios from 'axios';
 import FormData from 'form-data';
 
-const TAVUS_API_URL = 'https://api.tavus.io';
+const TAVUS_API_URL = process.env.TAVUS_API_URL || 'https://api.tavus.io';
 const TAVUS_API_KEY = process.env.TAVUS_API_KEY || 'b08e4c16d61747f995b612d7673dab64';
 
 // Initialize axios instance with Tavus API base URL and auth
