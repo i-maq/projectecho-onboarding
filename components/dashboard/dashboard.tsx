@@ -5,11 +5,13 @@ import { motion } from 'framer-motion';
 import { Sparkles, Send, Book, Calendar, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { EchoAvatarPlayer } from './echo-avatar-player';
 
 interface Echo {
   id: string;
   content: string;
   created_at: string;
+  video_url?: string;
 }
 
 const echoPrompts = [
@@ -30,6 +32,7 @@ export function Dashboard() {
   const [currentMemory, setCurrentMemory] = useState('');
   const [currentPrompt, setCurrentPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedEcho, setSelectedEcho] = useState<Echo | null>(null);
 
   useEffect(() => {
     fetchEchoes();
@@ -50,6 +53,11 @@ export function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         setEchoes(data);
+        
+        // If we have echoes, select the first one for the avatar to respond to
+        if (data.length > 0) {
+          setSelectedEcho(data[0]);
+        }
       }
     } catch (error) {
       console.error('Error fetching echoes:', error);
@@ -85,6 +93,7 @@ export function Dashboard() {
         const newEcho = await response.json();
         setEchoes([newEcho, ...echoes]);
         setCurrentMemory('');
+        setSelectedEcho(newEcho); // Select the newly created echo
         generateNewPrompt();
         toast.success('Memory saved!');
       } else {
@@ -131,6 +140,15 @@ export function Dashboard() {
                 <Sparkles className="h-5 w-5 text-purple-600 mr-2" />
                 Echo asks:
               </h2>
+              
+              {/* Echo Avatar Player */}
+              <div className="mb-6">
+                <EchoAvatarPlayer 
+                  prompt={selectedEcho?.content} 
+                  autoplay={true}
+                />
+              </div>
+              
               <div className="bg-purple-100 border border-purple-200 rounded-lg p-4 mb-6">
                 <p className="font-medium text-purple-800 text-body">{currentPrompt}</p>
               </div>
@@ -170,7 +188,8 @@ export function Dashboard() {
                     initial={{ opacity: 0, y: 10 }} 
                     animate={{ opacity: 1, y: 0 }} 
                     transition={{ delay: index * 0.1 }}
-                    className="bg-white/70 border border-gray-200 rounded-lg p-4"
+                    className={`bg-white/70 border rounded-lg p-4 cursor-pointer transition-all ${selectedEcho?.id === echo.id ? 'border-purple-400 shadow-md' : 'border-gray-200'}`}
+                    onClick={() => setSelectedEcho(echo)}
                   >
                     <p className="text-gray-700 leading-relaxed text-body">{echo.content}</p>
                     <p className="text-xs text-gray-500 mt-2 text-caption">
