@@ -178,8 +178,8 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
           </h2>
           
           <p className="text-gray-600 mb-8 text-body max-w-lg mx-auto">
-            {personalData?.firstName}, let's capture your likeness to create your Echo avatar. 
-            This will be stored securely in your personal database and used to generate your aged-up Echo.
+            {personalData?.firstName}, let's capture your likeness to create your Echo. 
+            This will be stored securely in your personal database and used to generate your Echo avatar.
           </p>
 
           {/* Camera Interface */}
