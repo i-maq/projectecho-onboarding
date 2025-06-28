@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { RotateCcw, Check, AlertCircle, Loader2, Camera } from 'lucide-react';
 import { toast } from 'sonner';
@@ -23,9 +23,18 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isComponentReady, setIsComponentReady] = useState(false);
 
   const startCamera = useCallback(async () => {
     console.log('Starting camera...');
+    
+    // Ensure video element is available
+    if (!videoRef.current) {
+      console.error('Video element not available');
+      setError('Video element not ready. Please try again in a moment.');
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -47,40 +56,41 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
       
       console.log('Camera access granted, stream:', stream);
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        
-        // Wait for the video to be ready and then play
-        videoRef.current.onloadedmetadata = async () => {
-          console.log('Video metadata loaded');
-          try {
-            if (videoRef.current) {
-              await videoRef.current.play();
-              console.log('Video playing successfully');
-              setIsCameraActive(true);
-              setIsLoading(false);
-            }
-          } catch (playError) {
-            console.error('Error playing video:', playError);
-            // Sometimes autoplay is blocked, but that's okay
+      // Double-check video element is still available
+      if (!videoRef.current) {
+        throw new Error('Video element became unavailable');
+      }
+
+      videoRef.current.srcObject = stream;
+      streamRef.current = stream;
+      
+      // Wait for the video to be ready and then play
+      videoRef.current.onloadedmetadata = async () => {
+        console.log('Video metadata loaded');
+        try {
+          if (videoRef.current) {
+            await videoRef.current.play();
+            console.log('Video playing successfully');
             setIsCameraActive(true);
             setIsLoading(false);
-            toast.info('Click the video area if camera preview doesn\'t appear');
           }
-        };
-
-        // Handle video errors
-        videoRef.current.onerror = (e) => {
-          console.error('Video element error:', e);
-          setError('Error loading camera feed');
+        } catch (playError) {
+          console.error('Error playing video:', playError);
+          // Sometimes autoplay is blocked, but that's okay
+          setIsCameraActive(true);
           setIsLoading(false);
-        };
+          toast.info('Click the video area if camera preview doesn\'t appear');
+        }
+      };
+
+      // Handle video errors
+      videoRef.current.onerror = (e) => {
+        console.error('Video element error:', e);
+        setError('Error loading camera feed');
+        setIsLoading(false);
+      };
         
-      } else {
-        throw new Error('Video element not available');
-      }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error accessing camera:', err);
       setIsLoading(false);
       
@@ -160,7 +170,10 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
 
   const retakePhoto = useCallback(() => {
     setCapturedPhoto(null);
-    startCamera();
+    // Add a small delay to ensure state is updated before starting camera
+    setTimeout(() => {
+      startCamera();
+    }, 100);
   }, [startCamera]);
 
   const savePhotoToDatabase = async (photoData: string): Promise<boolean> => {
@@ -228,13 +241,31 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
     }
   };
 
+  // Initialize component and ensure DOM is ready
+  useEffect(() => {
+    // Mark component as ready after a brief delay to ensure DOM is fully rendered
+    const timer = setTimeout(() => {
+      setIsComponentReady(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   // Cleanup camera when component unmounts
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       console.log('Component unmounting, cleaning up camera...');
       stopCamera();
     };
   }, [stopCamera]);
+
+  const handleStartCamera = () => {
+    if (!isComponentReady) {
+      toast.error('Please wait a moment and try again.');
+      return;
+    }
+    startCamera();
+  };
 
   return (
     <div className="w-full h-full flex items-center justify-center px-6 py-8">
@@ -305,14 +336,19 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
 
                 <div className="flex justify-center">
                   <button
-                    onClick={startCamera}
-                    disabled={isProcessing || isLoading}
+                    onClick={handleStartCamera}
+                    disabled={isProcessing || isLoading || !isComponentReady}
                     className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 py-3 disabled:opacity-50 flex flex-col items-center"
                   >
                     {isLoading ? (
                       <>
                         <Loader2 className="h-5 w-5 mb-1 animate-spin" />
                         Starting...
+                      </>
+                    ) : !isComponentReady ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mb-1 animate-spin" />
+                        Loading...
                       </>
                     ) : (
                       <>
