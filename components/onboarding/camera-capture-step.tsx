@@ -27,12 +27,28 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
 
   const startCamera = useCallback(async () => {
     console.log('Starting camera...');
+    console.log('videoRef.current:', videoRef.current);
+    console.log('isComponentReady:', isComponentReady);
     
     // Ensure video element is available
     if (!videoRef.current) {
       console.error('Video element not available');
-      setError('Video element not ready. Please try again in a moment.');
-      return;
+      console.log('Attempting to wait for video element...');
+      
+      // Try waiting a bit longer for the video element
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      while (!videoRef.current && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+        console.log(`Attempt ${attempts}: videoRef.current =`, videoRef.current);
+      }
+      
+      if (!videoRef.current) {
+        setError('Video element could not be initialized. Please refresh the page and try again.');
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -243,12 +259,22 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
 
   // Initialize component and ensure DOM is ready
   useEffect(() => {
-    // Mark component as ready after a brief delay to ensure DOM is fully rendered
-    const timer = setTimeout(() => {
-      setIsComponentReady(true);
-    }, 100);
+    console.log('Component mounted, videoRef.current:', videoRef.current);
+    
+    // Mark component as ready after ensuring video element exists
+    const checkVideoElement = () => {
+      console.log('Checking video element:', videoRef.current);
+      if (videoRef.current) {
+        console.log('Video element found, marking component as ready');
+        setIsComponentReady(true);
+      } else {
+        console.log('Video element not found, retrying...');
+        setTimeout(checkVideoElement, 100);
+      }
+    };
 
-    return () => clearTimeout(timer);
+    // Start checking after a brief initial delay
+    setTimeout(checkVideoElement, 200);
   }, []);
 
   // Cleanup camera when component unmounts
@@ -260,10 +286,21 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
   }, [stopCamera]);
 
   const handleStartCamera = () => {
+    console.log('handleStartCamera called');
+    console.log('isComponentReady:', isComponentReady);
+    console.log('videoRef.current:', videoRef.current);
+    
     if (!isComponentReady) {
       toast.error('Please wait a moment and try again.');
       return;
     }
+    
+    if (!videoRef.current) {
+      console.error('Video element still not available in handleStartCamera');
+      setError('Camera interface not ready. Please refresh the page.');
+      return;
+    }
+    
     startCamera();
   };
 
@@ -368,6 +405,7 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
                 className="space-y-6"
               >
                 <div className="relative">
+                  {/* Always render video element when camera should be active */}
                   <video
                     ref={videoRef}
                     autoPlay
@@ -409,6 +447,16 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
                 </div>
               </motion.div>
             )}
+
+            {/* Always render video element but hide it when not active */}
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              className="hidden"
+            />
+            <canvas ref={canvasRef} className="hidden" />
 
             {capturedPhoto && (
               <motion.div
