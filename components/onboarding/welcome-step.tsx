@@ -37,7 +37,7 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
          alt="Project Echo Logo"
          width={560}  // Increased from 400 to 560
          height={140} // Increased from 100 to 140
-         className="h-auto"
+         className="h-auto w-80 sm:w-auto"
          priority
        />
      </motion.div>
