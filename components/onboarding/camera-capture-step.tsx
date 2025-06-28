@@ -25,6 +25,28 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
   const [isLoading, setIsLoading] = useState(false);
   const [isComponentReady, setIsComponentReady] = useState(false);
 
+  const waitForVideoReady = (videoElement: HTMLVideoElement): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Video failed to initialize with valid dimensions'));
+      }, 10000); // 10 second timeout
+
+      const checkDimensions = () => {
+        if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+          clearTimeout(timeout);
+          console.log('Video dimensions ready:', videoElement.videoWidth, 'x', videoElement.videoHeight);
+          resolve();
+        } else {
+          // Keep checking every 100ms
+          setTimeout(checkDimensions, 100);
+        }
+      };
+
+      // Start checking immediately
+      checkDimensions();
+    });
+  };
+
   const startCamera = useCallback(async () => {
     console.log('Starting camera...');
     console.log('videoRef.current:', videoRef.current);
@@ -80,22 +102,40 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
       videoRef.current.srcObject = stream;
       streamRef.current = stream;
       
-      // Wait for the video to be ready and then play
+      // Wait for the video to be ready with valid dimensions
       videoRef.current.onloadedmetadata = async () => {
         console.log('Video metadata loaded');
         try {
           if (videoRef.current) {
             await videoRef.current.play();
-            console.log('Video playing successfully');
+            console.log('Video playing, waiting for valid dimensions...');
+            
+            // Wait for video to have valid dimensions before setting camera as active
+            await waitForVideoReady(videoRef.current);
+            
+            console.log('Video fully ready with valid dimensions');
             setIsCameraActive(true);
             setIsLoading(false);
           }
         } catch (playError) {
-          console.error('Error playing video:', playError);
-          // Sometimes autoplay is blocked, but that's okay
-          setIsCameraActive(true);
-          setIsLoading(false);
-          toast.info('Click the video area if camera preview doesn\'t appear');
+          console.error('Error playing video or waiting for dimensions:', playError);
+          
+          // Try to wait for dimensions even if autoplay failed
+          if (videoRef.current) {
+            try {
+              await waitForVideoReady(videoRef.current);
+              setIsCameraActive(true);
+              setIsLoading(false);
+              toast.info('Click the video area if camera preview doesn\'t appear');
+            } catch (dimensionError) {
+              console.error('Failed to get valid video dimensions:', dimensionError);
+              setError('Camera failed to initialize properly. Please try again.');
+              setIsLoading(false);
+            }
+          } else {
+            setError('Video element became unavailable during initialization');
+            setIsLoading(false);
+          }
         }
       };
 
