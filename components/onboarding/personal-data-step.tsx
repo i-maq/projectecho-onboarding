@@ -162,11 +162,11 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
           </motion.div>
 
           <h2 className="text-3xl font-extrabold mb-3 text-gray-800 text-title">
-            Let's Get to Know You
+            Personalize your Echo
           </h2>
           
           <p className="text-gray-600 mb-8 text-body">
-            Your Echo needs some basic information to create a personalized experience for you.
+            Your Echo needs some basic information to create your perfect experience
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
