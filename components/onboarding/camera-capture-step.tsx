@@ -209,9 +209,9 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
                 <button
                   onClick={startCamera}
                   disabled={isProcessing}
-                  className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 disabled:opacity-50"
+                  className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 py-3 disabled:opacity-50 flex flex-col items-center"
                 >
-                  <Camera className="h-5 w-5 mr-2" />
+                  <Camera className="h-5 w-5 mb-1" />
                   Start Camera
                 </button>
               </motion.div>
