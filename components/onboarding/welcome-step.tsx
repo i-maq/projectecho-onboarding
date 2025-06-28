@@ -12,24 +12,24 @@ interface WelcomeStepProps {
 export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
   return (
   <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-auto">
-  {/* Centered logo */}
+  {/* Centered logo - made larger */}
   <motion.div
     initial={{ scale: 0.8, opacity: 0 }}
     animate={{ scale: 1, opacity: 1 }}
     transition={{ duration: 0.5 }}
-    className="mb-8"
+    className="mb-12"
   >
     <Image 
       src="/projectechologo.png"
       alt="Project Echo Logo"
-      width={280} 
-      height={70}
+      width={400}  // Increased from 280
+      height={100} // Increased from 70
       className="h-auto"
       priority
     />
   </motion.div>
   
-  {/* Button directly below logo */}
+  {/* Button directly below logo - made larger */}
   <motion.div
     initial={{ y: 20, opacity: 0 }}
     animate={{ y: 0, opacity: 1 }}
@@ -37,7 +37,7 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
   >
     <button 
       onClick={onNext}
-      className="neumorphic-button-light text-button"
+      className="neumorphic-button-light text-button text-lg px-8 py-4"
     >
       Find My Echo
     </button>
