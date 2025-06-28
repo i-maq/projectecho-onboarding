@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 interface WelcomeStepProps {
   onNext: () => void;
@@ -11,13 +11,17 @@ interface WelcomeStepProps {
 
 export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
   const soundRef = useRef<HTMLAudioElement | null>(null);
+  const [clickPulse, setClickPulse] = useState<{ x: number, y: number, key: number } | null>(null);
 
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    // Set click position for visual effect
+    setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
+    
     // Play sound
     soundRef.current?.play().catch(e => console.error("Audio play failed:", e));
     
     // Call the onNext function
-    onNext();
+    setTimeout(() => onNext(), 300);
   };
   
   return (
@@ -55,6 +59,9 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
           Find My Echo
         </button>
       </motion.div>
+      
+      {/* Click pulse animation */}
+      {clickPulse && <div className="click-pulse" style={{ left: clickPulse.x, top: clickPulse.y }} />}
     </div>
   );
 }
