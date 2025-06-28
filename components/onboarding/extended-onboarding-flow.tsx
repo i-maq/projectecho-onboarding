@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react';
 import { DynamicOrbIntro } from '../orb/dynamic-orb-intro';
@@ -8,10 +8,9 @@ import { DatabaseSetupCheck } from './database-setup-check';
 import { PersonalDataStep } from './personal-data-step';
 import { CameraCaptureStep } from './camera-capture-step';
 import { VideoCaptureStep } from '../avatar/video-capture-step';
-import { WelcomeStep } from './welcome-step';
 import headphonesAnimation from '/public/wired-outline-1055-earbud-wireless-earphones-hover-pinch.json';
 
-type OnboardingStage = 'soundCheck' | 'welcome' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'videoCapture' | 'complete';
+type OnboardingStage = 'language' | 'soundCheck' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'videoCapture' | 'complete';
 
 interface PersonalData {
   firstName: string;
@@ -21,7 +20,7 @@ interface PersonalData {
 }
 
 export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void }) {
-  const [stage, setStage] = useState<OnboardingStage>('soundCheck');
+  const [stage, setStage] = useState<OnboardingStage>('language');
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [replicaId, setReplicaId] = useState<string | null>(null);
@@ -30,27 +29,21 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const musicRef = useRef<HTMLAudioElement | null>(null);
   const soundRef = useRef<HTMLAudioElement | null>(null);
 
-  // Start background music as soon as component mounts
-  useEffect(() => {
-    if (musicRef.current) {
+  const handleLanguageSelect = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (musicRef.current?.paused) {
       musicRef.current.loop = true;
       musicRef.current.volume = 0.1;
-      musicRef.current.play().catch(e => console.error("Audio play failed:", e));
+      musicRef.current.play().catch(e => console.error("Audio play failed"));
     }
-  }, []);
+    soundRef.current?.play();
+    setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
+    setTimeout(() => setStage('soundCheck'), 700);
+  };
 
   const handleSoundCheckNext = (event: React.MouseEvent<HTMLButtonElement>) => {
     soundRef.current?.play();
     setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
-    setTimeout(() => setStage('welcome'), 300);
-  };
-  
-  const handleWelcomeNext = () => {
-    setStage('orbIntro');
-  };
-  
-  const handleBackToSoundCheck = () => {
-    setStage('soundCheck');
+    setTimeout(() => setStage('orbIntro'), 300);
   };
 
   const handleOrbComplete = () => {
@@ -78,7 +71,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     localStorage.setItem('onboardingComplete', 'true');
     localStorage.setItem('replicaId', replicaId);
     
-    // Complete the onboarding
+    // Complete the onboarding - all user data and replica are now saved
     onComplete();
   };
 
@@ -100,6 +93,27 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
       <audio ref={soundRef} src="/tap-sound.mp3" preload="auto" />
 
       <AnimatePresence mode="wait">
+        {stage === 'language' && (
+          <motion.div 
+            key="language" 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-md mx-auto"
+          >
+            <div className="glass-panel-light text-center">
+              <h1 className="text-3xl font-extrabold mb-2 text-gray-800 text-title">Welcome</h1>
+              <p className="text-gray-600 mb-8 text-body">Please select your language.</p>
+              <div className="space-y-4">
+                <button onClick={handleLanguageSelect} className="w-full neumorphic-button-light h-12 text-button">English</button>
+                <button onClick={handleLanguageSelect} className="w-full neumorphic-button-light h-12 text-button">Español</button>
+                <button onClick={handleLanguageSelect} className="w-full neumorphic-button-light h-12 text-button">Français</button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {stage === 'soundCheck' && (
           <motion.div 
             key="soundCheck" 
@@ -110,7 +124,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
             className="w-full max-w-lg mx-auto"
           >
             <div className="glass-panel-light text-center">
-              {/* Animated Headphone Icon */}
               <motion.div 
                 className="flex justify-center mb-6"
                 initial={{ opacity: 0, y: -20 }}
@@ -136,22 +149,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
                 Continue
               </button>
             </div>
-          </motion.div>
-        )}
-
-        {stage === 'welcome' && (
-          <motion.div 
-            key="welcome"
-            initial={{ opacity: 0, x: 100 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.5 }}
-            className="w-full h-full"
-          >
-            <WelcomeStep 
-              onNext={handleWelcomeNext}
-              onBack={handleBackToSoundCheck}
-            />
           </motion.div>
         )}
 

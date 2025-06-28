@@ -7,10 +7,9 @@ import { Sparkles, Heart, Shield } from 'lucide-react';
 
 interface WelcomeStepProps {
   onNext: () => void;
-  onBack: () => void;
 }
 
-export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
+export function WelcomeStep({ onNext }: WelcomeStepProps) {
   return (
     <div className="text-center space-y-8">
       <motion.div
@@ -82,20 +81,13 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.6, duration: 0.5 }}
-        className="flex justify-between max-w-lg mx-auto"
       >
-        <button
-          onClick={onBack}
-          className="neumorphic-button-light text-button px-8 py-3 text-lg"
-        >
-          Back
-        </button>
-        <button
+        <Button 
           onClick={onNext}
-          className="neumorphic-button-light text-button px-8 py-3 text-lg"
+          className="echo-button echo-button-primary px-8 py-3 text-lg"
         >
-          Find Your Echo
-        </button>
+          Let's Get Started
+        </Button>
       </motion.div>
     </div>
   );
