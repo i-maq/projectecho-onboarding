@@ -20,7 +20,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
       >
         <div className="mx-auto mb-6 flex justify-center">
           <Image 
-            src="/project-echo-logo.svg"
+            src="/projectechologo.png"
             alt="Project Echo Logo"
             width={320}
             height={120}
