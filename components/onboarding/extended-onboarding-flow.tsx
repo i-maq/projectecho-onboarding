@@ -146,7 +146,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.5 }}
-            className="w-full h-full"
+            className="w-full flex flex-col overflow-y-auto"
           >
             <WelcomeStep
               onNext={handleWelcomeNext}
@@ -162,7 +162,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full h-full"
+            className="w-full"
           >
             <DynamicOrbIntro onAdvance={handleOrbComplete} />
           </motion.div>
@@ -175,7 +175,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.5 }}
-            className="w-full h-full"
+            className="w-full flex flex-col overflow-y-auto"
           >
             <DatabaseSetupCheck onContinue={handleDatabaseReady} />
           </motion.div>
@@ -188,7 +188,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.5 }}
-            className="w-full h-full"
+            className="w-full flex flex-col overflow-y-auto"
           >
             <PersonalDataStep
               onComplete={handlePersonalDataComplete}
@@ -204,7 +204,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.5 }}
-            className="w-full h-full"
+            className="w-full flex flex-col overflow-y-auto"
           >
             <CameraCaptureStep
               personalData={personalData}
@@ -221,7 +221,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.5 }}
-            className="w-full h-full"
+            className="w-full flex flex-col overflow-y-auto"
           >
             <VideoCaptureStep
               personalData={personalData}
