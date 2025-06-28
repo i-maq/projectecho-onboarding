@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useRef } from 'react';
 
 interface WelcomeStepProps {
   onNext: () => void;
@@ -9,8 +10,21 @@ interface WelcomeStepProps {
 }
 
 export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
+  const soundRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleClick = () => {
+    // Play sound
+    soundRef.current?.play().catch(e => console.error("Audio play failed:", e));
+    
+    // Call the onNext function
+    onNext();
+  };
+  
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-auto">
+      {/* Hidden audio element for button click sound */}
+      <audio ref={soundRef} src="/tap-sound.mp3" preload="auto" />
+      
       {/* Centered logo - made larger */}
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -35,7 +49,7 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
         transition={{ delay: 0.4, duration: 0.5 }}
       >
         <button 
-          onClick={onNext}
+          onClick={handleClick}
           className="neumorphic-button-light text-button"
         >
           Find My Echo
