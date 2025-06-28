@@ -2,10 +2,8 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { RotateCcw, Check, AlertCircle, Loader2, Camera } from 'lucide-react';
+import { Camera, RotateCcw, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import Lottie from 'lottie-react';
-import faceIdAnimation from '/public/wired-outline-1376-face-id-hover-scanning.json';
 
 interface CameraCaptureStepProps {
   personalData: any;
@@ -214,12 +212,7 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
                     disabled={isProcessing}
                     className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 py-3 disabled:opacity-50 flex flex-col items-center"
                   >
-                    <div className="w-10 h-10 mb-1">
-                      <Lottie
-                        animationData={faceIdAnimation}
-                        loop={true}
-                      />
-                    </div>
+                    <Camera className="h-5 w-5 mb-1" />
                     Start Camera
                   </button>
                 </div>
