@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Sparkles, Loader2 } from 'lucide-react';
+import { Calendar, User, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Lottie from 'lottie-react';
 import personalDataAnimation from '/public/personal-data-icon.json';
@@ -149,21 +151,23 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
         className="w-full max-w-md mx-auto"
       >
         <div className="glass-panel-light text-center">
-          {/* Just the Lottie animation without background container */}
+          {/* Lottie animation with gradient background container */}
           <motion.div 
             className="flex justify-center mb-6"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <Lottie 
-              animationData={personalDataAnimation}
-              loop={true}
-              style={{
-                width: '80px',
-                height: '80px',
-              }}
-            />
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
+              <Lottie 
+                animationData={personalDataAnimation}
+                loop={true}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                }}
+              />
+            </div>
           </motion.div>
 
           <h2 className="text-3xl font-extrabold mb-3 text-gray-800 text-title">
