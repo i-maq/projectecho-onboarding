@@ -22,7 +22,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
           <Image 
             src="/projectechologo.png"
             alt="Project Echo Logo"
-            width={320}
+            width={480}
             height={120}
             className="h-auto"
           />
