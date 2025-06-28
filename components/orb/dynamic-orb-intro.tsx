@@ -53,7 +53,6 @@ const captionSections = [
 export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const tapAudioRef = useRef<HTMLAudioElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
@@ -665,12 +664,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     setIsTapped(true);
     setTimeout(() => setIsTapped(false), 300);
     
-    // Tap sound effect
-    if (tapAudioRef.current) {
-      tapAudioRef.current.currentTime = 0;
-      tapAudioRef.current.play();
-    }
-    
     // Advance or finish
     if (step < captionSections.length - 1) {
       setStep(step + 1);
@@ -857,7 +850,6 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
 
       {/* Audio elements */}
       <audio ref={audioRef} preload="auto" />
-      <audio ref={tapAudioRef} src="/tap-sound.mp3" preload="auto" />
 
       {/* CLEAN Static Caption Container */}
       {currentCaption && (
