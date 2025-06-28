@@ -4,13 +4,13 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Sparkles, Heart, Shield } from 'lucide-react';
+import Image from 'next/image';
 
 interface WelcomeStepProps {
   onNext: () => void;
-  onBack: () => void; // Add onBack prop
 }
 
-export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructure onBack
+export function WelcomeStep({ onNext }: WelcomeStepProps) {
   return (
     <div className="text-center space-y-8">
       <motion.div
@@ -18,14 +18,17 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructu
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="mx-auto w-24 h-24 bg-gradient-to-br from-primary to-accent rounded-3xl flex items-center justify-center mb-6">
-          <span className="text-4xl font-bold text-primary-foreground">E</span>
+        <div className="mx-auto mb-6 flex justify-center">
+          <Image 
+            src="/project-echo-logo.svg"
+            alt="Project Echo Logo"
+            width={320}
+            height={120}
+            className="h-auto"
+          />
         </div>
-        <h1 className="text-4xl font-bold text-gradient mb-4">
-          Welcome to Echo
-        </h1>
         <p className="text-xl text-muted-foreground max-w-md mx-auto">
-          Your personal AI biographer for capturing and cherishing life's precious memories
+          Your personal AI companion for capturing and cherishing life's precious memories
         </p>
       </motion.div>
 
@@ -41,9 +44,9 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructu
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
             <div className="text-left">
-              <h3 className="font-semibold mb-2">AI-Powered Memory Journaling</h3>
+              <h3 className="font-semibold mb-2">AI-Powered Memory Prompts</h3>
               <p className="text-sm text-muted-foreground">
-                Echo helps you discover and record memories so you never forget.
+                Echo helps you discover and record memories you might have forgotten
               </p>
             </div>
           </CardContent>
@@ -57,7 +60,7 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructu
             <div className="text-left">
               <h3 className="font-semibold mb-2">Personal & Meaningful</h3>
               <p className="text-sm text-muted-foreground">
-                Focus on what matters most to you - your experiences, feelings, and growth.
+                Focus on what matters most to you - your experiences, feelings, and growth
               </p>
             </div>
           </CardContent>
@@ -71,7 +74,7 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructu
             <div className="text-left">
               <h3 className="font-semibold mb-2">Private & Secure</h3>
               <p className="text-sm text-muted-foreground">
-                Your memories are yours alone, stored securely.
+                Your memories are yours alone - no sharing, no social features, just you and Echo
               </p>
             </div>
           </CardContent>
@@ -82,20 +85,13 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructu
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.6, duration: 0.5 }}
-        className="flex justify-between max-w-lg mx-auto" // Add flex and justify-between for buttons
       >
-        <button
-          onClick={onBack} // Use onBack prop
-          className="neumorphic-button-light text-button px-8 py-3 text-lg" // Apply existing button styles
-        >
-          Back
-        </button>
-        <button
+        <Button 
           onClick={onNext}
-          className="neumorphic-button-light text-button px-8 py-3 text-lg" // Apply existing button styles
+          className="echo-button echo-button-primary px-8 py-3 text-lg"
         >
-          Find Your Echo
-        </button>
+          Let's Get Started
+        </Button>
       </motion.div>
     </div>
   );
