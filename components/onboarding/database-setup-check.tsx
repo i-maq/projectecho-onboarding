@@ -85,14 +85,14 @@ export function DatabaseSetupCheck({ onContinue }: DatabaseSetupCheckProps) {
           </motion.div>
 
           <h2 className="text-3xl font-extrabold mb-3 text-gray-800 text-title">
-            {connectionStatus === 'checking' && 'Connecting to Database'}
-            {connectionStatus === 'success' && 'Database Connected!'}
+            {connectionStatus === 'checking' && 'Connecting to Your Journal'}
+            {connectionStatus === 'success' && 'Connected Securely!'}
             {connectionStatus === 'error' && 'Connection Failed'}
           </h2>
           
           <p className="text-gray-600 mb-8 text-body">
-            {connectionStatus === 'checking' && 'Setting up your personal data storage...'}
-            {connectionStatus === 'success' && 'Your secure database connection is ready.'}
+            {connectionStatus === 'checking' && 'Setting up your private journal storage...'}
+            {connectionStatus === 'success' && 'Your secure journal database is ready.'}
             {connectionStatus === 'error' && 'Unable to connect to your database.'}
           </p>
 
