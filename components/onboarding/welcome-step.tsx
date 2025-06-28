@@ -90,7 +90,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
           onClick={onNext}
           className="echo-button echo-button-primary px-8 py-3 text-lg"
         >
-          Let's Get Started
+          Find My Echo
         </Button>
       </motion.div>
     </div>
