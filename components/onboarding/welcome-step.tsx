@@ -12,7 +12,7 @@ interface WelcomeStepProps {
 
 export function WelcomeStep({ onNext }: WelcomeStepProps) {
   return (
-    <div className="text-center space-y-8">
+    <div className="glass-panel-light max-w-2xl mx-auto p-8 text-center space-y-8">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -36,7 +36,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3, duration: 0.5 }}
-        className="grid gap-4 max-w-2xl mx-auto"
+        className="grid gap-4"
       >
         <Card className="card-glow">
           <CardContent className="p-6 flex items-start space-x-4">
