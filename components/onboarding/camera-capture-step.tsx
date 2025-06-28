@@ -2,8 +2,10 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, RotateCcw, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { RotateCcw, Check, AlertCircle, Loader2, Camera } from 'lucide-react';
 import { toast } from 'sonner';
+import Lottie from 'lottie-react';
+import faceIdAnimation from '/public/wired-outline-1376-face-id-hover-scanning.json';
 
 interface CameraCaptureStepProps {
   personalData: any;
@@ -169,7 +171,11 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Camera className="h-10 w-10 text-white" />
+              <Lottie
+                animationData={faceIdAnimation}
+                loop={true}
+                style={{ width: '100%', height: '100%' }}
+              />
             </div>
           </motion.div>
 
