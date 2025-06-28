@@ -22,10 +22,21 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const startCamera = useCallback(async () => {
+    console.log('Starting camera...');
+    setIsLoading(true);
+    
     try {
       setError(null);
+      
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera API not supported in this browser');
+      }
+
+      console.log('Requesting camera access...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           width: { ideal: 640 },
@@ -34,44 +45,102 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
         } 
       });
       
+      console.log('Camera access granted, stream:', stream);
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         
-        // Explicitly call play() to start the video stream
-        try {
-          await videoRef.current.play();
-          console.log('Camera stream started successfully');
-        } catch (playError) {
-          console.error('Error auto-playing camera stream:', playError);
-          // This error is non-fatal, as user may just need to interact with the page first
-          toast.info('Click the video area if camera preview doesn\'t appear');
-        }
+        // Wait for the video to be ready and then play
+        videoRef.current.onloadedmetadata = async () => {
+          console.log('Video metadata loaded');
+          try {
+            if (videoRef.current) {
+              await videoRef.current.play();
+              console.log('Video playing successfully');
+              setIsCameraActive(true);
+              setIsLoading(false);
+            }
+          } catch (playError) {
+            console.error('Error playing video:', playError);
+            // Sometimes autoplay is blocked, but that's okay
+            setIsCameraActive(true);
+            setIsLoading(false);
+            toast.info('Click the video area if camera preview doesn\'t appear');
+          }
+        };
+
+        // Handle video errors
+        videoRef.current.onerror = (e) => {
+          console.error('Video element error:', e);
+          setError('Error loading camera feed');
+          setIsLoading(false);
+        };
         
-        setIsCameraActive(true);
+      } else {
+        throw new Error('Video element not available');
       }
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError('Unable to access camera. Please ensure you have granted camera permissions.');
+      setIsLoading(false);
+      
+      let errorMessage = 'Unable to access camera. ';
+      
+      if (err.name === 'NotAllowedError') {
+        errorMessage += 'Please allow camera permissions and try again.';
+      } else if (err.name === 'NotFoundError') {
+        errorMessage += 'No camera found on this device.';
+      } else if (err.name === 'NotSupportedError') {
+        errorMessage += 'Camera not supported in this browser.';
+      } else if (err.name === 'NotReadableError') {
+        errorMessage += 'Camera is already in use by another application.';
+      } else {
+        errorMessage += err.message || 'Unknown error occurred.';
+      }
+      
+      setError(errorMessage);
     }
   }, []);
 
   const stopCamera = useCallback(() => {
+    console.log('Stopping camera...');
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(track => {
+        console.log('Stopping track:', track);
+        track.stop();
+      });
       streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
     }
     setIsCameraActive(false);
   }, []);
 
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return;
+    console.log('Capturing photo...');
+    if (!videoRef.current || !canvasRef.current) {
+      console.error('Video or canvas ref not available');
+      return;
+    }
 
     const canvas = canvasRef.current;
     const video = videoRef.current;
     const context = canvas.getContext('2d');
 
-    if (!context) return;
+    if (!context) {
+      console.error('Canvas context not available');
+      return;
+    }
+
+    // Check if video has valid dimensions
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      console.error('Video dimensions are 0');
+      toast.error('Camera not ready. Please wait and try again.');
+      return;
+    }
+
+    console.log('Video dimensions:', video.videoWidth, 'x', video.videoHeight);
 
     // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
@@ -82,6 +151,7 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
 
     // Convert to base64
     const photoData = canvas.toDataURL('image/jpeg', 0.8);
+    console.log('Photo captured, data length:', photoData.length);
     setCapturedPhoto(photoData);
     
     // Stop the camera
@@ -161,6 +231,7 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
   // Cleanup camera when component unmounts
   React.useEffect(() => {
     return () => {
+      console.log('Component unmounting, cleaning up camera...');
       stopCamera();
     };
   }, [stopCamera]);
@@ -209,8 +280,17 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
               >
                 <div className="w-80 h-60 bg-gray-200 rounded-2xl flex items-center justify-center mx-auto border-2 border-dashed border-gray-300">
                   <div className="text-center">
-                    <Camera className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-body">Camera preview will appear here</p>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-16 w-16 text-gray-400 mx-auto mb-4 animate-spin" />
+                        <p className="text-gray-500 text-body">Starting camera...</p>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500 text-body">Camera preview will appear here</p>
+                      </>
+                    )}
                   </div>
                 </div>
                 
@@ -226,11 +306,20 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
                 <div className="flex justify-center">
                   <button
                     onClick={startCamera}
-                    disabled={isProcessing}
+                    disabled={isProcessing || isLoading}
                     className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 py-3 disabled:opacity-50 flex flex-col items-center"
                   >
-                    <Camera className="h-5 w-5 mb-1" />
-                    Start Camera
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mb-1 animate-spin" />
+                        Starting...
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="h-5 w-5 mb-1" />
+                        Start Camera
+                      </>
+                    )}
                   </button>
                 </div>
               </motion.div>
@@ -248,9 +337,20 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
                     autoPlay
                     muted
                     playsInline
-                    className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover"
+                    onClick={() => {
+                      // Allow manual play if autoplay failed
+                      if (videoRef.current && videoRef.current.paused) {
+                        videoRef.current.play().catch(console.error);
+                      }
+                    }}
+                    className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover cursor-pointer"
                   />
                   <canvas ref={canvasRef} className="hidden" />
+                  
+                  {/* Overlay for debugging */}
+                  <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                    Camera Active
+                  </div>
                 </div>
 
                 <div className="flex gap-4 justify-center">
