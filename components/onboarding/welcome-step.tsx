@@ -28,7 +28,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
           />
         </div>
         <p className="text-xl text-muted-foreground max-w-md mx-auto">
-          Your personal AI companion for capturing and cherishing life's precious memories
+          Your personal AI biographer for capturing and cherishing life's precious memories
         </p>
       </motion.div>
 
@@ -46,7 +46,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             <div className="text-left">
               <h3 className="font-semibold mb-2">AI-Powered Memory Prompts</h3>
               <p className="text-sm text-muted-foreground">
-                Echo helps you discover and record memories you might have forgotten
+                Echo helps you discover and record memories you don't want to forget
               </p>
             </div>
           </CardContent>
@@ -74,7 +74,7 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
             <div className="text-left">
               <h3 className="font-semibold mb-2">Private & Secure</h3>
               <p className="text-sm text-muted-foreground">
-                Your memories are yours alone - no sharing, no social features, just you and Echo
+                Your memories are yours alone - your Echo's memory is secure.
               </p>
             </div>
           </CardContent>
