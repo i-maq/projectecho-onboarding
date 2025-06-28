@@ -25,7 +25,7 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructu
           Welcome to Echo
         </h1>
         <p className="text-xl text-muted-foreground max-w-md mx-auto">
-          Your personal AI companion for capturing and cherishing life's precious memories
+          Your personal AI biographer for capturing and cherishing life's precious memories
         </p>
       </motion.div>
 
@@ -41,9 +41,9 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructu
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
             <div className="text-left">
-              <h3 className="font-semibold mb-2">AI-Powered Memory Prompts</h3>
+              <h3 className="font-semibold mb-2">AI-Powered Memory Journaling</h3>
               <p className="text-sm text-muted-foreground">
-                Echo helps you discover and record memories you might have forgotten
+                Echo helps you discover and record memories so you never forget.
               </p>
             </div>
           </CardContent>
@@ -57,7 +57,7 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructu
             <div className="text-left">
               <h3 className="font-semibold mb-2">Personal & Meaningful</h3>
               <p className="text-sm text-muted-foreground">
-                Focus on what matters most to you - your experiences, feelings, and growth
+                Focus on what matters most to you - your experiences, feelings, and growth.
               </p>
             </div>
           </CardContent>
@@ -71,7 +71,7 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) { // Destructu
             <div className="text-left">
               <h3 className="font-semibold mb-2">Private & Secure</h3>
               <p className="text-sm text-muted-foreground">
-                Your memories are yours alone - no sharing, no social features, just you and Echo
+                Your memories are yours alone, stored securely.
               </p>
             </div>
           </CardContent>
