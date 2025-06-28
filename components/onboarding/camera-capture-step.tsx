@@ -37,6 +37,17 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
+        
+        // Explicitly call play() to start the video stream
+        try {
+          await videoRef.current.play();
+          console.log('Camera stream started successfully');
+        } catch (playError) {
+          console.error('Error auto-playing camera stream:', playError);
+          // This error is non-fatal, as user may just need to interact with the page first
+          toast.info('Click the video area if camera preview doesn\'t appear');
+        }
+        
         setIsCameraActive(true);
       }
     } catch (err) {
