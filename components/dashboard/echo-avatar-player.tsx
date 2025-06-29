@@ -20,18 +20,24 @@ export function EchoAvatarPlayer({ replicaId, prompt, autoplay = false, classNam
   const [error, setError] = useState<string | null>(null);
   const [videoId, setVideoId] = useState<string | null>(null);
   const [statusCheckInterval, setStatusCheckInterval] = useState<NodeJS.Timeout | null>(null);
+  const [hasAvatar, setHasAvatar] = useState<boolean>(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // If a specific replica ID is provided, use it
   // Otherwise, get it from localStorage
   useEffect(() => {
-    if (!replicaId) {
+    const checkForAvatar = async () => {
       const storedReplicaId = localStorage.getItem('replicaId');
-      if (!storedReplicaId) {
-        setError('No Echo avatar found. Please complete the onboarding process.');
+      const avatarExists = Boolean(replicaId || storedReplicaId);
+      setHasAvatar(avatarExists);
+      
+      if (!avatarExists) {
+        setError('No Echo avatar found. You can create one in your profile settings.');
       }
-    }
+    };
+    
+    checkForAvatar();
   }, [replicaId]);
 
   // Function to generate video
@@ -39,6 +45,17 @@ export function EchoAvatarPlayer({ replicaId, prompt, autoplay = false, classNam
     setIsLoading(true);
     setError(null);
     setVideoUrl(null);
+    
+    // If no avatar exists, use a text-only response
+    if (!hasAvatar) {
+      // Simulate a loading delay
+      setTimeout(() => {
+        setIsLoading(false);
+        // Instead of showing an error, display a message about missing avatar
+        setError('No avatar available. Your Echo is still collecting your memories!');
+      }, 1500);
+      return;
+    }
     
     try {
       const token = localStorage.getItem('token');
@@ -52,7 +69,7 @@ export function EchoAvatarPlayer({ replicaId, prompt, autoplay = false, classNam
       const actualReplicaId = replicaId || localStorage.getItem('replicaId');
       
       if (!actualReplicaId) {
-        setError('No Echo avatar found. Please complete the onboarding process.');
+        setError('No Echo avatar found. You can create one in your profile settings.');
         setIsLoading(false);
         return;
       }
@@ -207,15 +224,17 @@ export function EchoAvatarPlayer({ replicaId, prompt, autoplay = false, classNam
             <p className="text-gray-600 font-medium">Creating your Echo's response...</p>
           </div>
         ) : error ? (
-          // Error state
+          // Error state or No Avatar state
           <div className="text-center px-4">
-            <p className="text-red-500 mb-2">{error}</p>
-            <button 
-              onClick={() => prompt && generateVideo(prompt)} 
-              className="text-sm text-purple-600 hover:text-purple-800 underline"
-            >
-              Try Again
-            </button>
+            <p className={`${!hasAvatar ? "text-gray-600" : "text-red-500"} mb-2`}>{error}</p>
+            {hasAvatar && (
+              <button 
+                onClick={() => prompt && generateVideo(prompt)} 
+                className="text-sm text-purple-600 hover:text-purple-800 underline"
+              >
+                Try Again
+              </button>
+            )}
           </div>
         ) : videoUrl ? (
           // Video player
@@ -263,6 +282,9 @@ export function EchoAvatarPlayer({ replicaId, prompt, autoplay = false, classNam
           // Initial state
           <div className="text-center">
             <p className="text-gray-500">Your Echo will respond here</p>
+            {!hasAvatar && (
+              <p className="text-sm text-gray-400 mt-2">No avatar found. Responses will be text-only.</p>
+            )}
           </div>
         )}
       </div>

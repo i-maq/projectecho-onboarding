@@ -9,6 +9,7 @@ interface VideoCaptureStepProps {
   personalData: any;
   onComplete: (replicaId: string) => void;
   onBack: () => void;
+  onSkip?: () => void; // Optional prop for skipping this step
 }
 
 // Script prompts from Tavus recommendations
@@ -20,7 +21,7 @@ const scriptPrompts = [
   "I find that journaling helps me remember important moments in my life."
 ];
 
-export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCaptureStepProps) {
+export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: VideoCaptureStepProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -335,7 +336,7 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
         transition={{ duration: 0.6 }}
         className="w-full max-w-2xl mx-auto"
       >
-        <div className="glass-panel-light">
+        <div className="glass-panel-light text-center">
           {/* Header */}
           <motion.div 
             className="text-center mb-6"
@@ -581,7 +582,7 @@ export function VideoCaptureStep({ personalData, onComplete, onBack }: VideoCapt
           <div className="flex justify-between pt-8">
             <button
               onClick={onBack}
-              disabled={isProcessing || isRecording || (replicaId && replicaStatus !== 'ready')}
+              disabled={isProcessing || isRecording || (replicaId !== null && replicaStatus !== 'ready')}
               className="neumorphic-button-light text-button px-6 disabled:opacity-50"
             >
               Back

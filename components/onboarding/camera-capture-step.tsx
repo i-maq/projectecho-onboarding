@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { RotateCcw, Check, AlertCircle, Loader2, Camera } from 'lucide-react';
+import { RotateCcw, Check, AlertCircle, Loader2, Camera, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Lottie from 'lottie-react';
 import faceIdAnimation from '/public/wired-outline-1376-face-id-hover-scanning.json';
@@ -11,9 +11,10 @@ interface CameraCaptureStepProps {
   personalData: any;
   onComplete: (photoData: string) => void;
   onBack: () => void;
+  onSkip: () => void; // New prop for skipping this step
 }
 
-export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCaptureStepProps) {
+export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: CameraCaptureStepProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -552,13 +553,24 @@ export function CameraCaptureStep({ personalData, onComplete, onBack }: CameraCa
 
           {/* Navigation */}
           <div className="flex justify-between pt-8">
-            <button
-              onClick={onBack}
-              disabled={isProcessing}
-              className="neumorphic-button-light text-button px-6 disabled:opacity-50"
-            >
-              Back
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={onBack}
+                disabled={isProcessing}
+                className="neumorphic-button-light text-button px-6 disabled:opacity-50"
+              >
+                Back
+              </button>
+              
+              {/* Skip button */}
+              <button
+                onClick={onSkip}
+                disabled={isProcessing}
+                className="neumorphic-button-light bg-gray-600 text-white shadow-lg hover:bg-gray-700 text-button px-6 disabled:opacity-50"
+              >
+                Skip for now <ArrowRight className="h-4 w-4 ml-2 inline" />
+              </button>
+            </div>
             
             <div className="text-sm text-gray-500 text-caption self-center">
               Step 2 of 2

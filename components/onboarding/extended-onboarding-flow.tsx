@@ -6,11 +6,13 @@ import Lottie from 'lottie-react';
 import { DynamicOrbIntro } from '../orb/dynamic-orb-intro';
 import { DatabaseSetupCheck } from './database-setup-check';
 import { PersonalDataStep } from './personal-data-step';
+import { CameraCaptureStep } from './camera-capture-step';
 import { VideoCaptureStep } from '../avatar/video-capture-step';
-import { WelcomeStep } from './welcome-step';
+import { WelcomeStep } from './welcome-step'; 
 import headphonesAnimation from '/public/wired-outline-1055-earbud-wireless-earphones-hover-pinch.json';
+import { toast } from 'sonner';
 
-type OnboardingStage = 'soundCheck' | 'welcome' | 'orbIntro' | 'dbCheck' | 'personalData' | 'videoCapture' | 'complete';
+type OnboardingStage = 'soundCheck' | 'welcome' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'videoCapture' | 'complete';
 
 interface PersonalData {
   firstName: string;
@@ -22,6 +24,7 @@ interface PersonalData {
 export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [stage, setStage] = useState<OnboardingStage>('soundCheck');
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [replicaId, setReplicaId] = useState<string | null>(null);
   const [clickPulse, setClickPulse] = useState<{ x: number, y: number, key: number } | null>(null);
   
@@ -35,16 +38,16 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
       musicRef.current.volume = 0.1;
       musicRef.current.play().catch(e => console.error("Audio play failed:", e));
     }
-  }, []);
+  }, []); // Empty dependency array means it runs once on mount
 
   const handleSoundCheckNext = (event: React.MouseEvent<HTMLButtonElement>) => {
     soundRef.current?.play();
     setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
-    setTimeout(() => setStage('welcome'), 300);
+    setTimeout(() => setStage('welcome'), 300); // Transition to welcome
   };
 
   const handleWelcomeNext = () => {
-    setStage('orbIntro');
+    setStage('orbIntro'); // Transition from welcome to orbIntro
   };
 
   const handleBackToSoundCheck = () => {
@@ -61,7 +64,11 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
 
   const handlePersonalDataComplete = (data: PersonalData) => {
     setPersonalData(data);
-    // Go directly to video capture, skipping camera capture step
+    setStage('cameraCapture');
+  };
+
+  const handleCameraCaptureComplete = (photoData: string) => {
+    setUserPhoto(photoData);
     setStage('videoCapture');
   };
 
@@ -69,6 +76,21 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     setReplicaId(replicaId);
     localStorage.setItem('onboardingComplete', 'true');
     localStorage.setItem('replicaId', replicaId);
+    onComplete();
+  };
+
+  // Function to handle skipping the camera capture step
+  const handleSkipCameraCapture = () => {
+    // Skip camera step and go directly to video capture
+    toast.info('Camera capture skipped. You can add a photo later.');
+    setStage('videoCapture');
+  };
+
+  // New function to handle skipping the video capture step
+  const handleSkipVideoCapture = () => {
+    localStorage.setItem('onboardingComplete', 'true');
+    // We deliberately don't set a replicaId in localStorage
+    toast.info('Video capture skipped. You can create your Echo avatar later.');
     onComplete();
   };
 
@@ -82,6 +104,10 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
 
   const handleBackToPersonalData = () => {
     setStage('personalData');
+  };
+
+  const handleBackToCameraCapture = () => {
+    setStage('cameraCapture');
   };
 
   return (
@@ -140,7 +166,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
           >
             <WelcomeStep
               onNext={handleWelcomeNext}
-              onBack={handleBackToSoundCheck}
+              onBack={handleBackToSoundCheck} // New back handler
             />
           </motion.div>
         )}
@@ -187,6 +213,24 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
           </motion.div>
         )}
 
+        {stage === 'cameraCapture' && personalData && (
+          <motion.div
+            key="cameraCapture"
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.5 }}
+            className="w-full flex flex-col overflow-y-auto"
+          >
+            <CameraCaptureStep
+              personalData={personalData}
+              onComplete={handleCameraCaptureComplete}
+              onBack={handleBackToPersonalData}
+              onSkip={handleSkipCameraCapture}
+            />
+          </motion.div>
+        )}
+
         {stage === 'videoCapture' && personalData && (
           <motion.div
             key="videoCapture"
@@ -199,7 +243,8 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
             <VideoCaptureStep
               personalData={personalData}
               onComplete={handleVideoCaptureComplete}
-              onBack={handleBackToPersonalData}
+              onBack={handleBackToCameraCapture}
+              onSkip={handleSkipVideoCapture} // Add the skip handler
             />
           </motion.div>
         )}
