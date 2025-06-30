@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     if (insertError) {
       return NextResponse.json(
         { error: insertError.message },
-        { status: insertError.status || 500 }
+        { status: 500 }
       );
     }
 
