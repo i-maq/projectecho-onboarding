@@ -29,11 +29,11 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
         toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!');
         onSuccess();
       } else {
-        toast.error(data.error || 'An error occurred');
+        toast.error(data.error || data.message || 'An error occurred');
       }
     } catch (error) {
       console.error('Auth error:', error);
-      toast.error('An unexpected error occurred');
+      toast.error((error as Error).message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
