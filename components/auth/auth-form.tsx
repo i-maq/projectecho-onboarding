@@ -47,6 +47,16 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
       className="w-full max-w-md"
     >
       <div className="glass-panel-light text-center">
+        {/* Bolt.new badge at top center */}
+        <div className="flex justify-center mb-4">
+          <a href="https://bolt.new/" target="_blank" rel="noopener noreferrer">
+            <img
+              src="/white_circle_360x360.png"
+              alt="Powered by Bolt"
+              className="h-16 w-auto"
+            />
+          </a>
+        </div>
         <h1 className="text-5xl font-extrabold mb-2 text-gray-800 text-title">Echo</h1>
         <p className="text-gray-600 mb-8 text-body">
           {isLogin 
