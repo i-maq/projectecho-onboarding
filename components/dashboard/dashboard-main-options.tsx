@@ -5,8 +5,7 @@ import { Book, Calendar, Clock, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Echo } from './dashboard';
 import Lottie from 'lottie-react';
-import notebookAnimation from '@/assets/animations/wired-outline-738-notebook-2-hover-pinch.json';
-import calendarAnimation from '@/assets/animations/wired-outline-28-calendar-hover-pinch.json';
+import React, { useState, useEffect } from 'react';
 
 interface DashboardMainOptionsProps {
   onCreateMemory: () => void;
@@ -21,6 +20,21 @@ export function DashboardMainOptions({
   recentEchoes, 
   isLoading 
 }: DashboardMainOptionsProps) {
+  const [notebookAnimation, setNotebookAnimation] = useState(null);
+  const [calendarAnimation, setCalendarAnimation] = useState(null);
+
+  useEffect(() => {
+    fetch('/wired-outline-738-notebook-2-hover-pinch.json')
+      .then(res => res.json())
+      .then(setNotebookAnimation)
+      .catch(err => console.log('Failed to load notebook animation:', err));
+    
+    fetch('/wired-outline-28-calendar-hover-pinch.json')
+      .then(res => res.json())
+      .then(setCalendarAnimation)
+      .catch(err => console.log('Failed to load calendar animation:', err));
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -44,14 +58,16 @@ export function DashboardMainOptions({
         >
           <div className="flex flex-col items-center text-center p-6 sm:p-8">
             <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg mb-4 p-2">
-              <Lottie
-                animationData={notebookAnimation}
-                loop={true}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                }}
-              />
+              {notebookAnimation && (
+                <Lottie
+                  animationData={notebookAnimation}
+                  loop={true}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+              )}
             </div>
             <h3 className="text-xl font-bold mb-3">Create a Memory</h3>
             <p className="text-gray-600 mb-4">Record a video, add photos, or write about your day</p>
@@ -70,14 +86,16 @@ export function DashboardMainOptions({
         >
           <div className="flex flex-col items-center text-center p-6 sm:p-8">
             <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg mb-4 p-2">
-              <Lottie
-                animationData={calendarAnimation}
-                loop={true}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                }}
-              />
+              {calendarAnimation && (
+                <Lottie
+                  animationData={calendarAnimation}
+                  loop={true}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+              )}
             </div>
             <h3 className="text-xl font-bold mb-3">Visit a Memory</h3>
             <p className="text-gray-600 mb-4">Browse through your past entries by date</p>
