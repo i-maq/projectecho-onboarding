@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { RotateCcw, Check, AlertCircle, Loader2, Camera, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Lottie from 'lottie-react';
-import faceIdAnimation from '/public/wired-outline-1376-face-id-hover-scanning.json';
 
 interface CameraCaptureStepProps {
   personalData: any;
@@ -25,6 +24,27 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isComponentReady, setIsComponentReady] = useState(false);
+  const [faceIdAnimation, setFaceIdAnimation] = useState<any>(null);
+
+  // Load the Lottie animation dynamically
+  useEffect(() => {
+    const loadAnimation = async () => {
+      try {
+        const response = await fetch('/wired-outline-1376-face-id-hover-scanning.json');
+        if (response.ok) {
+          const animationData = await response.json();
+          setFaceIdAnimation(animationData);
+        } else {
+          console.warn('Could not load Lottie animation, using fallback icon');
+        }
+      } catch (error) {
+        console.warn('Error loading Lottie animation:', error);
+        // Animation will remain null and we'll show a fallback icon
+      }
+    };
+
+    loadAnimation();
+  }, []);
 
   const waitForVideoReady = (videoElement: HTMLVideoElement): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -362,11 +382,15 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Lottie
-                animationData={faceIdAnimation}
-                loop={true}
-                style={{ width: '100%', height: '100%' }}
-              />
+              {faceIdAnimation ? (
+                <Lottie
+                  animationData={faceIdAnimation}
+                  loop={true}
+                  style={{ width: '100%', height: '100%' }}
+                />
+              ) : (
+                <Camera className="h-10 w-10 text-white" />
+              )}
             </div>
           </motion.div>
 
