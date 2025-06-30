@@ -12,9 +12,14 @@ export function DatabaseSetupCheck({ onContinue }: DatabaseSetupCheckProps) {
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'success' | 'error'>('checking');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  useEffect(() => {
-    checkDatabaseConnection();
-  }, []);
+useEffect(() => {
+  // In production (public preview), skip the DB check and continue immediately
+  if (process.env.NODE_ENV === 'production') {
+    onContinue();
+    return;
+  }
+  checkDatabaseConnection();
+}, []);
 
   const checkDatabaseConnection = async () => {
     try {
