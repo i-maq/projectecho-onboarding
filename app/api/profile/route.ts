@@ -42,8 +42,9 @@ export async function POST(req: Request) {
           date_of_birth: dateOfBirth,
           age,
         },
-        { returning: 'representation', onConflict: 'user_id' }
-      );
+        { onConflict: 'user_id' }
+      )
+      .select('*');
 
     if (insertError) {
       return NextResponse.json(
