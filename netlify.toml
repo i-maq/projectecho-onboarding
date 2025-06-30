@@ -1,0 +1,14 @@
+# netlify.toml
+[[redirects]]
+  # Redirect any HTTP request on projectecho.me to HTTPS
+  from = "http://projectecho.me/*"
+  to = "https://projectecho.me/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  # Also cover the www subdomain
+  from = "http://www.projectecho.me/*"
+  to = "https://www.projectecho.me/:splat"
+  status = 301
+  force = true
