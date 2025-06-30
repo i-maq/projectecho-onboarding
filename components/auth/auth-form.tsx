@@ -14,7 +14,7 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
     setIsLoading(true);
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
