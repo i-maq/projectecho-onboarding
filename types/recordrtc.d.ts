@@ -1,5 +1,9 @@
 declare module 'recordrtc' {
+  // Stubbed default export to any to avoid duplicate identifier errors
+  const RecordRTC: any;
   export default RecordRTC;
+
+  // Retain options interface if needed elsewhere
   export interface RecordRTCOptions {
     type?: 'video' | 'audio' | 'gif' | 'canvas';
     mimeType?: string;
@@ -15,33 +19,5 @@ declare module 'recordrtc' {
     videoBitsPerSecond?: number;
     audioBitsPerSecond?: number;
     frameRate?: number;
-  }
-
-  export class RecordRTC {
-    constructor(stream: MediaStream, options?: RecordRTCOptions);
-    startRecording(): void;
-    stopRecording(callback?: (url: string) => void): void;
-    pauseRecording(): void;
-    resumeRecording(): void;
-    getBlob(): Blob;
-    getDataURL(callback: (dataURL: string) => void): void;
-    toURL(): string;
-    getSize(): number;
-    destroy(): void;
-    reset(): void;
-  }
-
-  export class RecordRTCPromisesHandler {
-    constructor(stream: MediaStream, options?: RecordRTCOptions);
-    startRecording(): Promise<void>;
-    stopRecording(): Promise<void>;
-    pauseRecording(): Promise<void>;
-    resumeRecording(): Promise<void>;
-    getBlob(): Promise<Blob>;
-    getDataURL(): Promise<string>;
-    toURL(): string;
-    getSize(): number;
-    destroy(): void;
-    reset(): void;
   }
 }
