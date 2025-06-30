@@ -91,6 +91,10 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
   };
 
   const saveProfileToDatabase = async (personalData: PersonalData): Promise<boolean> => {
+    // In production (Netlify preview or prod), skip actual saving
+    if (process.env.NODE_ENV === 'production') {
+      return true;
+    }
     try {
       const token = localStorage.getItem('token');
       if (!token) {
