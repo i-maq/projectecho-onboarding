@@ -5,7 +5,7 @@ import { supabase } from '@/lib/database';
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
-    const { data, error } = await supabase.auth.signUpWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       return NextResponse.json(
         { error: error.message },
