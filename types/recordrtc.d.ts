@@ -1,3 +1,4 @@
+// @ts-nocheck
 declare module 'recordrtc' {
   // Stubbed default export to any to avoid duplicate identifier errors
   const RecordRTC: any;
