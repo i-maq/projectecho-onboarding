@@ -1,3 +1,7 @@
+[build.environment]
+  SECRETS_SCAN_OMIT_PATHS = "backup/*"
+  SECRETS_SCAN_OMIT_KEYS = "JWT_SECRET,TAVUS_API_KEY"
+
 # netlify.toml
 [[redirects]]
   # Redirect any HTTP request on projectecho.me to HTTPS
