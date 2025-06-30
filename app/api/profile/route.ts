@@ -42,7 +42,7 @@ export async function POST(req: Request) {
           date_of_birth: dateOfBirth,
           age,
         },
-        { returning: 'representation', onConflict: ['user_id'] }
+        { returning: 'representation', onConflict: 'user_id' }
       );
 
     if (insertError) {
