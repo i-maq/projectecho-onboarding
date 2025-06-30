@@ -5,8 +5,8 @@ import { Book, Calendar, Clock, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Echo } from './dashboard';
 import Lottie from 'lottie-react';
-import notebookAnimation from '/public/wired-outline-738-notebook-2-hover-pinch.json';
-import calendarAnimation from '/public/wired-outline-28-calendar-hover-pinch.json';
+import notebookAnimation from '@/assets/animations/wired-outline-738-notebook-2-hover-pinch.json';
+import calendarAnimation from '@/assets/animations/wired-outline-28-calendar-hover-pinch.json';
 
 interface DashboardMainOptionsProps {
   onCreateMemory: () => void;
