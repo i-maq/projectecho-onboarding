@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, User, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Lottie from 'lottie-react';
-import personalDataAnimation from '/public/personal-data-icon.json';
 
 interface PersonalDataStepProps {
   onComplete: (data: PersonalData) => void;
@@ -28,6 +27,29 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
   
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [personalDataAnimation, setPersonalDataAnimation] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/personal-data-icon.json')
+      .then(res => {
+        if (!res.ok) throw new Error('Animation load failed');
+        return res.json();
+      })
+      .then(setPersonalDataAnimation)
+      .catch(err => {
+        console.error(err);
+        toast.error('Couldn’t load the personal data icon.');
+      });
+  }, []);
+
+  if (!personalDataAnimation) {
+    return (
+      <div className="w-full h-full flex items-center justify-center px-6 py-8">
+        Loading personal-data step…
+      </div>
+    );
+  }
 
   const calculateAge = (dateOfBirth: string): number => {
     const today = new Date();
