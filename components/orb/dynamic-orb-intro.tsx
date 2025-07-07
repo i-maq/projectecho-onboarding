@@ -63,6 +63,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [audioError, setAudioError] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const isAndroid = typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent);
+  const isIPad = typeof navigator !== 'undefined' && /iPad|Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document;
 
   // Mobile detection
   useEffect(() => {
@@ -563,7 +566,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       animationId = requestAnimationFrame(drawFrame);
     };
 
-    drawFrame();
+    if (!isAndroid && !isIPad) {
+      drawFrame();
+}
 
     return () => {
       if (animationId) {
@@ -654,11 +659,27 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     return () => { bg.pause(); };
   }, []);
 
-  const handleTap = () => {
-    // Trigger orb jump animation
-    if ((window as any).orbJump) {
-      (window as any).orbJump();
+  cconst handleTap = () => {
+  if (!hasInteracted) {
+    setHasInteracted(true);
+    if (!isMobile && !isAndroid && !isIPad) {
+      initAudioAnalysis();
     }
+  }
+
+  if ((window as any).orbJump) {
+    (window as any).orbJump();
+  }
+
+  setIsTapped(true);
+  setTimeout(() => setIsTapped(false), 300);
+
+  if (step < captionSections.length - 1) {
+    setStep(step + 1);
+  } else {
+    onAdvance();
+  }
+};
     
     // Visual feedback
     setIsTapped(true);
@@ -700,8 +721,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
       </div>
 
       {/* Enhanced detailed spherical orb */}
-      <motion.div
-        className="relative z-10 mx-4 md:mx-0"
+      {hasInteracted && !isAndroid && !isIPad && (
+  <motion.div
+    className="relative z-10 mx-4 md:mx-0"
         animate={{ 
           scale: isTapped ? 1.04 : 1,
           y: isAudioPlaying ? [0, -3, 3, 0] : 0
@@ -847,6 +869,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
           />
         </div>
       </motion.div>
+)}
 
       {/* Audio elements */}
       <audio ref={audioRef} preload="auto" />
