@@ -660,32 +660,20 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
   }, []);
 
   const handleTap = () => {
-  if (!hasInteracted) {
-    setHasInteracted(true);
-    if (!isMobile && !isAndroid && !isIPad) {
-      initAudioAnalysis();
+    if (!hasInteracted) {
+      setHasInteracted(true);
+      if (!isMobile && !isAndroid && !isIPad) {
+        initAudioAnalysis();
+      }
     }
-  }
 
-  if ((window as any).orbJump) {
-    (window as any).orbJump();
-  }
+    if ((window as any).orbJump) {
+      (window as any).orbJump();
+    }
 
-  setIsTapped(true);
-  setTimeout(() => setIsTapped(false), 300);
-
-  if (step < captionSections.length - 1) {
-    setStep(step + 1);
-  } else {
-    onAdvance();
-  }
-};
-    
-    // Visual feedback
     setIsTapped(true);
     setTimeout(() => setIsTapped(false), 300);
-    
-    // Advance or finish
+
     if (step < captionSections.length - 1) {
       setStep(step + 1);
     } else {
@@ -722,154 +710,154 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
 
       {/* Enhanced detailed spherical orb */}
       {hasInteracted && !isAndroid && !isIPad && (
-  <motion.div
-    className="relative z-10 mx-4 md:mx-0"
-        animate={{ 
-          scale: isTapped ? 1.04 : 1,
-          y: isAudioPlaying ? [0, -3, 3, 0] : 0
-        }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 350, 
-          damping: 20,
-          y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
-        }}
-      >
-        {/* Multi-layered spherical container with glass effects */}
-        <div className={`relative ${orbSize}`}>
-          {/* Primary glass sphere with detailed gradients */}
-          <div 
-            className="absolute inset-0 rounded-full overflow-hidden"
-            style={{
-              background: `
-                radial-gradient(circle at 30% 20%, 
-                  rgba(255, 255, 255, 0.4) 0%,
-                  rgba(255, 255, 255, 0.25) 15%,
-                  rgba(220, 235, 255, 0.2) 30%,
-                  rgba(180, 210, 255, 0.15) 45%,
-                  rgba(140, 180, 255, 0.1) 60%,
-                  rgba(100, 150, 255, 0.08) 75%,
-                  rgba(80, 120, 255, 0.05) 90%,
-                  transparent 100%),
-                radial-gradient(circle at 70% 80%, 
-                  rgba(150, 100, 255, 0.15) 0%,
-                  rgba(120, 150, 255, 0.1) 30%,
-                  transparent 60%),
-                linear-gradient(135deg,
-                  rgba(255, 255, 255, 0.1) 0%,
-                  rgba(200, 220, 255, 0.05) 50%,
-                  rgba(150, 180, 255, 0.02) 100%)
-              `,
-              backdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
-              WebkitBackdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
-              boxShadow: `
-                0 0 80px rgba(100, 150, 255, 0.4),
-                0 0 40px rgba(150, 200, 255, 0.3),
-                inset 0 0 80px rgba(255, 255, 255, 0.15),
-                inset 0 0 40px rgba(200, 220, 255, 0.1)
-              `
-            }}
-          >
-            {/* Enhanced fluid canvas with heavy blur */}
-            <canvas 
-              ref={canvasRef} 
-              width={canvasSize} 
-              height={canvasSize} 
-              className="w-full h-full rounded-full"
+        <motion.div
+          className="relative z-10 mx-4 md:mx-0"
+          animate={{ 
+            scale: isTapped ? 1.04 : 1,
+            y: isAudioPlaying ? [0, -3, 3, 0] : 0
+          }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 350, 
+            damping: 20,
+            y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+          }}
+        >
+          {/* Multi-layered spherical container with glass effects */}
+          <div className={`relative ${orbSize}`}>
+            {/* Primary glass sphere with detailed gradients */}
+            <div 
+              className="absolute inset-0 rounded-full overflow-hidden"
               style={{
-                filter: 'saturate(1.8) brightness(1.4) contrast(1.2) blur(6px)',
-                opacity: 0.95,
-                mixBlendMode: 'screen'
+                background: `
+                  radial-gradient(circle at 30% 20%, 
+                    rgba(255, 255, 255, 0.4) 0%,
+                    rgba(255, 255, 255, 0.25) 15%,
+                    rgba(220, 235, 255, 0.2) 30%,
+                    rgba(180, 210, 255, 0.15) 45%,
+                    rgba(140, 180, 255, 0.1) 60%,
+                    rgba(100, 150, 255, 0.08) 75%,
+                    rgba(80, 120, 255, 0.05) 90%,
+                    transparent 100%),
+                  radial-gradient(circle at 70% 80%, 
+                    rgba(150, 100, 255, 0.15) 0%,
+                    rgba(120, 150, 255, 0.1) 30%,
+                    transparent 60%),
+                  linear-gradient(135deg,
+                    rgba(255, 255, 255, 0.1) 0%,
+                    rgba(200, 220, 255, 0.05) 50%,
+                    rgba(150, 180, 255, 0.02) 100%)
+                `,
+                backdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
+                WebkitBackdropFilter: 'blur(20px) saturate(1.8) brightness(1.1)',
+                boxShadow: `
+                  0 0 80px rgba(100, 150, 255, 0.4),
+                  0 0 40px rgba(150, 200, 255, 0.3),
+                  inset 0 0 80px rgba(255, 255, 255, 0.15),
+                  inset 0 0 40px rgba(200, 220, 255, 0.1)
+                `
+              }}
+            >
+              {/* Enhanced fluid canvas with heavy blur */}
+              <canvas 
+                ref={canvasRef} 
+                width={canvasSize} 
+                height={canvasSize} 
+                className="w-full h-full rounded-full"
+                style={{
+                  filter: 'saturate(1.8) brightness(1.4) contrast(1.2) blur(6px)',
+                  opacity: 0.95,
+                  mixBlendMode: 'screen'
+                }}
+              />
+            </div>
+
+            {/* Spherical highlights and reflections */}
+            <div 
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                top: '8%',
+                left: '12%',
+                width: '45%',
+                height: '35%',
+                background: `
+                  radial-gradient(ellipse 100% 80%, 
+                    rgba(255, 255, 255, 0.6) 0%,
+                    rgba(255, 255, 255, 0.4) 25%,
+                    rgba(240, 250, 255, 0.25) 50%,
+                    rgba(220, 235, 255, 0.1) 75%,
+                    transparent 100%)
+                `,
+                filter: 'blur(6px)',
+                transform: 'rotate(-25deg)'
               }}
             />
+
+            <div 
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                top: '60%',
+                right: '15%',
+                width: '25%',
+                height: '20%',
+                background: `
+                  radial-gradient(ellipse, 
+                    rgba(180, 220, 255, 0.3) 0%,
+                    rgba(150, 200, 255, 0.15) 50%,
+                    transparent 80%)
+                `,
+                filter: 'blur(8px)',
+                transform: 'rotate(15deg)'
+              }}
+            />
+
+            <div 
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{
+                background: `
+                  radial-gradient(circle, 
+                    transparent 85%,
+                    rgba(255, 255, 255, 0.2) 90%,
+                    rgba(200, 220, 255, 0.3) 95%,
+                    rgba(150, 180, 255, 0.2) 100%)
+                `,
+                filter: 'blur(2px)'
+              }}
+            />
+
+            {/* Gradually shifting atmospheric glow - enhanced with audio reactivity */}
+            <motion.div 
+              className="absolute inset-0 rounded-full pointer-events-none"
+              animate={{
+                boxShadow: [
+                  `0 0 ${100 + audioLevel * 120}px ${40 + audioLevel * 50}px rgba(100, 255, 100, ${0.35 + audioLevel * 0.45})`,
+                  `0 0 ${110 + audioLevel * 130}px ${45 + audioLevel * 55}px rgba(150, 200, 255, ${0.3 + audioLevel * 0.4})`,
+                  `0 0 ${105 + audioLevel * 125}px ${42 + audioLevel * 52}px rgba(200, 100, 255, ${0.32 + audioLevel * 0.42})`,
+                  `0 0 ${95 + audioLevel * 115}px ${35 + audioLevel * 45}px rgba(80, 220, 150, ${0.4 + audioLevel * 0.5})`
+                ]
+              }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            />
+
+            <motion.div 
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{
+                transform: 'scale(1.3)',
+                opacity: 0.6
+              }}
+              animate={{
+                boxShadow: [
+                  `0 0 ${150 + audioLevel * 80}px ${20 + audioLevel * 30}px rgba(50, 255, 50, ${0.2 + audioLevel * 0.25})`,
+                  `0 0 ${155 + audioLevel * 85}px ${22 + audioLevel * 32}px rgba(100, 200, 255, ${0.18 + audioLevel * 0.22})`,
+                  `0 0 ${160 + audioLevel * 90}px ${25 + audioLevel * 35}px rgba(200, 50, 255, ${0.15 + audioLevel * 0.2})`,
+                  `0 0 ${145 + audioLevel * 82}px ${19 + audioLevel * 29}px rgba(80, 200, 180, ${0.22 + audioLevel * 0.28})`
+                ]
+              }}
+              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            />
           </div>
-
-          {/* Spherical highlights and reflections */}
-          <div 
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              top: '8%',
-              left: '12%',
-              width: '45%',
-              height: '35%',
-              background: `
-                radial-gradient(ellipse 100% 80%, 
-                  rgba(255, 255, 255, 0.6) 0%,
-                  rgba(255, 255, 255, 0.4) 25%,
-                  rgba(240, 250, 255, 0.25) 50%,
-                  rgba(220, 235, 255, 0.1) 75%,
-                  transparent 100%)
-              `,
-              filter: 'blur(6px)',
-              transform: 'rotate(-25deg)'
-            }}
-          />
-
-          <div 
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              top: '60%',
-              right: '15%',
-              width: '25%',
-              height: '20%',
-              background: `
-                radial-gradient(ellipse, 
-                  rgba(180, 220, 255, 0.3) 0%,
-                  rgba(150, 200, 255, 0.15) 50%,
-                  transparent 80%)
-              `,
-              filter: 'blur(8px)',
-              transform: 'rotate(15deg)'
-            }}
-          />
-
-          <div 
-            className="absolute inset-0 rounded-full pointer-events-none"
-            style={{
-              background: `
-                radial-gradient(circle, 
-                  transparent 85%,
-                  rgba(255, 255, 255, 0.2) 90%,
-                  rgba(200, 220, 255, 0.3) 95%,
-                  rgba(150, 180, 255, 0.2) 100%)
-              `,
-              filter: 'blur(2px)'
-            }}
-          />
-
-          {/* Gradually shifting atmospheric glow - enhanced with audio reactivity */}
-          <motion.div 
-            className="absolute inset-0 rounded-full pointer-events-none"
-            animate={{
-              boxShadow: [
-                `0 0 ${100 + audioLevel * 120}px ${40 + audioLevel * 50}px rgba(100, 255, 100, ${0.35 + audioLevel * 0.45})`,
-                `0 0 ${110 + audioLevel * 130}px ${45 + audioLevel * 55}px rgba(150, 200, 255, ${0.3 + audioLevel * 0.4})`,
-                `0 0 ${105 + audioLevel * 125}px ${42 + audioLevel * 52}px rgba(200, 100, 255, ${0.32 + audioLevel * 0.42})`,
-                `0 0 ${95 + audioLevel * 115}px ${35 + audioLevel * 45}px rgba(80, 220, 150, ${0.4 + audioLevel * 0.5})`
-              ]
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
-
-          <motion.div 
-            className="absolute inset-0 rounded-full pointer-events-none"
-            style={{
-              transform: 'scale(1.3)',
-              opacity: 0.6
-            }}
-            animate={{
-              boxShadow: [
-                `0 0 ${150 + audioLevel * 80}px ${20 + audioLevel * 30}px rgba(50, 255, 50, ${0.2 + audioLevel * 0.25})`,
-                `0 0 ${155 + audioLevel * 85}px ${22 + audioLevel * 32}px rgba(100, 200, 255, ${0.18 + audioLevel * 0.22})`,
-                `0 0 ${160 + audioLevel * 90}px ${25 + audioLevel * 35}px rgba(200, 50, 255, ${0.15 + audioLevel * 0.2})`,
-                `0 0 ${145 + audioLevel * 82}px ${19 + audioLevel * 29}px rgba(80, 200, 180, ${0.22 + audioLevel * 0.28})`
-              ]
-            }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </div>
-      </motion.div>
-)}
+        </motion.div>
+      )}
 
       {/* Audio elements */}
       <audio ref={audioRef} preload="auto" />
