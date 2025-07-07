@@ -659,7 +659,7 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     return () => { bg.pause(); };
   }, []);
 
-  cconst handleTap = () => {
+  const handleTap = () => {
   if (!hasInteracted) {
     setHasInteracted(true);
     if (!isMobile && !isAndroid && !isIPad) {
