@@ -9,7 +9,7 @@ interface WelcomeStepProps {
 export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
  const soundRef = useRef<HTMLAudioElement | null>(null);
  const [clickPulse, setClickPulse] = useState<{ x: number, y: number, key: number } | null>(null);
- const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+ const handleClick = (event: React.MouseEvent<HTMLButtonElement | HTMLImageElement>) => {
    // Set click position for visual effect
    setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
    
@@ -27,18 +27,18 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
      
      {/* Centered logo - made much larger */}
      <motion.div
-       initial={{ scale: 0.8, opacity: 0 }}
-       animate={{ scale: 1, opacity: 1 }}
-       transition={{ duration: 0.5 }}
-       className="mb-16"
+       initial={{ scale: 0.95, opacity: 0 }}
+       animate={{ scale: [0.95, 1, 0.95], opacity: 1 }}
+       transition={{ duration: 2, repeat: Infinity }}
      >
        <Image 
          src="/projectechologo.png"
          alt="Project Echo Logo"
          width={560}  // Increased from 400 to 560
          height={140} // Increased from 100 to 140
-         className="h-auto w-80 sm:w-auto"
+         className="h-auto w-80 sm:w-auto cursor-pointer"
          priority
+         onClick={(e) => handleClick(e as unknown as React.MouseEvent<HTMLImageElement>)}
        />
      </motion.div>
      
@@ -49,10 +49,9 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
        transition={{ delay: 0.4, duration: 0.5 }}
      >
        <button 
-         onClick={handleClick}
          className="neumorphic-button-light text-button text-xl px-12 py-6"
        >
-         Find My Echo
+         Let's Get Started
        </button>
      </motion.div>
      
