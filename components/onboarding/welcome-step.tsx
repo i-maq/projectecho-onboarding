@@ -21,14 +21,13 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
  };
  
  return (
-   <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-auto">
+   <div className="absolute inset-0 flex items-center justify-center">
      {/* Hidden audio element for button click sound */}
      <audio ref={soundRef} src="/tap-sound.mp3" preload="auto" />
      
      {/* Centered logo - made much larger */}
      <motion.div
-       initial={{ scale: 0.95, opacity: 0 }}
-       animate={{ scale: [0.95, 1, 0.95], opacity: 1 }}
+       animate={{ scale: [0.95, 1, 0.95] }}
        transition={{ duration: 2, repeat: Infinity }}
      >
        <Image 
@@ -40,19 +39,6 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
          priority
          onClick={(e) => handleClick(e as unknown as React.MouseEvent<HTMLImageElement>)}
        />
-     </motion.div>
-     
-     {/* Button directly below logo - made much larger */}
-     <motion.div
-       initial={{ y: 20, opacity: 0 }}
-       animate={{ y: 0, opacity: 1 }}
-       transition={{ delay: 0.4, duration: 0.5 }}
-     >
-       <button 
-         className="neumorphic-button-light text-button text-xl px-12 py-6"
-       >
-         Let's Get Started
-       </button>
      </motion.div>
      
      {/* Click pulse animation */}
