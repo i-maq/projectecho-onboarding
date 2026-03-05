@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRef, useState } from 'react';
-import { EchoButton } from '@/components/ui/echo-button';
 
 interface WelcomeStepProps {
   onNext: () => void;
@@ -14,40 +13,29 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
   const soundRef = useRef<HTMLAudioElement | null>(null);
   const [clickPulse, setClickPulse] = useState<{ x: number; y: number; key: number } | null>(null);
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement | HTMLImageElement>) => {
     setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
     soundRef.current?.play().catch(e => console.error("Audio play failed:", e));
     setTimeout(() => onNext(), 300);
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-auto">
+    <div className="absolute inset-0 flex items-center justify-center">
       <audio ref={soundRef} src="/tap-sound.mp3" preload="auto" />
 
       <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-        className="mb-16"
+        animate={{ scale: [0.95, 1, 0.95] }}
+        transition={{ duration: 2, repeat: Infinity }}
       >
         <Image
           src="/projectechologo.png"
           alt="Project Echo Logo"
           width={560}
           height={140}
-          className="h-auto w-80 sm:w-auto"
+          className="h-auto w-80 sm:w-auto cursor-pointer"
           priority
+          onClick={(e) => handleClick(e as unknown as React.MouseEvent<HTMLImageElement>)}
         />
-      </motion.div>
-
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-      >
-        <EchoButton variant="neumorphic" size="lg" onClick={handleClick} className="text-xl px-12 py-6">
-          Find My Echo
-        </EchoButton>
       </motion.div>
 
       {clickPulse && <div className="click-pulse" style={{ left: clickPulse.x, top: clickPulse.y }} />}

@@ -59,9 +59,7 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
           />
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-extrabold mb-2 text-echo-text-primary">
-          Echo
-        </h1>
+        <img src="/projectechologo.png" alt="Project Echo logo" className="w-3/4 max-w-xs mx-auto mb-2" />
         <p className="text-echo-text-secondary mb-8">
           {isLogin
             ? 'Sign in to access your personal legacy'
