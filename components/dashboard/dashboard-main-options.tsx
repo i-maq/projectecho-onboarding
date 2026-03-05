@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Book, Calendar, Clock, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Echo } from './dashboard';
