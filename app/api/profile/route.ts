@@ -1,64 +1,86 @@
-// app/api/profile/route.ts
-
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/database';
+import { verifyToken } from '@/lib/auth';
+import { db } from '@/lib/data';
 
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
-    // Extract bearer token from Authorization header
     const authHeader = req.headers.get('authorization') || '';
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.replace('Bearer ', '');
+
     if (!token) {
       return NextResponse.json(
-        { error: 'Missing authentication token.' },
+        { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Verify the token and retrieve the user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser(token);
-
-    if (userError || !user) {
+    const user = verifyToken(token);
+    if (!user) {
       return NextResponse.json(
-        { error: userError?.message || 'Invalid token.' },
-        { status: userError?.status || 401 }
+        { error: 'Invalid token' },
+        { status: 401 }
       );
     }
 
-    // Parse the request body
+    const profile = await db.getProfile(user.id);
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'Profile not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(profile);
+  } catch (err: any) {
+    console.error('Profile GET error:', err);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const authHeader = req.headers.get('authorization') || '';
+    const token = authHeader.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const user = verifyToken(token);
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
     const { firstName, lastName, dateOfBirth, age } = await req.json();
 
-    // Upsert into user_profiles table (using service role or anon key appropriately)
-    const { data: inserted, error: insertError } = await supabase
-      .from('user_profiles')
-      .upsert(
-        {
-          user_id: user.id,
-          first_name: firstName,
-          last_name: lastName,
-          date_of_birth: dateOfBirth,
-          age,
-        },
-        { onConflict: 'user_id' }
-      )
-      .select('*');
+    const profile = await db.upsertProfile(user.id, {
+      firstName,
+      lastName,
+      dateOfBirth,
+      age,
+    });
 
-    if (insertError) {
+    if (!profile) {
       return NextResponse.json(
-        { error: insertError.message },
+        { error: 'Failed to save profile' },
         { status: 500 }
       );
     }
 
-    // Return the upserted record
-    return NextResponse.json(inserted![0]);
+    return NextResponse.json(profile);
   } catch (err: any) {
-    console.error('Profile route error:', err);
+    console.error('Profile POST error:', err);
     return NextResponse.json(
-      { error: err.message || 'Internal server error.' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

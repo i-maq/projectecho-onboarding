@@ -3,6 +3,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { GlassCard } from '@/components/ui/glass-card';
+import { EchoButton } from '@/components/ui/echo-button';
+import { EchoInput } from '@/components/ui/echo-input';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -43,63 +47,70 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.7 }}
-      className="w-full max-w-md"
+      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+      className="w-full max-w-md px-4"
     >
-      <div className="glass-panel-light text-center">
-        {/* Bolt.new badge at top center */}
+      <GlassCard variant="strong" className="text-center">
         <div className="flex justify-center mb-4">
-          <a href="https://bolt.new/" target="_blank" rel="noopener noreferrer">
-            <img
-              src="/white_circle_360x360.png"
-              alt="Powered by Bolt"
-              className="h-16 w-auto"
-            />
-          </a>
+          <img
+            src="/white_circle_360x360.png"
+            alt="Echo"
+            className="h-16 w-auto"
+          />
         </div>
-        <h1 className="text-5xl font-extrabold mb-2 text-gray-800 text-title">Echo</h1>
-        <p className="text-gray-600 mb-8 text-body">
-          {isLogin 
-            ? 'Sign in to access your personal legacy' 
-            : 'Create an account to begin your story'
-          }
+
+        <h1 className="text-4xl sm:text-5xl font-extrabold mb-2 text-echo-text-primary">
+          Echo
+        </h1>
+        <p className="text-echo-text-secondary mb-8">
+          {isLogin
+            ? 'Sign in to access your personal legacy'
+            : 'Create an account to begin your story'}
         </p>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <input
-            type="email" 
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <EchoInput
+            type="email"
             placeholder="Email"
-            value={formData.email} 
+            value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800 text-body"
             required
           />
-          <input
-            type="password" 
+          <EchoInput
+            type="password"
             placeholder="Password"
-            value={formData.password} 
+            value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800 text-body"
             required
             minLength={6}
           />
-          <button 
-            type="submit" 
-            className="w-full neumorphic-button-light h-12 text-button" 
+          <EchoButton
+            type="submit"
+            variant="primary"
+            className="w-full"
             disabled={isLoading}
           >
-            {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Create Account')}
-          </button>
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <LoadingSpinner size="sm" className="border-white/30 border-t-white" />
+                Loading...
+              </span>
+            ) : (
+              isLogin ? 'Sign In' : 'Create Account'
+            )}
+          </EchoButton>
         </form>
+
         <div className="mt-6">
-          <button 
-            type="button" 
-            onClick={() => setIsLogin(!isLogin)} 
-            className="text-sm text-gray-500 hover:text-purple-600 transition-colors text-caption"
+          <button
+            type="button"
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-sm text-echo-text-muted hover:text-echo-purple-600 transition-colors"
           >
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
           </button>
         </div>
-      </div>
+      </GlassCard>
     </motion.div>
   );
 }

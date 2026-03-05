@@ -9,15 +9,16 @@ import { DashboardMainOptions } from './dashboard-main-options';
 import { CreateMemoryScreen } from './create-memory-screen';
 import { ViewMemoriesScreen } from './view-memories-screen';
 import { DaySummaryView } from './day-summary-view';
+import { EchoButton } from '@/components/ui/echo-button';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
-// Types for memory/journal entries
 export interface Echo {
   id: string;
   content: string;
   created_at: string;
   video_url?: string;
-  photos?: string[]; // Array of photo URLs or base64 data
-  notes?: string; // Additional notes
+  photos?: string[];
+  notes?: string;
 }
 
 type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary';
@@ -40,16 +41,12 @@ export function Dashboard() {
       if (!token) return;
 
       const response = await fetch('/api/echoes', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (response.ok) {
         const data = await response.json();
         setEchoes(data);
-        
-        // If we have echoes, select the first one for reference
         if (data.length > 0) {
           setSelectedEcho(data[0]);
         }
@@ -69,7 +66,6 @@ export function Dashboard() {
     window.location.reload();
   };
 
-  // Navigation handlers
   const navigateToCreateMemory = () => setCurrentScreen('createMemory');
   const navigateToViewMemories = () => setCurrentScreen('viewMemories');
   const navigateToMain = () => setCurrentScreen('main');
@@ -78,23 +74,22 @@ export function Dashboard() {
     setCurrentScreen('daySummary');
   };
 
-  // Data handlers
   const handleMemorySaved = (newEcho: Echo) => {
     setEchoes([newEcho, ...echoes]);
     toast.success('Memory saved successfully!');
-    // Optionally navigate back to main or stay on create screen
     setCurrentScreen('main');
   };
 
   return (
-    <div className="min-h-screen h-full flex flex-col bg-[#f0f2f5] text-gray-800">
-      {/* Header - Centered logo */}
+    <div className="min-h-screen h-full flex flex-col bg-echo-bg-primary text-echo-text-primary">
+      {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-4 sm:p-6 flex justify-center items-center border-b border-gray-200 bg-white/80 backdrop-blur-sm"
+        className="p-4 sm:p-6 flex justify-center items-center border-b border-white/30 glass-panel-strong"
+        style={{ borderRadius: 0 }}
       >
-        <Image 
+        <Image
           src="/projectechologo.png"
           alt="Echo Logo"
           width={280}
@@ -103,21 +98,20 @@ export function Dashboard() {
         />
       </motion.header>
 
-      {/* Main Content Area - Changes based on current screen */}
+      {/* Main Content */}
       <div className="flex-grow p-4 sm:p-6 overflow-y-auto">
         <div className="max-w-6xl mx-auto h-full flex flex-col">
           {currentScreen !== 'main' && (
-            <button 
+            <button
               onClick={navigateToMain}
-              className="self-start mb-4 text-sm text-purple-600 hover:text-purple-800"
+              className="self-start mb-4 text-sm text-echo-purple-600 hover:text-echo-purple-800 transition-colors"
             >
-              ← Back to Main
+              &larr; Back to Main
             </button>
           )}
-          
-          {/* Conditional rendering based on currentScreen */}
+
           {currentScreen === 'main' && (
-            <DashboardMainOptions 
+            <DashboardMainOptions
               onCreateMemory={navigateToCreateMemory}
               onViewMemories={navigateToViewMemories}
               recentEchoes={echoes.slice(0, 3)}
@@ -126,14 +120,14 @@ export function Dashboard() {
           )}
 
           {currentScreen === 'createMemory' && (
-            <CreateMemoryScreen 
+            <CreateMemoryScreen
               onMemorySaved={handleMemorySaved}
               onCancel={navigateToMain}
             />
           )}
 
           {currentScreen === 'viewMemories' && (
-            <ViewMemoriesScreen 
+            <ViewMemoriesScreen
               echoes={echoes}
               onSelectDate={navigateToDaySummary}
               onBack={navigateToMain}
@@ -142,7 +136,7 @@ export function Dashboard() {
           )}
 
           {currentScreen === 'daySummary' && selectedDate && (
-            <DaySummaryView 
+            <DaySummaryView
               date={selectedDate}
               echoes={echoes.filter(echo => {
                 const echoDate = new Date(echo.created_at);
@@ -154,15 +148,12 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Footer with logout button */}
-      <div className="p-4 sm:p-6 flex justify-center border-t border-gray-200 bg-white/80 backdrop-blur-sm">
-        <button 
-          onClick={logout} 
-          className="neumorphic-button-light text-button text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
-        >
-          <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 inline" />
+      {/* Footer */}
+      <div className="p-4 sm:p-6 flex justify-center border-t border-white/30 glass-panel-strong" style={{ borderRadius: 0 }}>
+        <EchoButton variant="ghost" size="sm" onClick={logout}>
+          <LogOut className="h-4 w-4 mr-2 inline" />
           Logout
-        </button>
+        </EchoButton>
       </div>
     </div>
   );

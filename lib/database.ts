@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Support both public and server env vars
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
@@ -11,19 +11,27 @@ const supabaseKey =
     ? (supabaseServiceKey || supabaseAnonKey)
     : supabaseAnonKey;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables. Ensure SUPABASE_URL and a key are set.');
-}
+let supabase: SupabaseClient | null = null;
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+} else {
+  const provider = process.env.DATA_PROVIDER || 'mock';
+  if (provider === 'supabase') {
+    console.error('[database] DATA_PROVIDER is "supabase" but Supabase env vars are missing.');
+  } else {
+    console.info('[database] Supabase not configured — using mock data provider.');
+  }
+}
 
 // Helper function to set user context for RLS
 export const setUserContext = async (userId: number) => {
+  if (!supabase) return;
   try {
     await supabase.rpc('set_config', {
       setting_name: 'app.current_user_id',
@@ -35,4 +43,5 @@ export const setUserContext = async (userId: number) => {
   }
 };
 
+export { supabase };
 export default supabase;

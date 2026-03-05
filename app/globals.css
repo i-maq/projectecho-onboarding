@@ -2,35 +2,235 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   PROJECT ECHO — DESIGN SYSTEM STYLES
+   Light Glassmorphism Theme
+   ============================================ */
+
 /* --- FONT CONFIGURATION --- */
 @layer base {
   :root {
     --font-poppins: 'Poppins', sans-serif;
+
+    /* Echo design tokens as CSS custom properties */
+    --echo-bg-primary: #f0f2f5;
+    --echo-bg-secondary: #f8f9fb;
+    --echo-bg-tertiary: #ffffff;
+    --echo-purple-500: #8b5cf6;
+    --echo-purple-600: #7c3aed;
+    --echo-text-primary: #1a1a2e;
+    --echo-text-secondary: #4a4a68;
+    --echo-text-muted: #8a8aa3;
+    --echo-glass-bg: rgba(255, 255, 255, 0.6);
+    --echo-glass-bg-strong: rgba(255, 255, 255, 0.8);
+    --echo-glass-border: rgba(255, 255, 255, 0.7);
+    --echo-glass-blur: 12px;
+    --echo-glass-blur-strong: 20px;
+    --echo-anim-fast: 150ms;
+    --echo-anim-normal: 300ms;
+    --echo-anim-slow: 500ms;
+    --echo-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Shadcn compatibility */
+    --radius: 12px;
   }
-  
-  /* Default text styling - Poppins Light */
+
   body {
     font-family: var(--font-poppins);
-    font-weight: 300; /* Poppins Light */
+    font-weight: 300;
+    color: var(--echo-text-primary);
+    background-color: var(--echo-bg-primary);
   }
-  
-  /* Headers and titles - Poppins Extrabold */
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-poppins);
-    font-weight: 800; /* Poppins Extrabold */
+    font-weight: 800;
   }
-  
-  /* Button text - Medium weight for readability */
+
   button {
     font-family: var(--font-poppins);
     font-weight: 500;
   }
-  
-  /* Input placeholders - Light */
+
   input::placeholder,
   textarea::placeholder {
     font-family: var(--font-poppins);
     font-weight: 300;
+  }
+}
+
+/* --- GLASSMORPHISM PANELS --- */
+@layer components {
+  .glass-panel {
+    background: var(--echo-glass-bg);
+    backdrop-filter: blur(var(--echo-glass-blur));
+    -webkit-backdrop-filter: blur(var(--echo-glass-blur));
+    border-radius: 16px;
+    border: 1px solid var(--echo-glass-border);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .glass-panel-strong {
+    background: var(--echo-glass-bg-strong);
+    backdrop-filter: blur(var(--echo-glass-blur-strong));
+    -webkit-backdrop-filter: blur(var(--echo-glass-blur-strong));
+    border-radius: 16px;
+    border: 1px solid var(--echo-glass-border);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Legacy alias */
+  .glass-panel-light {
+    background: var(--echo-glass-bg);
+    backdrop-filter: blur(var(--echo-glass-blur));
+    -webkit-backdrop-filter: blur(var(--echo-glass-blur));
+    border-radius: 16px;
+    border: 1px solid var(--echo-glass-border);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+  }
+}
+
+/* --- NEUMORPHIC BUTTONS --- */
+@layer components {
+  .neumorphic-button {
+    background: #eef2f9;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-family: var(--font-poppins);
+    font-weight: 600;
+    color: var(--echo-text-primary);
+    box-shadow: -4px -4px 8px #ffffff, 4px 4px 8px rgba(139, 92, 246, 0.15);
+    transition: all var(--echo-anim-normal) var(--echo-easing);
+    cursor: pointer;
+  }
+  .neumorphic-button:hover {
+    transform: translateY(-1px);
+    box-shadow: -6px -6px 12px #ffffff, 6px 6px 16px rgba(139, 92, 246, 0.2);
+  }
+  .neumorphic-button:active {
+    transform: translateY(0);
+    box-shadow: inset -2px -2px 4px #ffffff, inset 2px 2px 4px rgba(139, 92, 246, 0.2);
+  }
+
+  /* Legacy alias */
+  .neumorphic-button-light {
+    background: #eef2f9;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-family: var(--font-poppins);
+    font-weight: 600;
+    color: var(--echo-text-primary);
+    box-shadow: -4px -4px 8px #ffffff, 4px 4px 8px rgba(139, 92, 246, 0.15);
+    transition: all var(--echo-anim-normal) var(--echo-easing);
+    cursor: pointer;
+  }
+  .neumorphic-button-light:hover {
+    transform: translateY(-1px);
+    box-shadow: -6px -6px 12px #ffffff, 6px 6px 16px rgba(139, 92, 246, 0.2);
+  }
+  .neumorphic-button-light:active {
+    transform: translateY(0);
+    box-shadow: inset -2px -2px 4px #ffffff, inset 2px 2px 4px rgba(139, 92, 246, 0.2);
+  }
+
+  /* Purple gradient button */
+  .echo-button-primary {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-family: var(--font-poppins);
+    font-weight: 600;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+    transition: all var(--echo-anim-normal) var(--echo-easing);
+    cursor: pointer;
+  }
+  .echo-button-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(139, 92, 246, 0.4);
+  }
+  .echo-button-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+  }
+
+  /* Ghost button */
+  .echo-button-ghost {
+    background: transparent;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 12px;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-family: var(--font-poppins);
+    font-weight: 500;
+    color: var(--echo-purple-600);
+    transition: all var(--echo-anim-normal) var(--echo-easing);
+    cursor: pointer;
+  }
+  .echo-button-ghost:hover {
+    background: rgba(139, 92, 246, 0.05);
+    border-color: rgba(139, 92, 246, 0.5);
+  }
+
+  /* Glass input */
+  .echo-input {
+    background: var(--echo-glass-bg-strong);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--echo-glass-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    font-family: var(--font-poppins);
+    font-weight: 300;
+    color: var(--echo-text-primary);
+    transition: border-color var(--echo-anim-fast) var(--echo-easing),
+                box-shadow var(--echo-anim-fast) var(--echo-easing);
+    outline: none;
+    width: 100%;
+  }
+  .echo-input:focus {
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+  .echo-input::placeholder {
+    color: var(--echo-text-muted);
+  }
+}
+
+/* --- TYPOGRAPHY UTILITIES --- */
+@layer components {
+  .text-title {
+    font-family: var(--font-poppins);
+    font-weight: 800;
+  }
+
+  .text-heading {
+    font-family: var(--font-poppins);
+    font-weight: 800;
+  }
+
+  .text-body {
+    font-family: var(--font-poppins);
+    font-weight: 300;
+  }
+
+  .text-button {
+    font-family: var(--font-poppins);
+    font-weight: 600;
+  }
+
+  .text-caption {
+    font-family: var(--font-poppins);
+    font-weight: 300;
+    font-size: 0.875rem;
   }
 }
 
@@ -41,137 +241,57 @@
   100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
 }
 
-/* --- ENHANCED CLICK PULSE ANIMATION --- */
 @keyframes click-pulse-animation {
-  0% { 
-    transform: translate(-50%, -50%) scale(0); 
+  0% {
+    transform: translate(-50%, -50%) scale(0);
     opacity: 0.9;
-    box-shadow: 
-      0 0 0 rgba(139, 92, 246, 0.8),
-      0 0 0 rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 0 rgba(139, 92, 246, 0.8), 0 0 0 rgba(255, 255, 255, 0.6);
   }
-  25% { 
-    transform: translate(-50%, -50%) scale(1.2); 
+  25% {
+    transform: translate(-50%, -50%) scale(1.2);
     opacity: 0.7;
-    box-shadow: 
-      0 0 20px rgba(139, 92, 246, 0.6),
-      0 0 40px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.6), 0 0 40px rgba(255, 255, 255, 0.4);
   }
-  50% { 
-    transform: translate(-50%, -50%) scale(2.5); 
+  50% {
+    transform: translate(-50%, -50%) scale(2.5);
     opacity: 0.5;
-    box-shadow: 
-      0 0 30px rgba(139, 92, 246, 0.4),
-      0 0 60px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.4), 0 0 60px rgba(255, 255, 255, 0.3);
   }
-  75% { 
-    transform: translate(-50%, -50%) scale(3.5); 
+  75% {
+    transform: translate(-50%, -50%) scale(3.5);
     opacity: 0.2;
-    box-shadow: 
-      0 0 40px rgba(139, 92, 246, 0.2),
-      0 0 80px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.2), 0 0 80px rgba(255, 255, 255, 0.2);
   }
-  100% { 
-    transform: translate(-50%, -50%) scale(4.5); 
+  100% {
+    transform: translate(-50%, -50%) scale(4.5);
     opacity: 0;
-    box-shadow: 
-      0 0 50px rgba(139, 92, 246, 0),
-      0 0 100px rgba(255, 255, 255, 0);
+    box-shadow: 0 0 50px rgba(139, 92, 246, 0), 0 0 100px rgba(255, 255, 255, 0);
   }
 }
 
 @keyframes click-pulse-inner {
-  0% { 
-    transform: translate(-50%, -50%) scale(0); 
-    opacity: 1;
-  }
-  30% { 
-    transform: translate(-50%, -50%) scale(0.8); 
-    opacity: 0.8;
-  }
-  60% { 
-    transform: translate(-50%, -50%) scale(1.5); 
-    opacity: 0.4;
-  }
-  100% { 
-    transform: translate(-50%, -50%) scale(2.2); 
-    opacity: 0;
-  }
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  30% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+  60% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.4; }
+  100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
 }
 
-/* --- UI Components --- */
-.glass-panel-light {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  font-family: var(--font-poppins);
-  font-weight: 300;
+@keyframes random-float-animation {
+  0%   { transform: translate(0, 0);       opacity: 1; }
+  50%  {                                    opacity: 0.5; }
+  100% { transform: translate(20px, -110vh); opacity: 0; }
 }
 
-.neumorphic-button-light {
-  background: #eef2f9; /* Back to soft white neumorphic background */
-  border: none; 
-  border-radius: 12px;
-  padding: 15px 30px; 
-  font-size: 16px; 
-  font-family: var(--font-poppins);
-  font-weight: 600; /* Semi-bold for buttons */
-  color: #3f4a59; /* Dark text on light background */
-  box-shadow: 
-    -8px -8px 15px #ffffff,  /* White glow on top-left (neumorphic highlight) */
-    4px 4px 12px rgba(139, 92, 246, 0.4); /* Purple shadow on bottom-right */
-  transition: all 0.2s ease-in-out; 
-  cursor: pointer;
-}
-.neumorphic-button-light:hover {
-  transform: translateY(-1px); /* Subtle lift on hover */
-  box-shadow: 
-    -10px -10px 20px #ffffff,  /* Enhanced white glow on hover */
-    6px 6px 16px rgba(139, 92, 246, 0.5); /* Stronger purple shadow on hover */
-}
-.neumorphic-button-light:active {
-  transform: translateY(0); /* Return to original position when pressed */
-  box-shadow: 
-    inset -4px -4px 8px #ffffff,  /* Inset white highlight when pressed */
-    inset 2px 2px 6px rgba(139, 92, 246, 0.6); /* Inset purple shadow when pressed */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.6; }
 }
 
-/* --- Typography Utilities --- */
-.text-title {
-  font-family: var(--font-poppins);
-  font-weight: 800; /* Extrabold */
-}
-
-.text-heading {
-  font-family: var(--font-poppins);
-  font-weight: 800; /* Extrabold */
-}
-
-.text-body {
-  font-family: var(--font-poppins);
-  font-weight: 300; /* Light */
-}
-
-.text-button {
-  font-family: var(--font-poppins);
-  font-weight: 600; /* Semi-bold */
-}
-
-.text-caption {
-  font-family: var(--font-poppins);
-  font-weight: 300; /* Light */
-  font-size: 0.875rem;
-}
-
-/* --- ENHANCED ON-CLICK ANIMATION EFFECT --- */
+/* --- CLICK PULSE EFFECT --- */
 .click-pulse {
-  position: fixed; 
-  width: 120px; 
-  height: 120px; 
+  position: fixed;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -181,15 +301,14 @@
     rgba(139, 92, 246, 0.1) 100%
   );
   transform: translate(-50%, -50%) scale(0);
-  animation: click-pulse-animation 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  pointer-events: none; 
+  animation: click-pulse-animation 0.8s var(--echo-easing);
+  pointer-events: none;
   z-index: 100;
-  box-shadow: 
+  box-shadow:
     0 0 20px rgba(139, 92, 246, 0.4),
     inset 0 0 20px rgba(255, 255, 255, 0.6);
 }
 
-/* Secondary pulse layer for depth */
 .click-pulse::before {
   content: '';
   position: absolute;
@@ -205,10 +324,9 @@
     transparent 100%
   );
   transform: translate(-50%, -50%) scale(0);
-  animation: click-pulse-inner 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: click-pulse-inner 0.6s var(--echo-easing);
 }
 
-/* Sparkle effect layer */
 .click-pulse::after {
   content: '';
   position: absolute;
@@ -224,31 +342,14 @@
     transparent 70%
   );
   transform: translate(-50%, -50%) scale(0);
-  animation: click-pulse-inner 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: click-pulse-inner 0.4s var(--echo-easing);
 }
 
-/* --- GLOBAL ANIMATION DEFINITIONS --- */
-@keyframes random-float-animation {
-  0% { transform: translateY(0px) translateX(0px); }
-  100% { transform: translateY(-110vh) translateX(20px); }
-}
-
-@keyframes random-float-animation {
-  0%   { transform: translate(0, 0);      opacity: 1; }
-  50%  {                     opacity: 0.5; }
-  100% { transform: translate(20px, -110vh); opacity: 0; }
-}
-
-/* Slow‐pulse for the orb's gradient backlight */
-@keyframes pulse-slow {
-  0%, 100% { opacity: 0.4; }
-  50%      { opacity: 0.6; }
-}
+/* --- UTILITY CLASSES --- */
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
 }
 
-/* --- Full-screen background pulse --- */
 .pulse-circle-light {
   position: fixed;
   top: 50%;
@@ -263,9 +364,4 @@
   animation: pulse-animation 8s infinite ease-in-out;
   pointer-events: none;
   z-index: 0;
-}
-@keyframes pulse-animation {
-  0%   { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
-  50%  { opacity: 0.75; }
-  100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
 }
