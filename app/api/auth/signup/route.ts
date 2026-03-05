@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       );
     }
     return NextResponse.json({
-      // You probably want to send back session data or a confirmation flag:
+      token: data.session?.access_token,
       user: data.user
     });
   } catch (err: any) {

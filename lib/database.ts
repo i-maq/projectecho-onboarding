@@ -22,17 +22,4 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 });
 
-// Helper function to set user context for RLS
-export const setUserContext = async (userId: number) => {
-  try {
-    await supabase.rpc('set_config', {
-      setting_name: 'app.current_user_id',
-      setting_value: userId.toString(),
-      is_local: true,
-    });
-  } catch (error) {
-    console.error('Error setting user context:', error);
-  }
-};
-
 export default supabase;
