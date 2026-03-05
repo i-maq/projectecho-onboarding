@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Calendar, User, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Lottie from 'lottie-react';

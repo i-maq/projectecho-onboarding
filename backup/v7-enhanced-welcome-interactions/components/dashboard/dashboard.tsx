@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Sparkles, Book, Calendar, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';

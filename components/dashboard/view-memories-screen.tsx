@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Search, Clock } from 'lucide-react';
 import { format, isToday, isYesterday, addMonths, subMonths, isSameDay, parse, isValid } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
@@ -137,7 +137,7 @@ export function ViewMemoriesScreen({
                     }
                   }}
                   styles={{
-                    caption: { color: '#4b5563' },
+                    month_caption: { color: '#4b5563' },
                     day: { margin: '0.2em' }
                   }}
                 />

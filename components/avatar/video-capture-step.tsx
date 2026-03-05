@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Camera, Video, RotateCcw, Check, AlertCircle, Loader2, Mic, MicOff, Play, Square, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 

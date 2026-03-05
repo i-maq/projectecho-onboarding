@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import Lottie from 'lottie-react';
 import { DynamicOrbIntro } from '../orb/dynamic-orb-intro';
 import { DatabaseSetupCheck } from './database-setup-check';
