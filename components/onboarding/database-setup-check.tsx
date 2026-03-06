@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Database, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase-client';
 
 interface DatabaseSetupCheckProps {
   onContinue: () => void;
@@ -12,42 +13,38 @@ export function DatabaseSetupCheck({ onContinue }: DatabaseSetupCheckProps) {
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'success' | 'error'>('checking');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-useEffect(() => {
-  // In production (public preview), skip the DB check and continue immediately
-  if (process.env.NODE_ENV === 'production') {
-    onContinue();
-    return;
-  }
-  checkDatabaseConnection();
-}, []);
+  useEffect(() => {
+    checkDatabaseConnection();
+  }, []);
 
   const checkDatabaseConnection = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      // Lightweight health check: verify we have a session and can reach Supabase
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
         setConnectionStatus('error');
-        setErrorMessage('Please sign in again');
+        setErrorMessage('Session expired. Please sign in again.');
         return;
       }
 
-      // Test the database connection
-      const response = await fetch('/api/profile', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // Verify DB connectivity with a simple query against user_profiles
+      const { error: dbError } = await supabase
+        .from('user_profiles')
+        .select('user_id')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
 
-      if (response.ok) {
-        setConnectionStatus('success');
-        setTimeout(() => {
-          onContinue();
-        }, 1500);
-      } else {
-        const errorData = await response.json();
+      if (dbError) {
         setConnectionStatus('error');
-        setErrorMessage(errorData.details || errorData.error || 'Database connection failed');
+        setErrorMessage(dbError.message || 'Database connection failed');
+        return;
       }
+
+      setConnectionStatus('success');
+      setTimeout(() => {
+        onContinue();
+      }, 1500);
     } catch (error) {
       console.error('Database connection test failed:', error);
       setConnectionStatus('error');
@@ -70,14 +67,14 @@ useEffect(() => {
         className="w-full max-w-md mx-auto"
       >
         <div className="glass-panel-light text-center">
-          <motion.div 
+          <motion.div
             className="flex justify-center mb-6"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <div className={`w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg ${
-              connectionStatus === 'success' 
+              connectionStatus === 'success'
                 ? 'bg-gradient-to-br from-green-500 to-emerald-600'
                 : connectionStatus === 'error'
                 ? 'bg-gradient-to-br from-red-500 to-red-600'
@@ -94,7 +91,7 @@ useEffect(() => {
             {connectionStatus === 'success' && 'Connected Securely!'}
             {connectionStatus === 'error' && 'Connection Failed'}
           </h2>
-          
+
           <p className="text-gray-600 mb-8 text-body">
             {connectionStatus === 'checking' && 'Setting up your private journal storage...'}
             {connectionStatus === 'success' && 'Your secure journal database is ready.'}
@@ -106,12 +103,12 @@ useEffect(() => {
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                 <p className="text-red-700 text-sm text-body">{errorMessage}</p>
               </div>
-              
+
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left text-sm text-body">
                 <h4 className="font-semibold text-blue-800 mb-2">Setup Required:</h4>
                 <ol className="list-decimal list-inside space-y-1 text-blue-700">
                   <li>Go to <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="underline">supabase.com</a> and create/sign into your account</li>
-                  <li>Find your project URL and API keys in Project Settings → API</li>
+                  <li>Find your project URL and API keys in Project Settings &rarr; API</li>
                   <li>Update your <code className="bg-blue-100 px-1 rounded">.env.local</code> file with these values</li>
                   <li>Restart the development server</li>
                 </ol>

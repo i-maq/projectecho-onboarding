@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase-client';
 
 export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,26 +15,25 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
     setIsLoading(true);
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        toast.success(isLogin ? 'Welcome back!' : 'Account created successfully!');
-        onSuccess();
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (error) throw error;
+        toast.success('Welcome back!');
       } else {
-        toast.error(data.error || data.message || 'An error occurred');
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (error) throw error;
+        toast.success('Account created successfully!');
       }
-    } catch (error) {
+      onSuccess();
+    } catch (error: any) {
       console.error('Auth error:', error);
-      toast.error((error as Error).message || 'An unexpected error occurred');
+      toast.error(error.message || 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -59,41 +59,41 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
         <img src="/projectechologo.png" alt="Project Echo logo" className="w-3/4 max-w-xs mx-auto mb-2" />
         <p className="text-gray-600 mb-8 text-body">
-          {isLogin 
-            ? 'Sign in to access your personal legacy' 
+          {isLogin
+            ? 'Sign in to access your personal legacy'
             : 'Create an account to begin your story'
           }
         </p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <input
-            type="email" 
+            type="email"
             placeholder="Email"
-            value={formData.email} 
+            value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800 text-body"
             required
           />
           <input
-            type="password" 
+            type="password"
             placeholder="Password"
-            value={formData.password} 
+            value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800 text-body"
             required
             minLength={6}
           />
-          <button 
-            type="submit" 
-            className="w-full neumorphic-button-light h-12 text-button" 
+          <button
+            type="submit"
+            className="w-full neumorphic-button-light h-12 text-button"
             disabled={isLoading}
           >
             {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Create Account')}
           </button>
         </form>
         <div className="mt-6">
-          <button 
-            type="button" 
-            onClick={() => setIsLogin(!isLogin)} 
+          <button
+            type="button"
+            onClick={() => setIsLogin(!isLogin)}
             className="text-sm text-gray-500 hover:text-purple-600 transition-colors text-caption"
           >
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}

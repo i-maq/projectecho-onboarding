@@ -1,19 +1,28 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
+let supabaseAdmin: SupabaseClient;
+
+if (supabaseUrl && supabaseServiceKey) {
+  // Admin client for server-side operations with RLS bypass
+  supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+} else {
+  console.warn('Missing Supabase admin environment variables. Admin DB operations will fail.');
+  supabaseAdmin = new Proxy({} as SupabaseClient, {
+    get() {
+      throw new Error('Supabase admin client not initialized — missing environment variables.');
+    },
+  });
 }
 
-// Admin client for server-side operations with RLS bypass
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+export { supabaseAdmin };
 
 // Helper function to set user context for RLS
 export const setUserContext = async (userId: number) => {

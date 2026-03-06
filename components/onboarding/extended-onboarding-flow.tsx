@@ -10,6 +10,7 @@ import { CameraCaptureStep } from './camera-capture-step';
 import { VideoCaptureStep } from '../avatar/video-capture-step';
 import { WelcomeStep } from './welcome-step';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase-client';
 
 type OnboardingStage = 'soundCheck' | 'welcome' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'videoCapture' | 'complete';
 
@@ -50,9 +51,31 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
       .then(setHeadphonesAnimation)
       .catch(err => {
         console.error(err);
-        toast.error('Couldn’t load sound-check animation.');
+        toast.error('Couldn\u2019t load sound-check animation.');
       });
   }, []);
+
+  const markOnboardingComplete = async (rid?: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from('user_profiles')
+          .upsert({
+            user_id: session.user.id,
+            onboarding_completed: true,
+          }, { onConflict: 'user_id' });
+      }
+    } catch (error) {
+      console.error('Failed to mark onboarding complete in DB:', error);
+    }
+    // Cache in localStorage as fallback
+    localStorage.setItem('onboardingComplete', 'true');
+    if (rid) {
+      localStorage.setItem('replicaId', rid);
+    }
+    onComplete();
+  };
 
   const handleSoundCheckNext = (event: React.MouseEvent<HTMLButtonElement>) => {
     soundRef.current?.play();
@@ -66,9 +89,9 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const handleDatabaseReady = () => { setStage('personalData'); };
   const handlePersonalDataComplete = (data: PersonalData) => { setPersonalData(data); setStage('cameraCapture'); };
   const handleCameraCaptureComplete = (photoData: string) => { setUserPhoto(photoData); setStage('videoCapture'); };
-  const handleVideoCaptureComplete = (replicaId: string) => { setReplicaId(replicaId); localStorage.setItem('onboardingComplete','true'); localStorage.setItem('replicaId', replicaId); onComplete(); };
+  const handleVideoCaptureComplete = (rid: string) => { setReplicaId(rid); markOnboardingComplete(rid); };
   const handleSkipCameraCapture = () => { toast.info('Camera capture skipped. You can add a photo later.'); setStage('videoCapture'); };
-  const handleSkipVideoCapture = () => { localStorage.setItem('onboardingComplete','true'); toast.info('Video capture skipped. You can create your Echo avatar later.'); onComplete(); };
+  const handleSkipVideoCapture = () => { toast.info('Video capture skipped. You can create your Echo avatar later.'); markOnboardingComplete(); };
   const handleBackToWelcome = () => { setStage('welcome'); };
   const handleBackToDatabaseCheck = () => { setStage('dbCheck'); };
   const handleBackToPersonalData = () => { setStage('personalData'); };
@@ -83,7 +106,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
         {stage === 'soundCheck' && (
           !headphonesAnimation ? (
             <div className="w-full max-w-lg mx-auto text-center">
-              Loading sound-check…
+              Loading sound-check&hellip;
             </div>
           ) : (
             <motion.div
