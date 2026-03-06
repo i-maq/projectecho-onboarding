@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Calendar, ArrowLeft, Video, Image, FileText, Clock, ChevronRight, ChevronLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { Echo } from './dashboard';

@@ -1,13 +1,19 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
+import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 
-const poppins = Poppins({ 
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-poppins'
+const poppins = localFont({
+  src: [
+    { path: '../public/fonts/Poppins-300.woff2', weight: '300', style: 'normal' },
+    { path: '../public/fonts/Poppins-400.woff2', weight: '400', style: 'normal' },
+    { path: '../public/fonts/Poppins-500.woff2', weight: '500', style: 'normal' },
+    { path: '../public/fonts/Poppins-600.woff2', weight: '600', style: 'normal' },
+    { path: '../public/fonts/Poppins-700.woff2', weight: '700', style: 'normal' },
+    { path: '../public/fonts/Poppins-800.woff2', weight: '800', style: 'normal' },
+  ],
+  variable: '--font-poppins',
 });
 
 export const metadata: Metadata = {

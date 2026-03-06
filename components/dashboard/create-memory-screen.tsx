@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Camera, ImagePlus, X, Loader2, Video, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Echo } from './dashboard';

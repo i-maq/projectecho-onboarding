@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Support both public and server env vars
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
@@ -11,16 +11,26 @@ const supabaseKey =
     ? (supabaseServiceKey || supabaseAnonKey)
     : supabaseAnonKey;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables. Ensure SUPABASE_URL and a key are set.');
+let supabase: SupabaseClient;
+
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+} else {
+  console.warn('Missing Supabase environment variables. Server-side DB operations will fail.');
+  // Create a placeholder that will throw at call-time rather than at import-time
+  supabase = new Proxy({} as SupabaseClient, {
+    get() {
+      throw new Error('Supabase client not initialized — missing environment variables.');
+    },
+  });
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+export { supabase };
 
 // Helper function to set user context for RLS
 export const setUserContext = async (userId: number) => {

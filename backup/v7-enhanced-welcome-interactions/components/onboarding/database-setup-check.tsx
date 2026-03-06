@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Database, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
 interface DatabaseSetupCheckProps {

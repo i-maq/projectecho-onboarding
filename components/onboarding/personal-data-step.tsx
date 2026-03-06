@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, User, Sparkles, Loader2 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Calendar, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Lottie from 'lottie-react';
+import { supabase } from '@/lib/supabase-client';
 
 interface PersonalDataStepProps {
   onComplete: (data: PersonalData) => void;
@@ -24,7 +25,7 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
     lastName: '',
     dateOfBirth: ''
   });
-  
+
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,14 +40,14 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
       .then(setPersonalDataAnimation)
       .catch(err => {
         console.error(err);
-        toast.error('Couldn’t load the personal data icon.');
+        toast.error('Couldn\u2019t load the personal data icon.');
       });
   }, []);
 
   if (!personalDataAnimation) {
     return (
       <div className="w-full h-full flex items-center justify-center px-6 py-8">
-        Loading personal-data step…
+        Loading personal-data step\u2026
       </div>
     );
   }
@@ -56,25 +57,25 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
     const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
-    
+
     return age;
   };
 
   const validateForm = (): boolean => {
     const newErrors: {[key: string]: string} = {};
-    
+
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
-    
+
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     }
-    
+
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = 'Date of birth is required';
     } else {
@@ -85,44 +86,35 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
         newErrors.dateOfBirth = 'Please enter a valid date of birth';
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const saveProfileToDatabase = async (personalData: PersonalData): Promise<boolean> => {
-    // In production (Netlify preview or prod), skip actual saving
-    if (process.env.NODE_ENV === 'production') {
-      return true;
-    }
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         toast.error('Please sign in again');
         return false;
       }
 
-      const response = await fetch('/api/profile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          firstName: personalData.firstName,
-          lastName: personalData.lastName,
-          dateOfBirth: personalData.dateOfBirth,
-          age: personalData.age
-        }),
-      });
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: session.user.id,
+          first_name: personalData.firstName,
+          last_name: personalData.lastName,
+          date_of_birth: personalData.dateOfBirth,
+          age: personalData.age,
+        }, { onConflict: 'user_id' });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save profile');
+      if (error) {
+        console.error('Error saving profile:', error);
+        toast.error('Failed to save your information. Please try again.');
+        return false;
       }
 
-      const savedProfile = await response.json();
-      console.log('Profile saved successfully:', savedProfile);
       return true;
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -133,7 +125,7 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -150,9 +142,9 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
 
     // Save to database
     const saved = await saveProfileToDatabase(personalData);
-    
+
     if (saved) {
-      // Also store in localStorage for offline access
+      // Also store in localStorage as a cache for offline access
       localStorage.setItem('personalData', JSON.stringify(personalData));
       toast.success(`Welcome, ${personalData.firstName}!`);
       onComplete(personalData);
@@ -162,9 +154,9 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
   };
 
   const isFormValid = () => {
-    return formData.firstName.trim() && 
-           formData.lastName.trim() && 
-           formData.dateOfBirth && 
+    return formData.firstName.trim() &&
+           formData.lastName.trim() &&
+           formData.dateOfBirth &&
            Object.keys(errors).length === 0;
   };
 
@@ -178,14 +170,14 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
       >
         <div className="glass-panel-light text-center">
           {/* Lottie animation with gradient background container */}
-          <motion.div 
+          <motion.div
             className="flex justify-center mb-6"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
-              <Lottie 
+              <Lottie
                 animationData={personalDataAnimation}
                 loop={true}
                 style={{
@@ -199,7 +191,7 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
           <h2 className="text-3xl font-extrabold mb-3 text-gray-800 text-title">
             Personalize your Echo
           </h2>
-          
+
           <p className="text-gray-600 mb-8 text-body">
             Your Echo needs some basic information to create your perfect experience
           </p>
@@ -269,7 +261,7 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
                 <p className="mt-1 text-sm text-red-500 text-caption">{errors.dateOfBirth}</p>
               )}
               {formData.dateOfBirth && !errors.dateOfBirth && (
-                <motion.p 
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="mt-1 text-sm text-purple-600 text-caption"
@@ -290,13 +282,13 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
               >
                 Back
               </button>
-              
+
               <button
                 type="submit"
                 disabled={!isFormValid() || isSubmitting}
                 className={`neumorphic-button-light text-button px-8 flex items-center ${
                   !isFormValid() || isSubmitting
-                    ? 'opacity-50 cursor-not-allowed' 
+                    ? 'opacity-50 cursor-not-allowed'
                     : 'bg-purple-600 text-white shadow-lg hover:bg-purple-700'
                 }`}
               >
