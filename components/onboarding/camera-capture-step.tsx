@@ -405,6 +405,52 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
 
           {/* Camera Interface */}
           <div className="relative">
+            {/* Single video element always in the DOM so the ref is stable.
+                Visible only when camera is active and no photo captured yet. */}
+            <div className={isCameraActive && !capturedPhoto ? 'block' : 'hidden'}>
+              <div className="relative space-y-6">
+                <div className="relative">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    onClick={() => {
+                      if (videoRef.current && videoRef.current.paused) {
+                        videoRef.current.play().catch(console.error);
+                      }
+                    }}
+                    className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover cursor-pointer"
+                  />
+                  <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                    Camera Active
+                  </div>
+                </div>
+
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={stopCamera}
+                    disabled={isProcessing}
+                    className="neumorphic-button-light text-button px-6 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={capturePhoto}
+                    disabled={isProcessing}
+                    className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 disabled:opacity-50"
+                  >
+                    <Camera className="h-5 w-5 mr-2" />
+                    Capture Photo
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Single canvas element for photo capture */}
+            <canvas ref={canvasRef} className="hidden" />
+
             {!isCameraActive && !capturedPhoto && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -426,7 +472,7 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
                     )}
                   </div>
                 </div>
-                
+
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
                     <div className="flex items-center">
@@ -462,66 +508,6 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
                 </div>
               </motion.div>
             )}
-
-            {isCameraActive && !capturedPhoto && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="space-y-6"
-              >
-                <div className="relative">
-                  {/* Always render video element when camera should be active */}
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    onClick={() => {
-                      // Allow manual play if autoplay failed
-                      if (videoRef.current && videoRef.current.paused) {
-                        videoRef.current.play().catch(console.error);
-                      }
-                    }}
-                    className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover cursor-pointer"
-                  />
-                  <canvas ref={canvasRef} className="hidden" />
-                  
-                  {/* Overlay for debugging */}
-                  <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                    Camera Active
-                  </div>
-                </div>
-
-                <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={stopCamera}
-                    disabled={isProcessing}
-                    className="neumorphic-button-light text-button px-6 disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  
-                  <button
-                    onClick={capturePhoto}
-                    disabled={isProcessing}
-                    className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 disabled:opacity-50"
-                  >
-                    <Camera className="h-5 w-5 mr-2" />
-                    Capture Photo
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Always render video element but hide it when not active */}
-            <video
-              ref={videoRef}
-              autoPlay
-              muted
-              playsInline
-              className="hidden"
-            />
-            <canvas ref={canvasRef} className="hidden" />
 
             {capturedPhoto && (
               <motion.div
