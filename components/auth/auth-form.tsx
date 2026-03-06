@@ -23,11 +23,25 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
         if (error) throw error;
         toast.success('Welcome back!');
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
         });
         if (error) throw error;
+
+        // Supabase returns a user with empty identities if the email is already registered
+        // (security measure to avoid leaking whether an account exists)
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          throw new Error('An account with this email may already exist. Try signing in instead.');
+        }
+
+        // If email confirmation is required, session will be null
+        if (!data.session) {
+          toast.success('Check your email to confirm your account before signing in.');
+          setIsLogin(true);
+          return;
+        }
+
         toast.success('Account created successfully!');
       }
       onSuccess();
