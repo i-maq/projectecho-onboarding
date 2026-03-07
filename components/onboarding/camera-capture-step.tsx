@@ -120,52 +120,44 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
         throw new Error('Video element became unavailable');
       }
 
-      videoRef.current.srcObject = stream;
+      const video = videoRef.current;
       streamRef.current = stream;
-      
-      // Wait for the video to be ready with valid dimensions
-      videoRef.current.onloadedmetadata = async () => {
-        console.log('Video metadata loaded');
+
+      // Register event handlers BEFORE setting srcObject to avoid race conditions
+      // where metadata loads before the handler is attached.
+      video.onloadedmetadata = async () => {
+        console.log('[Camera] onloadedmetadata fired');
         try {
-          if (videoRef.current) {
-            await videoRef.current.play();
-            console.log('Video playing, waiting for valid dimensions...');
-            
-            // Wait for video to have valid dimensions before setting camera as active
-            await waitForVideoReady(videoRef.current);
-            
-            console.log('Video fully ready with valid dimensions');
+          await video.play();
+          console.log('[Camera] video.play() succeeded, waiting for dimensions...');
+          await waitForVideoReady(video);
+          console.log('[Camera] dimensions ready — activating viewfinder');
+          setIsCameraActive(true);
+          setIsLoading(false);
+        } catch (playError) {
+          console.error('[Camera] play/dimension error:', playError);
+          // Even if play() rejects (e.g. autoplay policy), dimensions may still be valid
+          try {
+            await waitForVideoReady(video);
             setIsCameraActive(true);
             setIsLoading(false);
-          }
-        } catch (playError) {
-          console.error('Error playing video or waiting for dimensions:', playError);
-          
-          // Try to wait for dimensions even if autoplay failed
-          if (videoRef.current) {
-            try {
-              await waitForVideoReady(videoRef.current);
-              setIsCameraActive(true);
-              setIsLoading(false);
-              toast.info('Click the video area if camera preview doesn\'t appear');
-            } catch (dimensionError) {
-              console.error('Failed to get valid video dimensions:', dimensionError);
-              setError('Camera failed to initialize properly. Please try again.');
-              setIsLoading(false);
-            }
-          } else {
-            setError('Video element became unavailable during initialization');
+            toast.info('Click the video area if camera preview doesn\'t appear');
+          } catch (dimensionError) {
+            console.error('[Camera] dimension validation failed:', dimensionError);
+            setError('Camera failed to initialize properly. Please try again.');
             setIsLoading(false);
           }
         }
       };
 
-      // Handle video errors
-      videoRef.current.onerror = (e) => {
-        console.error('Video element error:', e);
+      video.onerror = (e) => {
+        console.error('[Camera] video element error:', e);
         setError('Error loading camera feed');
         setIsLoading(false);
       };
+
+      // Attach stream AFTER handlers are registered
+      video.srcObject = stream;
         
     } catch (err: any) {
       console.error('Error accessing camera:', err);
@@ -405,6 +397,54 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
 
           {/* Camera Interface */}
           <div className="relative">
+            {/* Video element is always in the DOM and never display:none.
+                We use visibility:hidden + h-0 overflow-hidden when inactive so browsers
+                still fire loadedmetadata and allow .play(). */}
+            <div
+              className={isCameraActive && !capturedPhoto
+                ? 'relative space-y-6'
+                : 'invisible h-0 overflow-hidden'
+              }
+              style={{ position: 'relative', zIndex: 2 }}
+            >
+              <div className="relative">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  onClick={() => {
+                    if (videoRef.current && videoRef.current.paused) {
+                      videoRef.current.play().catch(console.error);
+                    }
+                  }}
+                  className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover cursor-pointer"
+                />
+              </div>
+
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={stopCamera}
+                  disabled={isProcessing}
+                  className="neumorphic-button-light text-button px-6 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={capturePhoto}
+                  disabled={isProcessing}
+                  className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 disabled:opacity-50"
+                >
+                  <Camera className="h-5 w-5 mr-2" />
+                  Capture Photo
+                </button>
+              </div>
+            </div>
+
+            {/* Single canvas element for photo capture */}
+            <canvas ref={canvasRef} className="hidden" />
+
             {!isCameraActive && !capturedPhoto && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -426,7 +466,7 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
                     )}
                   </div>
                 </div>
-                
+
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
                     <div className="flex items-center">
@@ -462,66 +502,6 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
                 </div>
               </motion.div>
             )}
-
-            {isCameraActive && !capturedPhoto && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="space-y-6"
-              >
-                <div className="relative">
-                  {/* Always render video element when camera should be active */}
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    onClick={() => {
-                      // Allow manual play if autoplay failed
-                      if (videoRef.current && videoRef.current.paused) {
-                        videoRef.current.play().catch(console.error);
-                      }
-                    }}
-                    className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover cursor-pointer"
-                  />
-                  <canvas ref={canvasRef} className="hidden" />
-                  
-                  {/* Overlay for debugging */}
-                  <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                    Camera Active
-                  </div>
-                </div>
-
-                <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={stopCamera}
-                    disabled={isProcessing}
-                    className="neumorphic-button-light text-button px-6 disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  
-                  <button
-                    onClick={capturePhoto}
-                    disabled={isProcessing}
-                    className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 disabled:opacity-50"
-                  >
-                    <Camera className="h-5 w-5 mr-2" />
-                    Capture Photo
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Always render video element but hide it when not active */}
-            <video
-              ref={videoRef}
-              autoPlay
-              muted
-              playsInline
-              className="hidden"
-            />
-            <canvas ref={canvasRef} className="hidden" />
 
             {capturedPhoto && (
               <motion.div
