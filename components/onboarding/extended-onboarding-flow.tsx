@@ -7,12 +7,11 @@ import { DynamicOrbIntro } from '../orb/dynamic-orb-intro';
 import { DatabaseSetupCheck } from './database-setup-check';
 import { PersonalDataStep } from './personal-data-step';
 import { CameraCaptureStep } from './camera-capture-step';
-import { VideoCaptureStep } from '../avatar/video-capture-step';
 import { WelcomeStep } from './welcome-step';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase-client';
 
-type OnboardingStage = 'soundCheck' | 'welcome' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'videoCapture' | 'complete';
+type OnboardingStage = 'soundCheck' | 'welcome' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'complete';
 
 interface PersonalData {
   firstName: string;
@@ -25,7 +24,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const [stage, setStage] = useState<OnboardingStage>('soundCheck');
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
-  const [replicaId, setReplicaId] = useState<string | null>(null);
   const [clickPulse, setClickPulse] = useState<{ x: number, y: number, key: number } | null>(null);
   const [headphonesAnimation, setHeadphonesAnimation] = useState<any>(null);
 
@@ -55,7 +53,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
       });
   }, []);
 
-  const markOnboardingComplete = async (rid?: string) => {
+  const markOnboardingComplete = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -71,9 +69,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     }
     // Cache in localStorage as fallback
     localStorage.setItem('onboardingComplete', 'true');
-    if (rid) {
-      localStorage.setItem('replicaId', rid);
-    }
     onComplete();
   };
 
@@ -88,14 +83,11 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const handleOrbComplete = () => { setStage('dbCheck'); };
   const handleDatabaseReady = () => { setStage('personalData'); };
   const handlePersonalDataComplete = (data: PersonalData) => { setPersonalData(data); setStage('cameraCapture'); };
-  const handleCameraCaptureComplete = (photoData: string) => { setUserPhoto(photoData); setStage('videoCapture'); };
-  const handleVideoCaptureComplete = (rid: string) => { setReplicaId(rid); markOnboardingComplete(rid); };
-  const handleSkipCameraCapture = () => { toast.info('Camera capture skipped. You can add a photo later.'); setStage('videoCapture'); };
-  const handleSkipVideoCapture = () => { toast.info('Video capture skipped. You can create your Echo avatar later.'); markOnboardingComplete(); };
+  const handleCameraCaptureComplete = (photoData: string) => { setUserPhoto(photoData); markOnboardingComplete(); };
+  const handleSkipCameraCapture = () => { toast.info('Camera capture skipped. You can add a photo later.'); markOnboardingComplete(); };
   const handleBackToWelcome = () => { setStage('welcome'); };
   const handleBackToDatabaseCheck = () => { setStage('dbCheck'); };
   const handleBackToPersonalData = () => { setStage('personalData'); };
-  const handleBackToCameraCapture = () => { setStage('cameraCapture'); };
 
   return (
     <div className="w-full h-full flex items-center justify-center px-6 py-8">
@@ -163,11 +155,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
           </motion.div>
         )}
 
-        {stage === 'videoCapture' && personalData && (
-          <motion.div key="videoCapture" initial={{opacity:0, x:100}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-100}} transition={{duration:0.5}} className="w-full flex flex-col overflow-y-auto">
-            <VideoCaptureStep personalData={personalData} onComplete={handleVideoCaptureComplete} onBack={handleBackToCameraCapture} onSkip={handleSkipVideoCapture} />
-          </motion.div>
-        )}
+
       </AnimatePresence>
 
       {clickPulse && <div key={clickPulse.key} className="click-pulse" style={{ left: clickPulse.x, top: clickPulse.y }} />}
