@@ -40,35 +40,82 @@ export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: V
   const [replicaStatus, setReplicaStatus] = useState<string | null>(null);
   const [statusCheckInterval, setStatusCheckInterval] = useState<NodeJS.Timeout | null>(null);
 
+  const waitForVideoReady = (videoElement: HTMLVideoElement): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Video failed to initialize with valid dimensions'));
+      }, 10000);
+
+      const checkDimensions = () => {
+        if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+          clearTimeout(timeout);
+          console.log('[Video] dimensions ready:', videoElement.videoWidth, 'x', videoElement.videoHeight);
+          resolve();
+        } else {
+          setTimeout(checkDimensions, 100);
+        }
+      };
+
+      checkDimensions();
+    });
+  };
+
   const startCamera = useCallback(async () => {
     try {
       setError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      console.log('[Video] Requesting camera + mic access...');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           width: { ideal: 1280 },
           height: { ideal: 720 },
           facingMode: 'user'
         },
         audio: true
       });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        // Explicitly call play() to start the video stream
-        try {
-          await videoRef.current.play();
-          console.log('Camera stream started successfully');
-        } catch (playError) {
-          console.error('Error auto-playing camera stream:', playError);
-          // This error is non-fatal, as user may just need to interact with the page first
-          toast.info('Click the video area if camera preview doesn\'t appear');
-        }
-        
-        streamRef.current = stream;
-        setIsCameraActive(true);
+
+      console.log('[Video] Stream acquired');
+
+      if (!videoRef.current) {
+        console.error('[Video] videoRef not available');
+        setError('Video element not ready. Please try again.');
+        stream.getTracks().forEach(t => t.stop());
+        return;
       }
+
+      const video = videoRef.current;
+      streamRef.current = stream;
+
+      // Register handlers BEFORE setting srcObject to avoid race condition
+      video.onloadedmetadata = async () => {
+        console.log('[Video] onloadedmetadata fired');
+        try {
+          await video.play();
+          console.log('[Video] play() succeeded, waiting for dimensions...');
+          await waitForVideoReady(video);
+          console.log('[Video] dimensions ready — activating viewfinder');
+          setIsCameraActive(true);
+        } catch (playError) {
+          console.error('[Video] play/dimension error:', playError);
+          try {
+            await waitForVideoReady(video);
+            setIsCameraActive(true);
+            toast.info('Click the video area if camera preview doesn\'t appear');
+          } catch (dimensionError) {
+            console.error('[Video] dimension validation failed:', dimensionError);
+            setError('Camera failed to initialize properly. Please try again.');
+          }
+        }
+      };
+
+      video.onerror = (e) => {
+        console.error('[Video] element error:', e);
+        setError('Error loading camera feed');
+      };
+
+      // Attach stream AFTER handlers are registered
+      video.srcObject = stream;
     } catch (err) {
-      console.error('Error accessing camera or microphone:', err);
+      console.error('[Video] Error accessing camera or microphone:', err);
       setError('Unable to access camera and microphone. Please ensure you have granted camera and audio permissions.');
     }
   }, []);
@@ -400,6 +447,89 @@ export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: V
 
           {/* Camera/Video Interface */}
           <div className="relative">
+            {/* Video element is always in the DOM and never display:none.
+                We use visibility:hidden + h-0 overflow-hidden when inactive so
+                browsers still fire loadedmetadata and allow .play(). */}
+            <div
+              className={isCameraActive && !recordedVideo
+                ? 'space-y-6'
+                : 'invisible h-0 overflow-hidden'
+              }
+              style={{ position: 'relative', zIndex: 2 }}
+            >
+              <div className="relative">
+                {countdown !== null && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10 rounded-2xl">
+                    <div className="bg-white rounded-full h-24 w-24 flex items-center justify-center">
+                      <span className="text-5xl font-bold text-purple-600">{countdown}</span>
+                    </div>
+                  </div>
+                )}
+
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  muted={isMuted}
+                  playsInline
+                  className="w-full h-80 bg-black rounded-2xl mx-auto object-cover"
+                />
+
+                {isRecording && (
+                  <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full flex items-center">
+                    <div className="w-2 h-2 rounded-full bg-white animate-pulse mr-2"></div>
+                    <span>{formatTime(recordingTime)}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-4 justify-center">
+                {!isRecording ? (
+                  <>
+                    <button
+                      onClick={stopCamera}
+                      disabled={isProcessing || countdown !== null}
+                      className="neumorphic-button-light text-button px-6 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      onClick={toggleMute}
+                      className="neumorphic-button-light text-button px-4"
+                    >
+                      {isMuted ? (
+                        <><MicOff className="h-4 w-4 mr-2" />Unmute</>
+                      ) : (
+                        <><Mic className="h-4 w-4 mr-2" />Mute</>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (currentScript < scriptPrompts.length - 1) {
+                          setCurrentScript(currentScript + 1);
+                        }
+                        startCountdown();
+                      }}
+                      disabled={isProcessing || countdown !== null}
+                      className="neumorphic-button-light bg-red-600 text-white shadow-lg hover:bg-red-700 text-button px-8 disabled:opacity-50"
+                    >
+                      <Camera className="h-5 w-5 mr-2" />
+                      {currentScript < scriptPrompts.length - 1 ? 'Record & Next Phrase' : 'Record Final Phrase'}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={stopRecording}
+                    className="neumorphic-button-light bg-red-600 text-white shadow-lg hover:bg-red-700 text-button px-8"
+                  >
+                    <Square className="h-4 w-4 mr-2" />
+                    Stop Recording
+                  </button>
+                )}
+              </div>
+            </div>
+
             {!isCameraActive && !recordedVideo && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -412,7 +542,7 @@ export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: V
                     <p className="text-gray-500 text-body">Video preview will appear here</p>
                   </div>
                 </div>
-                
+
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
                     <div className="flex items-center">
@@ -433,87 +563,7 @@ export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: V
                   </button>
                 </div>
               </motion.div>
-            )}
-
-            {isCameraActive && !recordedVideo && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="space-y-6"
-              >
-                <div className="relative">
-                  {countdown !== null && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10 rounded-2xl">
-                      <div className="bg-white rounded-full h-24 w-24 flex items-center justify-center">
-                        <span className="text-5xl font-bold text-purple-600">{countdown}</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    muted={isMuted}
-                    playsInline
-                    className="w-full h-80 bg-black rounded-2xl mx-auto object-cover"
-                  />
-                  
-                  {isRecording && (
-                    <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-white animate-pulse mr-2"></div>
-                      <span>{formatTime(recordingTime)}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-4 justify-center">
-                  {!isRecording ? (
-                    <>
-                      <button
-                        onClick={stopCamera}
-                        disabled={isProcessing || countdown !== null}
-                        className="neumorphic-button-light text-button px-6 disabled:opacity-50"
-                      >
-                        Cancel
-                      </button>
-                      
-                      <button
-                        onClick={toggleMute}
-                        className="neumorphic-button-light text-button px-4"
-                      >
-                        {isMuted ? (
-                          <><MicOff className="h-4 w-4 mr-2" />Unmute</>
-                        ) : (
-                          <><Mic className="h-4 w-4 mr-2" />Mute</>
-                        )}
-                      </button>
-                      
-                      <button
-                        onClick={() => {
-                          if (currentScript < scriptPrompts.length - 1) {
-                            setCurrentScript(currentScript + 1);
-                          }
-                          startCountdown();
-                        }}
-                        disabled={isProcessing || countdown !== null}
-                        className="neumorphic-button-light bg-red-600 text-white shadow-lg hover:bg-red-700 text-button px-8 disabled:opacity-50"
-                      >
-                        <Camera className="h-5 w-5 mr-2" />
-                        {currentScript < scriptPrompts.length - 1 ? 'Record & Next Phrase' : 'Record Final Phrase'}
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={stopRecording}
-                      className="neumorphic-button-light bg-red-600 text-white shadow-lg hover:bg-red-700 text-button px-8"
-                    >
-                      <Square className="h-4 w-4 mr-2" />
-                      Stop Recording
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            )}
+            )
 
             {recordedVideo && (
               <motion.div
