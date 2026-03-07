@@ -563,7 +563,7 @@ export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: V
                   </button>
                 </div>
               </motion.div>
-            )
+            )}
 
             {recordedVideo && (
               <motion.div
