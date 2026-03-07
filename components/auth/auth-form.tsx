@@ -29,13 +29,10 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
         });
         if (error) throw error;
 
-        // Supabase returns a user with empty identities if the email is already registered
-        // (security measure to avoid leaking whether an account exists)
         if (data.user && data.user.identities && data.user.identities.length === 0) {
           throw new Error('An account with this email may already exist. Try signing in instead.');
         }
 
-        // If email confirmation is required, session will be null
         if (!data.session) {
           toast.success('Check your email to confirm your account before signing in.');
           setIsLogin(true);
@@ -61,7 +58,6 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
       className="w-full max-w-md"
     >
       <div className="glass-panel-light text-center">
-        {/* Bolt.new badge at top center */}
         <div className="flex justify-center mb-4">
           <a href="https://bolt.new/" target="_blank" rel="noopener noreferrer">
             <img
@@ -84,7 +80,7 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
             placeholder="Email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800 text-body"
+            className="glass-input"
             required
           />
           <input
@@ -92,13 +88,13 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
             placeholder="Password"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            className="w-full p-3 rounded-lg bg-white/50 border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none text-gray-800 text-body"
+            className="glass-input"
             required
             minLength={6}
           />
           <button
             type="submit"
-            className="w-full neumorphic-button-light h-12 text-button"
+            className="w-full glass-button glass-button-primary h-12 text-button"
             disabled={isLoading}
           >
             {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Create Account')}
@@ -108,7 +104,7 @@ export function AuthForm({ onSuccess }: { onSuccess: () => void }) {
           <button
             type="button"
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-gray-500 hover:text-purple-600 transition-colors text-caption"
+            className="text-sm text-gray-500 hover:text-sky-600 transition-colors text-caption"
           >
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
           </button>
