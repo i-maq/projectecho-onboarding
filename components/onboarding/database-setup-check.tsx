@@ -57,7 +57,7 @@ export function DatabaseSetupCheck({ onContinue }: DatabaseSetupCheckProps) {
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center px-6 py-8">
+    <div className="w-full min-h-[100dvh] flex items-center justify-center px-6 py-8 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

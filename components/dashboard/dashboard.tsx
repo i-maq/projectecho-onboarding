@@ -63,7 +63,7 @@ export function Dashboard() {
   const handleMemorySaved = (newEcho: Echo) => { setEchoes([newEcho, ...echoes]); toast.success('Memory saved successfully!'); setCurrentScreen('main'); };
 
   return (
-    <div className="min-h-screen h-full flex flex-col bg-white text-gray-800">
+    <div className="min-h-[100dvh] flex flex-col bg-white text-gray-800">
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

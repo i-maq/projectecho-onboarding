@@ -226,7 +226,7 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center px-6 py-8">
+    <div className="w-full min-h-[100dvh] flex items-center justify-center px-6 py-8 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -263,9 +263,9 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
                   className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover cursor-pointer" />
               </div>
 
-              <div className="flex gap-4 justify-center">
-                <button onClick={stopCamera} disabled={isProcessing} className="glass-button text-button px-6 disabled:opacity-50">Cancel</button>
-                <button onClick={capturePhoto} disabled={isProcessing} className="glass-button glass-button-primary text-button px-8 disabled:opacity-50">
+              <div className="flex flex-row gap-3">
+                <button onClick={stopCamera} disabled={isProcessing} className="glass-button text-button flex-1 disabled:opacity-50">Cancel</button>
+                <button onClick={capturePhoto} disabled={isProcessing} className="glass-button glass-button-primary text-button flex-1 disabled:opacity-50">
                   <Camera className="h-5 w-5 mr-2" />Capture Photo
                 </button>
               </div>
@@ -317,12 +317,12 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
                   </p>
                 </div>
 
-                <div className="flex gap-4 justify-center">
-                  <button onClick={retakePhoto} disabled={isProcessing} className="glass-button text-button px-6 disabled:opacity-50">
+                <div className="flex flex-row gap-3">
+                  <button onClick={retakePhoto} disabled={isProcessing} className="glass-button text-button flex-1 disabled:opacity-50">
                     <RotateCcw className="h-4 w-4 mr-2" />Retake
                   </button>
                   <button onClick={handleConfirmPhoto} disabled={isProcessing}
-                    className="glass-button text-button px-8 disabled:opacity-50" style={{ background: 'rgba(16, 185, 129, 0.09)', color: '#059669' }}>
+                    className="glass-button text-button flex-1 disabled:opacity-50" style={{ background: 'rgba(16, 185, 129, 0.09)', color: '#059669' }}>
                     {isProcessing ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Creating Echo...</>)
                       : (<><Check className="h-4 w-4 mr-2" />Looks Good!</>)}
                   </button>
@@ -331,15 +331,13 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
             )}
           </div>
 
-          <div className="flex justify-between pt-8">
-            <div className="flex space-x-3">
-              <button onClick={onBack} disabled={isProcessing} className="glass-button text-button px-6 disabled:opacity-50">Back</button>
-              <button onClick={onSkip} disabled={isProcessing} className="glass-button text-button px-6 disabled:opacity-50">
-                Skip for now <ArrowRight className="h-4 w-4 ml-2 inline" />
-              </button>
-            </div>
-            <div className="text-sm text-gray-500 text-caption self-center">Step 2 of 2</div>
+          <div className="flex flex-row gap-3 pt-8 justify-center">
+            <button onClick={onBack} disabled={isProcessing} className="glass-button text-button flex-1 disabled:opacity-50">Back</button>
+            <button onClick={onSkip} disabled={isProcessing} className="glass-button text-button flex-1 disabled:opacity-50">
+              Skip for now <ArrowRight className="h-4 w-4 ml-2 inline" />
+            </button>
           </div>
+          <div className="text-sm text-gray-500 text-caption text-center pt-3">Step 2 of 2</div>
         </div>
       </motion.div>
     </div>

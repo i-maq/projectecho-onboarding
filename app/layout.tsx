@@ -37,7 +37,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="gradient-bg min-h-screen h-full flex-grow">
+          <div className="gradient-bg min-h-[100dvh] flex-grow overflow-y-auto">
             {children}
           </div>
           <Toaster />

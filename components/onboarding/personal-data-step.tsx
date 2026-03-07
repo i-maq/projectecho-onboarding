@@ -45,7 +45,7 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
 
   if (!personalDataAnimation) {
     return (
-      <div className="w-full h-full flex items-center justify-center px-6 py-8">
+      <div className="w-full min-h-[100dvh] flex items-center justify-center px-6 py-8">
         Loading personal-data step\u2026
       </div>
     );
@@ -128,7 +128,7 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center px-6 py-8">
+    <div className="w-full min-h-[100dvh] flex items-center justify-center px-6 py-8 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -188,14 +188,15 @@ export function PersonalDataStep({ onComplete, onBack }: PersonalDataStepProps) 
               )}
             </div>
 
-            <div className="flex justify-between pt-4">
-              <button type="button" onClick={onBack} disabled={isSubmitting} className="glass-button text-button px-6 disabled:opacity-50">Back</button>
+            <div className="flex flex-row gap-3 pt-4">
+              <button type="button" onClick={onBack} disabled={isSubmitting} className="glass-button text-button flex-1 disabled:opacity-50">Back</button>
               <button type="submit" disabled={!isFormValid() || isSubmitting}
-                className={`glass-button glass-button-primary text-button px-8 flex items-center ${!isFormValid() || isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                className={`glass-button glass-button-primary text-button flex-1 flex items-center justify-center ${!isFormValid() || isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {isSubmitting ? 'Saving...' : 'Continue'}
               </button>
             </div>
+            <div className="text-sm text-gray-500 text-caption text-center pt-3">Step 1 of 2</div>
           </form>
         </div>
       </motion.div>

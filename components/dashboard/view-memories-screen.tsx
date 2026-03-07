@@ -78,7 +78,7 @@ export function ViewMemoriesScreen({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="h-full flex flex-col space-y-6 overflow-y-auto"
+      className="flex-grow flex flex-col space-y-6 overflow-y-auto"
     >
       <div className="glass-panel-light flex-grow overflow-y-auto">
         <h2 className="text-2xl font-bold mb-6">Visit a Memory</h2>

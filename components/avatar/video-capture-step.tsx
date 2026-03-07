@@ -206,7 +206,7 @@ export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: V
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center px-6 py-8">
+    <div className="w-full min-h-[100dvh] flex items-center justify-center px-6 py-8 overflow-y-auto">
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }} className="w-full max-w-2xl mx-auto">
         <div className="glass-panel-light text-center">
           <motion.div className="text-center mb-6" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
@@ -268,21 +268,21 @@ export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: V
                 )}
               </div>
 
-              <div className="flex gap-4 justify-center">
+              <div className="flex flex-row gap-3">
                 {!isRecording ? (
                   <>
-                    <button onClick={stopCamera} disabled={isProcessing || countdown !== null} className="glass-button text-button px-6 disabled:opacity-50">Cancel</button>
-                    <button onClick={toggleMute} className="glass-button text-button px-4">
+                    <button onClick={stopCamera} disabled={isProcessing || countdown !== null} className="glass-button text-button flex-1 disabled:opacity-50">Cancel</button>
+                    <button onClick={toggleMute} className="glass-button text-button flex-1">
                       {isMuted ? (<><MicOff className="h-4 w-4 mr-2" />Unmute</>) : (<><Mic className="h-4 w-4 mr-2" />Mute</>)}
                     </button>
                     <button onClick={() => { if (currentScript < scriptPrompts.length - 1) setCurrentScript(currentScript + 1); startCountdown(); }}
                       disabled={isProcessing || countdown !== null}
-                      className="glass-button text-button px-8 disabled:opacity-50" style={{ background: 'rgba(239, 68, 68, 0.09)', color: '#dc2626' }}>
-                      <Camera className="h-5 w-5 mr-2" />{currentScript < scriptPrompts.length - 1 ? 'Record & Next Phrase' : 'Record Final Phrase'}
+                      className="glass-button text-button flex-1 disabled:opacity-50" style={{ background: 'rgba(239, 68, 68, 0.09)', color: '#dc2626' }}>
+                      <Camera className="h-5 w-5 mr-2" />{currentScript < scriptPrompts.length - 1 ? 'Record & Next' : 'Record Final'}
                     </button>
                   </>
                 ) : (
-                  <button onClick={stopRecording} className="glass-button text-button px-8" style={{ background: 'rgba(239, 68, 68, 0.09)', color: '#dc2626' }}>
+                  <button onClick={stopRecording} className="glass-button text-button flex-1" style={{ background: 'rgba(239, 68, 68, 0.09)', color: '#dc2626' }}>
                     <Square className="h-4 w-4 mr-2" />Stop Recording
                   </button>
                 )}
@@ -321,20 +321,20 @@ export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: V
                 <div className="bg-sky-50 border border-sky-200 rounded-lg p-4 max-w-md mx-auto">
                   <p className="text-sky-800 text-sm text-body">This video will be used to create your Echo avatar. The AI needs clear audio and video to work best.</p>
                 </div>
-                <div className="flex gap-4 justify-center">
+                <div className="flex flex-row gap-3">
                   {!replicaId && (
                     <>
-                      <button onClick={restartCapture} disabled={isProcessing} className="glass-button text-button px-6 disabled:opacity-50">
+                      <button onClick={restartCapture} disabled={isProcessing} className="glass-button text-button flex-1 disabled:opacity-50">
                         <RotateCcw className="h-4 w-4 mr-2" />Record Again
                       </button>
                       <button onClick={uploadVideoToTavus} disabled={isProcessing}
-                        className="glass-button text-button px-8 disabled:opacity-50" style={{ background: 'rgba(16, 185, 129, 0.09)', color: '#059669' }}>
-                        {isProcessing ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing...</>) : (<><Check className="h-4 w-4 mr-2" />Create My Echo Avatar</>)}
+                        className="glass-button text-button flex-1 disabled:opacity-50" style={{ background: 'rgba(16, 185, 129, 0.09)', color: '#059669' }}>
+                        {isProcessing ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing...</>) : (<><Check className="h-4 w-4 mr-2" />Create Echo</>)}
                       </button>
                     </>
                   )}
                   {replicaId && replicaStatus !== 'ready' && (
-                    <div className="flex items-center">
+                    <div className="flex items-center justify-center flex-1">
                       <Clock className="h-5 w-5 text-sky-500 mr-2 animate-pulse" />
                       <span className="text-sky-700">Processing your Echo avatar...</span>
                     </div>
@@ -344,10 +344,10 @@ export function VideoCaptureStep({ personalData, onComplete, onBack, onSkip }: V
             )}
           </div>
 
-          <div className="flex justify-between pt-8">
-            <button onClick={onBack} disabled={isProcessing || isRecording || (replicaId !== null && replicaStatus !== 'ready')} className="glass-button text-button px-6 disabled:opacity-50">Back</button>
-            <div className="text-sm text-gray-500 text-caption self-center">Step 3 of 3</div>
+          <div className="flex flex-row gap-3 pt-8 justify-center">
+            <button onClick={onBack} disabled={isProcessing || isRecording || (replicaId !== null && replicaStatus !== 'ready')} className="glass-button text-button flex-1 disabled:opacity-50">Back</button>
           </div>
+          <div className="text-sm text-gray-500 text-caption text-center pt-3">Step 3 of 3</div>
 
           {isCameraActive && !recordedVideo && (
             <div className="mt-6 border-t border-white/18 pt-6">
