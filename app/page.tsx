@@ -7,14 +7,12 @@ import { Dashboard } from '@/components/dashboard/dashboard';
 import { MasterBackground } from '@/components/master-background';
 import { supabase } from '@/lib/supabase-client';
 
-// --- The main page component ---
 export default function HomePage() {
   const [currentStep, setCurrentStep] = useState<'auth' | 'onboarding' | 'dashboard' | 'loading'>('loading');
 
   useEffect(() => {
     checkSession();
 
-    // Listen for auth state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         setCurrentStep('auth');
@@ -33,7 +31,6 @@ export default function HomePage() {
         return;
       }
 
-      // Check onboarding status from DB
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('onboarding_completed')
@@ -41,7 +38,6 @@ export default function HomePage() {
         .single();
 
       if (profile?.onboarding_completed) {
-        // Cache in localStorage for faster subsequent loads
         localStorage.setItem('onboardingComplete', 'true');
         setCurrentStep('dashboard');
       } else {
@@ -49,7 +45,6 @@ export default function HomePage() {
         setCurrentStep('onboarding');
       }
     } catch {
-      // If DB query fails, fall back to localStorage cache
       const cached = localStorage.getItem('onboardingComplete');
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -61,13 +56,12 @@ export default function HomePage() {
   };
 
   const handleAuthSuccess = () => {
-    // Re-run session check to determine onboarding vs dashboard
     checkSession();
   };
 
   return (
     <main style={{
-      backgroundColor: '#f0f2f5',
+      backgroundColor: '#ffffff',
       width: '100vw',
       height: '100vh',
       overflow: 'hidden',
@@ -81,7 +75,7 @@ export default function HomePage() {
 
       <div style={{ zIndex: 1, color: '#1a1a1a' }}>
         {currentStep === 'loading' && (
-          <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-sky-500/30 border-t-sky-500 rounded-full animate-spin"></div>
         )}
         {currentStep === 'auth' && (
           <AuthForm onSuccess={handleAuthSuccess} />

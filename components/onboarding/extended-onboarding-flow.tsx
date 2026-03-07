@@ -30,7 +30,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const musicRef = useRef<HTMLAudioElement | null>(null);
   const soundRef = useRef<HTMLAudioElement | null>(null);
 
-  // Play background music immediately when component mounts
   useEffect(() => {
     if (musicRef.current) {
       musicRef.current.loop = true;
@@ -39,7 +38,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     }
   }, []);
 
-  // Load Lottie JSON from public at runtime
   useEffect(() => {
     fetch('/wired-outline-1055-earbud-wireless-earphones-hover-pinch.json')
       .then(res => {
@@ -67,7 +65,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     } catch (error) {
       console.error('Failed to mark onboarding complete in DB:', error);
     }
-    // Cache in localStorage as fallback
     localStorage.setItem('onboardingComplete', 'true');
     onComplete();
   };
@@ -75,7 +72,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const handleSoundCheckNext = (event: React.MouseEvent<HTMLButtonElement>) => {
     soundRef.current?.play();
     setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
-    setTimeout(() => setStage('welcome'), 300); // Transition to welcome
+    setTimeout(() => setStage('welcome'), 300);
   };
 
   const handleWelcomeNext = () => { setStage('orbIntro'); };
@@ -110,16 +107,15 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
               className="w-full max-w-lg mx-auto"
             >
               <div className="glass-panel-light text-center">
-                {/* Animated Headphone Icon */}
                 <motion.div className="flex justify-center mb-6" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
                   <div className="w-24 h-24">
                     <Lottie animationData={headphonesAnimation} loop style={{ width:'100%', height:'100%', filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))' }} />
                   </div>
                 </motion.div>
 
-                <h2 className="text-3xl font-extrabold mb-4 text-gray-800 text-title">Can You Hear Me?</h2>
+                <h2 className="text-3xl font-bold mb-4 text-gray-800 text-title">Can You Hear Me?</h2>
                 <p className="text-lg text-gray-600 mb-8 text-body">This experience is best enjoyed with sound.</p>
-                <button onClick={handleSoundCheckNext} className="neumorphic-button-light text-button">Continue</button>
+                <button onClick={handleSoundCheckNext} className="glass-button glass-button-primary text-button">Continue</button>
               </div>
             </motion.div>
           )

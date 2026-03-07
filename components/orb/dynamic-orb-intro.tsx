@@ -141,10 +141,10 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
     { r: 50, g: 255, b: 50 },     // Bright green 
     { r: 100, g: 255, b: 100 },   // Light green
     { r: 0, g: 200, b: 100 },     // Emerald green
-    { r: 150, g: 50, b: 255 },    // Bright purple
-    { r: 200, g: 100, b: 255 },   // Light purple
-    { r: 100, g: 0, b: 200 },     // Deep purple
-    { r: 255, g: 100, b: 200 },   // Pink-purple
+    { r: 14, g: 165, b: 233 },     // Sky blue
+    { r: 56, g: 189, b: 248 },    // Light sky
+    { r: 2, g: 132, b: 199 },     // Deep sky
+    { r: 20, g: 184, b: 166 },    // Teal
     { r: 0, g: 255, b: 150 },     // Cyan-green
     { r: 100, g: 150, b: 255 },   // Light blue
     { r: 50, g: 100, b: 255 },    // Deep blue
@@ -681,19 +681,26 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-[#f0f2f5] cursor-pointer overflow-hidden"
+      className="fixed inset-0 flex items-center justify-center bg-white cursor-pointer overflow-hidden"
       onClick={handleTap}
     >
       {/* Enhanced background particles with depth */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, overflow:'hidden' }}>
         {circles.map((circle, index) => (
-          <div 
-            key={index} 
-            className='pulse-circle-light' 
-            style={{ 
-              animationDuration: circle.duration, 
-              animationDelay: circle.delay 
-            }} 
+          <div
+            key={index}
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%) scale(0.02)',
+              width: '1200px',
+              height: '1200px',
+              borderRadius: '50%',
+              border: '1.5px solid rgba(14, 165, 233, 0.12)',
+              animation: `pulse-animation ${circle.duration} ${circle.delay} infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
+              pointerEvents: 'none',
+            }}
           />
         ))}
         {particles}
@@ -892,9 +899,9 @@ export const DynamicOrbIntro: React.FC<DynamicOrbIntroProps> = ({ onAdvance }) =
                     key={index}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
                       index === step 
-                        ? 'bg-purple-500 w-6' 
+                        ? 'bg-sky-500 w-6' 
                         : index < step 
-                        ? 'bg-purple-300' 
+                        ? 'bg-sky-300' 
                         : 'bg-gray-300'
                     }`}
                   />
