@@ -159,11 +159,11 @@ export function DaySummaryView({ date, echoes, onBack }: DaySummaryViewProps) {
 
       {/* Navigation for mobile */}
       {hasMultipleEchoes && (
-        <div className="sm:hidden mt-6 flex justify-between">
+        <div className="sm:hidden mt-6 flex flex-row gap-3">
           <button
             onClick={handlePrev}
             disabled={currentEchoIndex === 0}
-            className={`glass-button px-4 py-2 ${currentEchoIndex === 0 ? 'opacity-50' : ''}`}
+            className={`glass-button flex-1 ${currentEchoIndex === 0 ? 'opacity-50' : ''}`}
           >
             <ChevronLeft className="h-4 w-4 mr-1 inline" />
             Previous
@@ -172,7 +172,7 @@ export function DaySummaryView({ date, echoes, onBack }: DaySummaryViewProps) {
           <button
             onClick={handleNext}
             disabled={currentEchoIndex === echoes.length - 1}
-            className={`glass-button px-4 py-2 ${currentEchoIndex === echoes.length - 1 ? 'opacity-50' : ''}`}
+            className={`glass-button flex-1 ${currentEchoIndex === echoes.length - 1 ? 'opacity-50' : ''}`}
           >
             Next
             <ChevronRight className="h-4 w-4 ml-1 inline" />

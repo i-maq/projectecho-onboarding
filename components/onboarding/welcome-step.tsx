@@ -21,7 +21,7 @@ export function WelcomeStep({ onNext, onBack }: WelcomeStepProps) {
  };
  
  return (
-   <div className="absolute inset-0 flex items-center justify-center">
+   <div className="w-full min-h-[100dvh] flex items-center justify-center">
      {/* Hidden audio element for button click sound */}
      <audio ref={soundRef} src="/tap-sound.mp3" preload="auto" />
      

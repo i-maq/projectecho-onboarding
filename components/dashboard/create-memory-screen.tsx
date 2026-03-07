@@ -323,26 +323,24 @@ export function CreateMemoryScreen({ onMemorySaved, onCancel }: CreateMemoryScre
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between mt-6">
-            <div className="flex space-x-3">
-              <button
-                onClick={generateNewPrompt}
-                className="glass-button text-button px-4 py-2"
-              >
-                New Prompt
-              </button>
-              <button
-                onClick={onCancel}
-                className="glass-button text-button px-4 py-2"
-                disabled={isLoading}
-              >
-                Cancel
-              </button>
-            </div>
+          <div className="flex flex-row gap-3 mt-6">
+            <button
+              onClick={generateNewPrompt}
+              className="glass-button text-button flex-1"
+            >
+              New Prompt
+            </button>
+            <button
+              onClick={onCancel}
+              className="glass-button text-button flex-1"
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
             <button
               onClick={saveMemory}
               disabled={(!memoryContent.trim() && selectedFiles.length === 0) || isLoading}
-              className="glass-button glass-button-primary text-button px-5 py-2 disabled:opacity-50 flex items-center"
+              className="glass-button glass-button-primary text-button flex-1 disabled:opacity-50 flex items-center justify-center"
             >
               {isLoading ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</>

@@ -87,7 +87,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const handleBackToPersonalData = () => { setStage('personalData'); };
 
   return (
-    <div className="w-full h-full flex items-center justify-center px-6 py-8">
+    <div className="w-full min-h-[100dvh] flex items-center justify-center px-6 py-8 overflow-y-auto">
       <audio ref={musicRef} src="/ambient-music.mp3" preload="auto" />
       <audio ref={soundRef} src="/tap-sound.mp3" preload="auto" />
 
