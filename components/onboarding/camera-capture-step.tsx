@@ -11,14 +11,14 @@ interface CameraCaptureStepProps {
   personalData: any;
   onComplete: (photoData: string) => void;
   onBack: () => void;
-  onSkip: () => void; // New prop for skipping this step
+  onSkip: () => void;
 }
 
 export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: CameraCaptureStepProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  
+
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +27,6 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
   const [isComponentReady, setIsComponentReady] = useState(false);
   const [faceIdAnimation, setFaceIdAnimation] = useState<any>(null);
 
-  // Load the Lottie animation dynamically
   useEffect(() => {
     const loadAnimation = async () => {
       try {
@@ -40,10 +39,8 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
         }
       } catch (error) {
         console.warn('Error loading Lottie animation:', error);
-        // Animation will remain null and we'll show a fallback icon
       }
     };
-
     loadAnimation();
   }, []);
 
@@ -51,44 +48,28 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error('Video failed to initialize with valid dimensions'));
-      }, 10000); // 10 second timeout
+      }, 10000);
 
       const checkDimensions = () => {
         if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
           clearTimeout(timeout);
-          console.log('Video dimensions ready:', videoElement.videoWidth, 'x', videoElement.videoHeight);
           resolve();
         } else {
-          // Keep checking every 100ms
           setTimeout(checkDimensions, 100);
         }
       };
-
-      // Start checking immediately
       checkDimensions();
     });
   };
 
   const startCamera = useCallback(async () => {
-    console.log('Starting camera...');
-    console.log('videoRef.current:', videoRef.current);
-    console.log('isComponentReady:', isComponentReady);
-    
-    // Ensure video element is available
     if (!videoRef.current) {
-      console.error('Video element not available');
-      console.log('Attempting to wait for video element...');
-      
-      // Try waiting a bit longer for the video element
       let attempts = 0;
       const maxAttempts = 10;
-      
       while (!videoRef.current && attempts < maxAttempts) {
         await new Promise(resolve => setTimeout(resolve, 100));
         attempts++;
-        console.log(`Attempt ${attempts}: videoRef.current =`, videoRef.current);
       }
-      
       if (!videoRef.current) {
         setError('Video element could not be initialized. Please refresh the page and try again.');
         return;
@@ -96,164 +77,92 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
     }
 
     setIsLoading(true);
-    
+
     try {
       setError(null);
-      
-      // Check if getUserMedia is supported
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Camera API not supported in this browser');
       }
 
-      console.log('Requesting camera access...');
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: 'user'
-        } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
       });
-      
-      console.log('Camera access granted, stream:', stream);
-      
-      // Double-check video element is still available
-      if (!videoRef.current) {
-        throw new Error('Video element became unavailable');
-      }
+
+      if (!videoRef.current) throw new Error('Video element became unavailable');
 
       const video = videoRef.current;
       streamRef.current = stream;
 
-      // Register event handlers BEFORE setting srcObject to avoid race conditions
-      // where metadata loads before the handler is attached.
       video.onloadedmetadata = async () => {
-        console.log('[Camera] onloadedmetadata fired');
         try {
           await video.play();
-          console.log('[Camera] video.play() succeeded, waiting for dimensions...');
           await waitForVideoReady(video);
-          console.log('[Camera] dimensions ready — activating viewfinder');
           setIsCameraActive(true);
           setIsLoading(false);
         } catch (playError) {
-          console.error('[Camera] play/dimension error:', playError);
-          // Even if play() rejects (e.g. autoplay policy), dimensions may still be valid
           try {
             await waitForVideoReady(video);
             setIsCameraActive(true);
             setIsLoading(false);
             toast.info('Click the video area if camera preview doesn\'t appear');
           } catch (dimensionError) {
-            console.error('[Camera] dimension validation failed:', dimensionError);
             setError('Camera failed to initialize properly. Please try again.');
             setIsLoading(false);
           }
         }
       };
 
-      video.onerror = (e) => {
-        console.error('[Camera] video element error:', e);
-        setError('Error loading camera feed');
-        setIsLoading(false);
-      };
-
-      // Attach stream AFTER handlers are registered
+      video.onerror = () => { setError('Error loading camera feed'); setIsLoading(false); };
       video.srcObject = stream;
-        
+
     } catch (err: any) {
-      console.error('Error accessing camera:', err);
       setIsLoading(false);
-      
       let errorMessage = 'Unable to access camera. ';
-      
-      if (err.name === 'NotAllowedError') {
-        errorMessage += 'Please allow camera permissions and try again.';
-      } else if (err.name === 'NotFoundError') {
-        errorMessage += 'No camera found on this device.';
-      } else if (err.name === 'NotSupportedError') {
-        errorMessage += 'Camera not supported in this browser.';
-      } else if (err.name === 'NotReadableError') {
-        errorMessage += 'Camera is already in use by another application.';
-      } else {
-        errorMessage += err.message || 'Unknown error occurred.';
-      }
-      
+      if (err.name === 'NotAllowedError') errorMessage += 'Please allow camera permissions and try again.';
+      else if (err.name === 'NotFoundError') errorMessage += 'No camera found on this device.';
+      else if (err.name === 'NotSupportedError') errorMessage += 'Camera not supported in this browser.';
+      else if (err.name === 'NotReadableError') errorMessage += 'Camera is already in use by another application.';
+      else errorMessage += err.message || 'Unknown error occurred.';
       setError(errorMessage);
     }
   }, []);
 
   const stopCamera = useCallback(() => {
-    console.log('Stopping camera...');
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => {
-        console.log('Stopping track:', track);
-        track.stop();
-      });
+      streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
+    if (videoRef.current) videoRef.current.srcObject = null;
     setIsCameraActive(false);
   }, []);
 
   const capturePhoto = useCallback(() => {
-    console.log('Capturing photo...');
-    if (!videoRef.current || !canvasRef.current) {
-      console.error('Video or canvas ref not available');
-      return;
-    }
-
+    if (!videoRef.current || !canvasRef.current) return;
     const canvas = canvasRef.current;
     const video = videoRef.current;
     const context = canvas.getContext('2d');
-
-    if (!context) {
-      console.error('Canvas context not available');
-      return;
-    }
-
-    // Check if video has valid dimensions
+    if (!context) return;
     if (video.videoWidth === 0 || video.videoHeight === 0) {
-      console.error('Video dimensions are 0');
       toast.error('Camera not ready. Please wait and try again.');
       return;
     }
-
-    console.log('Video dimensions:', video.videoWidth, 'x', video.videoHeight);
-
-    // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-
-    // Draw the video frame to canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Convert to base64
     const photoData = canvas.toDataURL('image/jpeg', 0.8);
-    console.log('Photo captured, data length:', photoData.length);
     setCapturedPhoto(photoData);
-    
-    // Stop the camera
     stopCamera();
   }, [stopCamera]);
 
   const retakePhoto = useCallback(() => {
     setCapturedPhoto(null);
-    // Add a small delay to ensure state is updated before starting camera
-    setTimeout(() => {
-      startCamera();
-    }, 100);
+    setTimeout(() => startCamera(), 100);
   }, [startCamera]);
 
   const savePhotoToDatabase = async (photoData: string): Promise<boolean> => {
     try {
-      // Get the Supabase session token (not a custom JWT from localStorage)
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        console.warn('[Camera] No Supabase session — photo will be saved locally only');
-        return false;
-      }
+      if (!session?.access_token) return false;
 
       const response = await fetch('/api/profile', {
         method: 'POST',
@@ -274,9 +183,6 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to save photo');
       }
-
-      const savedProfile = await response.json();
-      console.log('[Camera] Photo saved successfully:', savedProfile.id);
       return true;
     } catch (error) {
       console.error('[Camera] Error saving photo:', error);
@@ -286,30 +192,15 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
 
   const handleConfirmPhoto = async () => {
     if (!capturedPhoto) return;
-
     setIsProcessing(true);
-
     try {
-      // Attempt to save photo to database
       const saved = await savePhotoToDatabase(capturedPhoto);
-
-      // Brief pause for UX feedback
       await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Always store locally so the photo is available downstream
       localStorage.setItem('userPhoto', capturedPhoto);
-
-      if (saved) {
-        toast.success('Your Echo avatar is being created!');
-      } else {
-        toast.info('Photo saved locally — it will sync when connection is restored.');
-      }
-
-      // Always advance to the next step
+      if (saved) toast.success('Your Echo avatar is being created!');
+      else toast.info('Photo saved locally — it will sync when connection is restored.');
       onComplete(capturedPhoto);
     } catch (error) {
-      console.error('[Camera] Error processing photo:', error);
-      // Even on unexpected errors, save locally and proceed
       localStorage.setItem('userPhoto', capturedPhoto);
       toast.info('Photo saved locally. Continuing...');
       onComplete(capturedPhoto);
@@ -318,50 +209,19 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
     }
   };
 
-  // Initialize component and ensure DOM is ready
   useEffect(() => {
-    console.log('Component mounted, videoRef.current:', videoRef.current);
-    
-    // Mark component as ready after ensuring video element exists
     const checkVideoElement = () => {
-      console.log('Checking video element:', videoRef.current);
-      if (videoRef.current) {
-        console.log('Video element found, marking component as ready');
-        setIsComponentReady(true);
-      } else {
-        console.log('Video element not found, retrying...');
-        setTimeout(checkVideoElement, 100);
-      }
+      if (videoRef.current) setIsComponentReady(true);
+      else setTimeout(checkVideoElement, 100);
     };
-
-    // Start checking after a brief initial delay
     setTimeout(checkVideoElement, 200);
   }, []);
 
-  // Cleanup camera when component unmounts
-  useEffect(() => {
-    return () => {
-      console.log('Component unmounting, cleaning up camera...');
-      stopCamera();
-    };
-  }, [stopCamera]);
+  useEffect(() => { return () => stopCamera(); }, [stopCamera]);
 
   const handleStartCamera = () => {
-    console.log('handleStartCamera called');
-    console.log('isComponentReady:', isComponentReady);
-    console.log('videoRef.current:', videoRef.current);
-    
-    if (!isComponentReady) {
-      toast.error('Please wait a moment and try again.');
-      return;
-    }
-    
-    if (!videoRef.current) {
-      console.error('Video element still not available in handleStartCamera');
-      setError('Camera interface not ready. Please refresh the page.');
-      return;
-    }
-    
+    if (!isComponentReady) { toast.error('Please wait a moment and try again.'); return; }
+    if (!videoRef.current) { setError('Camera interface not ready. Please refresh the page.'); return; }
     startCamera();
   };
 
@@ -374,103 +234,53 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
         className="w-full max-w-2xl mx-auto"
       >
         <div className="glass-panel-light text-center">
-          {/* Header */}
-          <motion.div 
+          <motion.div
             className="flex justify-center mb-6"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-20 h-20 bg-gradient-to-br from-sky-400 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
               {faceIdAnimation ? (
-                <Lottie
-                  animationData={faceIdAnimation}
-                  loop={true}
-                  style={{ width: '100%', height: '100%' }}
-                />
+                <Lottie animationData={faceIdAnimation} loop={true} style={{ width: '100%', height: '100%' }} />
               ) : (
                 <Camera className="h-10 w-10 text-white" />
               )}
             </div>
           </motion.div>
 
-          <h2 className="text-3xl font-extrabold mb-3 text-gray-800 text-title">
-            Create Your Echo
-          </h2>
-          
+          <h2 className="text-3xl font-bold mb-3 text-gray-800 text-title">Create Your Echo</h2>
           <p className="text-gray-600 mb-8 text-body max-w-lg mx-auto">
-            {personalData?.firstName}, let's capture your likeness to create your Echo. 
+            {personalData?.firstName}, let's capture your likeness to create your Echo.
             This will be stored securely in your personal database and used to generate your Echo avatar.
           </p>
 
-          {/* Camera Interface */}
           <div className="relative">
-            {/* Video element is always in the DOM and never display:none.
-                We use visibility:hidden + h-0 overflow-hidden when inactive so browsers
-                still fire loadedmetadata and allow .play(). */}
-            <div
-              className={isCameraActive && !capturedPhoto
-                ? 'relative space-y-6'
-                : 'invisible h-0 overflow-hidden'
-              }
-              style={{ position: 'relative', zIndex: 2 }}
-            >
+            <div className={isCameraActive && !capturedPhoto ? 'relative space-y-6' : 'invisible h-0 overflow-hidden'} style={{ position: 'relative', zIndex: 2 }}>
               <div className="relative">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                  onClick={() => {
-                    if (videoRef.current && videoRef.current.paused) {
-                      videoRef.current.play().catch(console.error);
-                    }
-                  }}
-                  className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover cursor-pointer"
-                />
+                <video ref={videoRef} autoPlay muted playsInline
+                  onClick={() => { if (videoRef.current && videoRef.current.paused) videoRef.current.play().catch(console.error); }}
+                  className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover cursor-pointer" />
               </div>
 
               <div className="flex gap-4 justify-center">
-                <button
-                  onClick={stopCamera}
-                  disabled={isProcessing}
-                  className="neumorphic-button-light text-button px-6 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  onClick={capturePhoto}
-                  disabled={isProcessing}
-                  className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 disabled:opacity-50"
-                >
-                  <Camera className="h-5 w-5 mr-2" />
-                  Capture Photo
+                <button onClick={stopCamera} disabled={isProcessing} className="glass-button text-button px-6 disabled:opacity-50">Cancel</button>
+                <button onClick={capturePhoto} disabled={isProcessing} className="glass-button glass-button-primary text-button px-8 disabled:opacity-50">
+                  <Camera className="h-5 w-5 mr-2" />Capture Photo
                 </button>
               </div>
             </div>
 
-            {/* Single canvas element for photo capture */}
             <canvas ref={canvasRef} className="hidden" />
 
             {!isCameraActive && !capturedPhoto && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="space-y-6"
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                 <div className="w-80 h-60 bg-gray-200 rounded-2xl flex items-center justify-center mx-auto border-2 border-dashed border-gray-300">
                   <div className="text-center">
                     {isLoading ? (
-                      <>
-                        <Loader2 className="h-16 w-16 text-gray-400 mx-auto mb-4 animate-spin" />
-                        <p className="text-gray-500 text-body">Starting camera...</p>
-                      </>
+                      <><Loader2 className="h-16 w-16 text-gray-400 mx-auto mb-4 animate-spin" /><p className="text-gray-500 text-body">Starting camera...</p></>
                     ) : (
-                      <>
-                        <Camera className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 text-body">Camera preview will appear here</p>
-                      </>
+                      <><Camera className="h-16 w-16 text-gray-400 mx-auto mb-4" /><p className="text-gray-500 text-body">Camera preview will appear here</p></>
                     )}
                   </div>
                 </div>
@@ -485,108 +295,50 @@ export function CameraCaptureStep({ personalData, onComplete, onBack, onSkip }: 
                 )}
 
                 <div className="flex justify-center">
-                  <button
-                    onClick={handleStartCamera}
-                    disabled={isProcessing || isLoading || !isComponentReady}
-                    className="neumorphic-button-light bg-purple-600 text-white shadow-lg hover:bg-purple-700 text-button px-8 py-3 disabled:opacity-50 flex flex-col items-center"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="h-5 w-5 mb-1 animate-spin" />
-                        Starting...
-                      </>
-                    ) : !isComponentReady ? (
-                      <>
-                        <Loader2 className="h-5 w-5 mb-1 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <Camera className="h-5 w-5 mb-1" />
-                        Start Camera
-                      </>
-                    )}
+                  <button onClick={handleStartCamera} disabled={isProcessing || isLoading || !isComponentReady}
+                    className="glass-button glass-button-primary text-button px-8 py-3 disabled:opacity-50 flex flex-col items-center">
+                    {isLoading ? (<><Loader2 className="h-5 w-5 mb-1 animate-spin" />Starting...</>)
+                      : !isComponentReady ? (<><Loader2 className="h-5 w-5 mb-1 animate-spin" />Loading...</>)
+                      : (<><Camera className="h-5 w-5 mb-1" />Start Camera</>)}
                   </button>
                 </div>
               </motion.div>
             )}
 
             {capturedPhoto && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="space-y-6"
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                 <div className="relative">
-                  <img
-                    src={capturedPhoto}
-                    alt="Captured"
-                    className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover"
-                  />
+                  <img src={capturedPhoto} alt="Captured" className="w-80 h-60 bg-black rounded-2xl mx-auto object-cover" />
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
-                  <p className="text-blue-800 text-sm text-body">
+                <div className="bg-sky-50 border border-sky-200 rounded-lg p-4 max-w-md mx-auto">
+                  <p className="text-sky-800 text-sm text-body">
                     This photo will be securely stored in your database and used to create your aged Echo avatar.
                   </p>
                 </div>
 
                 <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={retakePhoto}
-                    disabled={isProcessing}
-                    className="neumorphic-button-light text-button px-6 disabled:opacity-50"
-                  >
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    Retake
+                  <button onClick={retakePhoto} disabled={isProcessing} className="glass-button text-button px-6 disabled:opacity-50">
+                    <RotateCcw className="h-4 w-4 mr-2" />Retake
                   </button>
-                  
-                  <button
-                    onClick={handleConfirmPhoto}
-                    disabled={isProcessing}
-                    className="neumorphic-button-light bg-green-600 text-white shadow-lg hover:bg-green-700 text-button px-8 disabled:opacity-50"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Creating Echo...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="h-4 w-4 mr-2" />
-                        Looks Good!
-                      </>
-                    )}
+                  <button onClick={handleConfirmPhoto} disabled={isProcessing}
+                    className="glass-button text-button px-8 disabled:opacity-50" style={{ background: 'rgba(16, 185, 129, 0.09)', color: '#059669' }}>
+                    {isProcessing ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Creating Echo...</>)
+                      : (<><Check className="h-4 w-4 mr-2" />Looks Good!</>)}
                   </button>
                 </div>
               </motion.div>
             )}
           </div>
 
-          {/* Navigation */}
           <div className="flex justify-between pt-8">
             <div className="flex space-x-3">
-              <button
-                onClick={onBack}
-                disabled={isProcessing}
-                className="neumorphic-button-light text-button px-6 disabled:opacity-50"
-              >
-                Back
-              </button>
-              
-              {/* Skip button */}
-              <button
-                onClick={onSkip}
-                disabled={isProcessing}
-                className="neumorphic-button-light bg-gray-600 text-white shadow-lg hover:bg-gray-700 text-button px-6 disabled:opacity-50"
-              >
+              <button onClick={onBack} disabled={isProcessing} className="glass-button text-button px-6 disabled:opacity-50">Back</button>
+              <button onClick={onSkip} disabled={isProcessing} className="glass-button text-button px-6 disabled:opacity-50">
                 Skip for now <ArrowRight className="h-4 w-4 ml-2 inline" />
               </button>
             </div>
-            
-            <div className="text-sm text-gray-500 text-caption self-center">
-              Step 2 of 2
-            </div>
+            <div className="text-sm text-gray-500 text-caption self-center">Step 2 of 2</div>
           </div>
         </div>
       </motion.div>
