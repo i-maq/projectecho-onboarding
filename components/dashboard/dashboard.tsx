@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
@@ -9,6 +9,7 @@ import { DashboardMainOptions } from './dashboard-main-options';
 import { CreateMemoryScreen } from './create-memory-screen';
 import { ViewMemoriesScreen } from './view-memories-screen';
 import { DaySummaryView } from './day-summary-view';
+import { EchoConversationScreen } from './echo-conversation-screen';
 
 export interface Echo {
   id: string;
@@ -19,7 +20,7 @@ export interface Echo {
   notes?: string;
 }
 
-type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary';
+type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary' | 'echoConversation';
 
 export function Dashboard() {
   const [currentScreen, setCurrentScreen] = useState<DashboardScreen>('main');
@@ -59,6 +60,7 @@ export function Dashboard() {
   const navigateToCreateMemory = () => setCurrentScreen('createMemory');
   const navigateToViewMemories = () => setCurrentScreen('viewMemories');
   const navigateToMain = () => setCurrentScreen('main');
+  const navigateToEchoConversation = () => setCurrentScreen('echoConversation');
   const navigateToDaySummary = (date: Date) => { setSelectedDate(date); setCurrentScreen('daySummary'); };
   const handleMemorySaved = (newEcho: Echo) => { setEchoes([newEcho, ...echoes]); toast.success('Memory saved successfully!'); setCurrentScreen('main'); };
 
@@ -80,12 +82,12 @@ export function Dashboard() {
 
       <div className="flex-grow p-4 sm:p-6 overflow-y-auto">
         <div className="max-w-6xl mx-auto h-full flex flex-col">
-          {currentScreen !== 'main' && (
+          {currentScreen !== 'main' && currentScreen !== 'echoConversation' && (
             <button onClick={navigateToMain} className="self-start mb-4 text-sm text-sky-600 hover:text-sky-800">
               ← Back to Main
             </button>
           )}
-          {currentScreen === 'main' && <DashboardMainOptions onCreateMemory={navigateToCreateMemory} onViewMemories={navigateToViewMemories} recentEchoes={echoes.slice(0, 3)} isLoading={isLoading} />}
+          {currentScreen === 'main' && <DashboardMainOptions onCreateMemory={navigateToEchoConversation} onViewMemories={navigateToViewMemories} recentEchoes={echoes.slice(0, 3)} isLoading={isLoading} />}
           {currentScreen === 'createMemory' && <CreateMemoryScreen onMemorySaved={handleMemorySaved} onCancel={navigateToMain} />}
           {currentScreen === 'viewMemories' && <ViewMemoriesScreen echoes={echoes} onSelectDate={navigateToDaySummary} onBack={navigateToMain} isLoading={isLoading} />}
           {currentScreen === 'daySummary' && selectedDate && (
@@ -93,6 +95,13 @@ export function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Echo Conversation - renders as full-screen overlay */}
+      <AnimatePresence>
+        {currentScreen === 'echoConversation' && (
+          <EchoConversationScreen onBack={navigateToMain} />
+        )}
+      </AnimatePresence>
 
       <div className="p-4 sm:p-6 flex justify-center"
         style={{
