@@ -10,6 +10,7 @@ import { CreateMemoryScreen } from './create-memory-screen';
 import { ViewMemoriesScreen } from './view-memories-screen';
 import { DaySummaryView } from './day-summary-view';
 import { EchoConversationScreen } from './echo-conversation-screen';
+import { MemoryReceiptScreen } from './memory-receipt-screen';
 
 export interface Echo {
   id: string;
@@ -20,7 +21,7 @@ export interface Echo {
   notes?: string;
 }
 
-type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary' | 'echoConversation';
+type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary' | 'echoConversation' | 'memoryReceipt';
 
 export function Dashboard() {
   const [currentScreen, setCurrentScreen] = useState<DashboardScreen>('main');
@@ -61,6 +62,7 @@ export function Dashboard() {
   const navigateToViewMemories = () => setCurrentScreen('viewMemories');
   const navigateToMain = () => setCurrentScreen('main');
   const navigateToEchoConversation = () => setCurrentScreen('echoConversation');
+  const navigateToMemoryReceipt = () => setCurrentScreen('memoryReceipt');
   const navigateToDaySummary = (date: Date) => { setSelectedDate(date); setCurrentScreen('daySummary'); };
   const handleMemorySaved = (newEcho: Echo) => { setEchoes([newEcho, ...echoes]); toast.success('Memory saved successfully!'); setCurrentScreen('main'); };
 
@@ -82,7 +84,7 @@ export function Dashboard() {
 
       <div className="flex-grow p-4 sm:p-6 overflow-y-auto">
         <div className="max-w-6xl mx-auto h-full flex flex-col">
-          {currentScreen !== 'main' && currentScreen !== 'echoConversation' && (
+          {currentScreen !== 'main' && currentScreen !== 'echoConversation' && currentScreen !== 'memoryReceipt' && (
             <button onClick={navigateToMain} className="self-start mb-4 text-sm text-sky-600 hover:text-sky-800">
               ← Back to Main
             </button>
@@ -96,10 +98,13 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Echo Conversation - renders as full-screen overlay */}
+      {/* Full-screen overlays */}
       <AnimatePresence>
         {currentScreen === 'echoConversation' && (
-          <EchoConversationScreen onBack={navigateToMain} />
+          <EchoConversationScreen onBack={navigateToMain} onViewReceipt={navigateToMemoryReceipt} />
+        )}
+        {currentScreen === 'memoryReceipt' && (
+          <MemoryReceiptScreen onAddMore={navigateToEchoConversation} onDone={navigateToMain} />
         )}
       </AnimatePresence>
 
