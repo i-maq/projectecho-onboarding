@@ -11,6 +11,7 @@ import { ViewMemoriesScreen } from './view-memories-screen';
 import { DaySummaryView } from './day-summary-view';
 import { EchoConversationScreen } from './echo-conversation-screen';
 import { MemoryReceiptScreen } from './memory-receipt-screen';
+import { MemoryTimelineScreen } from './memory-timeline-screen';
 
 export interface Echo {
   id: string;
@@ -21,7 +22,7 @@ export interface Echo {
   notes?: string;
 }
 
-type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary' | 'echoConversation' | 'memoryReceipt';
+type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary' | 'echoConversation' | 'memoryReceipt' | 'memoryTimeline';
 
 export function Dashboard() {
   const [currentScreen, setCurrentScreen] = useState<DashboardScreen>('main');
@@ -63,6 +64,7 @@ export function Dashboard() {
   const navigateToMain = () => setCurrentScreen('main');
   const navigateToEchoConversation = () => setCurrentScreen('echoConversation');
   const navigateToMemoryReceipt = () => setCurrentScreen('memoryReceipt');
+  const navigateToMemoryTimeline = () => setCurrentScreen('memoryTimeline');
   const navigateToDaySummary = (date: Date) => { setSelectedDate(date); setCurrentScreen('daySummary'); };
   const handleMemorySaved = (newEcho: Echo) => { setEchoes([newEcho, ...echoes]); toast.success('Memory saved successfully!'); setCurrentScreen('main'); };
 
@@ -84,12 +86,12 @@ export function Dashboard() {
 
       <div className="flex-grow p-4 sm:p-6 overflow-y-auto">
         <div className="max-w-6xl mx-auto h-full flex flex-col">
-          {currentScreen !== 'main' && currentScreen !== 'echoConversation' && currentScreen !== 'memoryReceipt' && (
+          {currentScreen !== 'main' && currentScreen !== 'echoConversation' && currentScreen !== 'memoryReceipt' && currentScreen !== 'memoryTimeline' && (
             <button onClick={navigateToMain} className="self-start mb-4 text-sm text-sky-600 hover:text-sky-800">
               ← Back to Main
             </button>
           )}
-          {currentScreen === 'main' && <DashboardMainOptions onCreateMemory={navigateToEchoConversation} onViewMemories={navigateToViewMemories} recentEchoes={echoes.slice(0, 3)} isLoading={isLoading} />}
+          {currentScreen === 'main' && <DashboardMainOptions onCreateMemory={navigateToEchoConversation} onViewMemories={navigateToMemoryTimeline} recentEchoes={echoes.slice(0, 3)} isLoading={isLoading} />}
           {currentScreen === 'createMemory' && <CreateMemoryScreen onMemorySaved={handleMemorySaved} onCancel={navigateToMain} />}
           {currentScreen === 'viewMemories' && <ViewMemoriesScreen echoes={echoes} onSelectDate={navigateToDaySummary} onBack={navigateToMain} isLoading={isLoading} />}
           {currentScreen === 'daySummary' && selectedDate && (
@@ -105,6 +107,9 @@ export function Dashboard() {
         )}
         {currentScreen === 'memoryReceipt' && (
           <MemoryReceiptScreen onAddMore={navigateToEchoConversation} onDone={navigateToMain} />
+        )}
+        {currentScreen === 'memoryTimeline' && (
+          <MemoryTimelineScreen onBack={navigateToMain} onSelectMemory={() => navigateToMemoryReceipt()} />
         )}
       </AnimatePresence>
 
