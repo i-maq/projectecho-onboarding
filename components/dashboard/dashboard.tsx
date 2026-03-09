@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, PenLine, Sparkles, User } from 'lucide-react';
+import { Home, Sparkles, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardHomeScreen } from './dashboard-home-screen';
 import { CreateMemoryScreen } from './create-memory-screen';
@@ -26,13 +26,6 @@ type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary' |
 // Screens that render as full-screen overlays (hide shell chrome)
 const OVERLAY_SCREENS: DashboardScreen[] = ['echoConversation', 'memoryReceipt', 'memoryTimeline'];
 
-// Bottom nav tab definitions
-const NAV_TABS = [
-  { id: 'main' as const, label: 'Home', icon: Home },
-  { id: 'capture' as const, label: 'Capture', icon: PenLine },
-  { id: 'echo' as const, label: 'Echo', icon: Sparkles },
-  { id: 'profile' as const, label: 'Profile', icon: User },
-] as const;
 
 export function Dashboard() {
   const [currentScreen, setCurrentScreen] = useState<DashboardScreen>('main');
@@ -69,18 +62,7 @@ export function Dashboard() {
   const navigateToDaySummary = (date: Date) => { setSelectedDate(date); setCurrentScreen('daySummary'); };
   const handleMemorySaved = (newEcho: Echo) => { setEchoes([newEcho, ...echoes]); toast.success('Memory saved successfully!'); setCurrentScreen('main'); };
 
-  const handleNavTap = (id: string) => {
-    switch (id) {
-      case 'main': navigateToMain(); break;
-      case 'capture': navigateToEchoConversation(); break;
-      case 'echo': navigateToEchoConversation(); break;
-      // profile: no-op for now
-    }
-  };
-
   const isOverlay = OVERLAY_SCREENS.includes(currentScreen);
-  // Determine which nav tab is "active"
-  const activeTab = currentScreen === 'echoConversation' ? 'echo' : currentScreen === 'main' ? 'main' : null;
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-white text-gray-800">
@@ -123,7 +105,7 @@ export function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* ── Bottom navigation bar ── */}
+      {/* ── Bottom navigation bar (3 items: Home / Echo hero / Profile) ── */}
       {!isOverlay && (
         <nav
           style={{
@@ -156,49 +138,158 @@ export function Dashboard() {
               zIndex: 2,
             }}
           />
-          <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center" }}>
-            {NAV_TABS.map(tab => {
-              const active = activeTab === tab.id;
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => handleNavTap(tab.id)}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 2,
-                    padding: "6px 14px",
-                    borderRadius: 12,
-                    background: active ? "rgba(14, 165, 233, 0.08)" : "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
-                  }}
-                >
-                  <Icon
-                    style={{
-                      width: 20,
-                      height: 20,
-                      color: active ? "#0ea5e9" : "#94a3b8",
-                      transition: "color 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      fontWeight: active ? 500 : 300,
-                      fontSize: 10,
-                      color: active ? "#0ea5e9" : "#94a3b8",
-                      transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
-                    }}
-                  >
-                    {tab.label}
-                  </span>
-                </button>
-              );
-            })}
+          <div style={{ display: "flex", justifyContent: "space-around", alignItems: "flex-end" }}>
+            {/* Home tab */}
+            <button
+              onClick={navigateToMain}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+                padding: "6px 14px",
+                borderRadius: 12,
+                background: currentScreen === 'main' ? "rgba(14, 165, 233, 0.08)" : "transparent",
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
+              }}
+            >
+              <Home
+                style={{
+                  width: 20,
+                  height: 20,
+                  color: currentScreen === 'main' ? "#0ea5e9" : "#94a3b8",
+                  transition: "color 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: currentScreen === 'main' ? 500 : 300,
+                  fontSize: 10,
+                  color: currentScreen === 'main' ? "#0ea5e9" : "#94a3b8",
+                  transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
+                }}
+              >
+                Home
+              </span>
+            </button>
+
+            {/* Echo hero center button — raised above nav bar */}
+            <button
+              onClick={navigateToEchoConversation}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: "50%",
+                transform: "translateY(-16px)",
+                background: `radial-gradient(circle at 40% 40%,
+                  rgba(14, 165, 233, 0.35),
+                  rgba(20, 184, 166, 0.28) 50%,
+                  rgba(16, 185, 129, 0.2) 80%,
+                  rgba(14, 165, 233, 0.12))`,
+                backdropFilter: "blur(16px) saturate(1.6)",
+                WebkitBackdropFilter: "blur(16px) saturate(1.6)",
+                border: "1px solid rgba(255, 255, 255, 0.45)",
+                boxShadow: [
+                  "0 0 20px rgba(14, 165, 233, 0.3)",
+                  "0 0 40px rgba(16, 185, 129, 0.15)",
+                  "0 4px 16px rgba(0, 0, 20, 0.08)",
+                  "inset 0 1px 0 rgba(255, 255, 255, 0.4)",
+                  "inset 0 -1px 2px rgba(0, 0, 0, 0.03)",
+                ].join(", "),
+                cursor: "pointer",
+                position: "relative",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
+              }}
+            >
+              {/* Iridescent rim shimmer */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: -1,
+                  borderRadius: "50%",
+                  background: `conic-gradient(
+                    from 180deg,
+                    rgba(14, 165, 233, 0.25),
+                    rgba(20, 184, 166, 0.2),
+                    rgba(167, 139, 250, 0.15),
+                    rgba(244, 114, 182, 0.12),
+                    rgba(14, 165, 233, 0.25)
+                  )`,
+                  mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                  WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                  maskComposite: "exclude",
+                  WebkitMaskComposite: "xor",
+                  padding: 1.5,
+                  pointerEvents: "none",
+                  opacity: 0.8,
+                }}
+              />
+              {/* Specular top highlight */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: "10%",
+                  right: "10%",
+                  height: "1px",
+                  background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
+                  pointerEvents: "none",
+                }}
+              />
+              <Sparkles
+                style={{
+                  width: 24,
+                  height: 24,
+                  color: "#ffffff",
+                  position: "relative",
+                  zIndex: 1,
+                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.15))",
+                }}
+              />
+            </button>
+
+            {/* Profile tab */}
+            <button
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+                padding: "6px 14px",
+                borderRadius: 12,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
+              }}
+            >
+              <User
+                style={{
+                  width: 20,
+                  height: 20,
+                  color: "#94a3b8",
+                  transition: "color 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 300,
+                  fontSize: 10,
+                  color: "#94a3b8",
+                  transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
+                }}
+              >
+                Profile
+              </span>
+            </button>
           </div>
         </nav>
       )}
