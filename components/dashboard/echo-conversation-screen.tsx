@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Mic, Type } from 'lucide-react';
+import { MiniOrb } from './mini-orb';
 
 const ECHO_PROMPTS = [
   "What made today different from yesterday?",
@@ -158,65 +159,12 @@ export function EchoConversationScreen({ onBack, onViewReceipt }: EchoConversati
               transition={{ duration: 0.4, ease: easing }}
               className="flex flex-col items-center"
             >
-              {/* Echo Avatar */}
+              {/* Echo Avatar — living mini orb */}
               <motion.div
-                animate={{
-                  scale: isListening ? [1.0, 1.05, 1.0] : [1.0, 1.03, 1.0],
-                }}
-                transition={{
-                  duration: isListening ? 2 : 4,
-                  ease: 'easeInOut',
-                  repeat: Infinity,
-                }}
-                style={{
-                  width: 200,
-                  height: 200,
-                  borderRadius: '50%',
-                  background: `radial-gradient(circle at 40% 40%,
-                    rgba(14, 165, 233, 0.25),
-                    rgba(20, 184, 166, 0.2) 50%,
-                    rgba(16, 185, 129, 0.15) 80%,
-                    transparent)`,
-                  backdropFilter: 'blur(12px) saturate(1.6)',
-                  WebkitBackdropFilter: 'blur(12px) saturate(1.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.35)',
-                  boxShadow: [
-                    '0 4px 24px rgba(0, 0, 20, 0.06)',
-                    '0 1px 4px rgba(0, 0, 20, 0.04)',
-                    'inset 0 1px 0 0 rgba(255, 255, 255, 0.4)',
-                    isSaved
-                      ? '0 0 40px rgba(16, 185, 129, 0.25)'
-                      : isListening
-                        ? '0 0 40px rgba(14, 165, 233, 0.2)'
-                        : 'none',
-                  ].filter(Boolean).join(', '),
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
+                animate={isSaved ? { y: [0, -2, 0] } : {}}
+                transition={isSaved ? { duration: 1.5, ease: 'easeInOut' } : {}}
               >
-                {/* Specular highlight */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '1px',
-                    background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.4) 15%, rgba(255,255,255,0.7) 35%, rgba(255,255,255,0.7) 65%, rgba(255,255,255,0.4) 85%, transparent 95%)',
-                    borderRadius: '50%',
-                    pointerEvents: 'none',
-                    zIndex: 2,
-                  }}
-                />
-                {/* Nod animation for saved state */}
-                {isSaved && (
-                  <motion.div
-                    initial={{ y: 0 }}
-                    animate={{ y: [-2, 0] }}
-                    transition={{ duration: 1.5, ease: 'easeInOut' }}
-                    style={{ position: 'absolute', inset: 0 }}
-                  />
-                )}
+                <MiniOrb size={200} listening={isListening} saved={isSaved} />
               </motion.div>
 
               {/* Question / Status text */}
@@ -288,57 +236,10 @@ export function EchoConversationScreen({ onBack, onViewReceipt }: EchoConversati
               className="w-full max-w-md flex flex-col items-end gap-4 flex-1"
               style={{ paddingTop: 8, paddingBottom: 120 }}
             >
-              {/* Small avatar in top-right */}
-              <motion.div
-                animate={{
-                  scale: isListening ? [1.0, 1.05, 1.0] : [1.0, 1.03, 1.0],
-                }}
-                transition={{
-                  duration: isListening ? 2 : 4,
-                  ease: 'easeInOut',
-                  repeat: Infinity,
-                }}
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  background: `radial-gradient(circle at 40% 40%,
-                    rgba(14, 165, 233, 0.25),
-                    rgba(20, 184, 166, 0.2) 50%,
-                    rgba(16, 185, 129, 0.15) 80%,
-                    transparent)`,
-                  backdropFilter: 'blur(12px) saturate(1.6)',
-                  WebkitBackdropFilter: 'blur(12px) saturate(1.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.35)',
-                  boxShadow: [
-                    '0 4px 24px rgba(0, 0, 20, 0.06)',
-                    '0 1px 4px rgba(0, 0, 20, 0.04)',
-                    'inset 0 1px 0 0 rgba(255, 255, 255, 0.4)',
-                    isSaved
-                      ? '0 0 30px rgba(16, 185, 129, 0.2)'
-                      : isListening
-                        ? '0 0 30px rgba(14, 165, 233, 0.15)'
-                        : 'none',
-                  ].filter(Boolean).join(', '),
-                  flexShrink: 0,
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '1px',
-                    background: 'linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.4) 15%, rgba(255,255,255,0.7) 35%, rgba(255,255,255,0.7) 65%, rgba(255,255,255,0.4) 85%, transparent 95%)',
-                    borderRadius: '50%',
-                    pointerEvents: 'none',
-                    zIndex: 2,
-                  }}
-                />
-              </motion.div>
+              {/* Small avatar in top-right — mini orb */}
+              <div style={{ flexShrink: 0 }}>
+                <MiniOrb size={80} listening={isListening} saved={isSaved} />
+              </div>
 
               {/* Transcription area */}
               <div

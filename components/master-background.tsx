@@ -104,31 +104,49 @@ export const MasterBackground = () => {
       ))}
 
       {/* Concentric ripples — sky blue */}
-      {ripples.map(({ delay, index }) => (
-        <div
-          key={`ripple-${index}`}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%) scale(0.02)',
-            width: '1200px',
-            height: '1200px',
-            borderRadius: '50%',
-            border: '1.5px solid rgba(14, 165, 233, 0.12)',
-            animation: `ripple-expand 20s ${delay}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
-            pointerEvents: 'none',
-          }}
-        />
-      ))}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+        }}
+      >
+        {ripples.map(({ delay, index }) => (
+          <div
+            key={`ripple-${index}`}
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%) scale(0.02)',
+              width: '1200px',
+              height: '1200px',
+              borderRadius: '50%',
+              border: '1.5px solid rgba(14, 165, 233, 0.12)',
+              animation: `ripple-expand 20s ${delay}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
+              pointerEvents: 'none',
+            }}
+          />
+        ))}
+      </div>
 
       {/* Floating particles */}
-      {particles}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+        }}
+      >
+        {particles}
+      </div>
 
       {/* Central ambient teal glow */}
       <div
         style={{
-          position: 'fixed',
+          position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
