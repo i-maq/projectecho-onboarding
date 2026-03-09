@@ -19,6 +19,14 @@ interface MiniOrbProps {
 export function MiniOrb({ size, listening = false, saved = false }: MiniOrbProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
+  const isIOSRef = useRef(false);
+
+  useEffect(() => {
+    // Detect iOS Safari — ctx.filter is unreliable on iOS Safari
+    isIOSRef.current =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -26,22 +34,31 @@ export function MiniOrb({ size, listening = false, saved = false }: MiniOrbProps
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const isIOS = isIOSRef.current;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = size * dpr;
     canvas.height = size * dpr;
     ctx.scale(dpr, dpr);
 
+    // On iOS, apply CSS blur to canvas element since ctx.filter is unsupported
+    if (isIOS) {
+      canvas.style.filter = 'blur(6px)';
+    } else {
+      canvas.style.filter = '';
+    }
+
     let time = 0;
     const cx = size / 2;
     const cy = size / 2;
 
-    // 4 blob layers
-    const layers = [
+    // Use 3 layers on iOS (reduce noise without blur smoothing), 4 on desktop
+    const allLayers = [
       { baseRadius: size * 0.38, segments: 24, speed: 0.012, noiseScale: 0.7, colorPhase: 0, opacity: 0.7 },
       { baseRadius: size * 0.30, segments: 20, speed: 0.018, noiseScale: 1.0, colorPhase: 1.5, opacity: 0.8 },
       { baseRadius: size * 0.42, segments: 28, speed: 0.008, noiseScale: 0.5, colorPhase: 3.0, opacity: 0.6 },
       { baseRadius: size * 0.22, segments: 16, speed: 0.025, noiseScale: 1.3, colorPhase: 4.5, opacity: 0.9 },
     ];
+    const layers = isIOS ? allLayers.slice(0, 3) : allLayers;
 
     const noise = (x: number, y: number, t: number, scale: number) => {
       const r = Math.sqrt(x * x + y * y) * 0.01;
@@ -126,22 +143,35 @@ export function MiniOrb({ size, listening = false, saved = false }: MiniOrbProps
         const color = getColor(layer.colorPhase, time * colorSpeed);
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, layer.baseRadius * 2);
         const op = layer.opacity;
-        gradient.addColorStop(0, `rgba(${color.r},${color.g},${color.b},${op})`);
-        gradient.addColorStop(0.4, `rgba(${color.r},${color.g},${color.b},${op * 0.7})`);
-        gradient.addColorStop(0.7, `rgba(${color.r},${color.g},${color.b},${op * 0.35})`);
-        gradient.addColorStop(1, `rgba(${color.r},${color.g},${color.b},${op * 0.05})`);
+
+        if (isIOS) {
+          // iOS: wider/softer gradient spread to compensate for no ctx.filter blur
+          gradient.addColorStop(0, `rgba(${color.r},${color.g},${color.b},${op})`);
+          gradient.addColorStop(0.3, `rgba(${color.r},${color.g},${color.b},${op * 0.8})`);
+          gradient.addColorStop(0.6, `rgba(${color.r},${color.g},${color.b},${op * 0.4})`);
+          gradient.addColorStop(1, `rgba(${color.r},${color.g},${color.b},0)`);
+        } else {
+          gradient.addColorStop(0, `rgba(${color.r},${color.g},${color.b},${op})`);
+          gradient.addColorStop(0.4, `rgba(${color.r},${color.g},${color.b},${op * 0.7})`);
+          gradient.addColorStop(0.7, `rgba(${color.r},${color.g},${color.b},${op * 0.35})`);
+          gradient.addColorStop(1, `rgba(${color.r},${color.g},${color.b},${op * 0.05})`);
+        }
 
         ctx.globalCompositeOperation = layer.baseRadius < size * 0.25 ? 'screen' : 'multiply';
-        ctx.filter = 'blur(6px) saturate(1.4) brightness(1.2)';
+        if (!isIOS) {
+          ctx.filter = 'blur(6px) saturate(1.4) brightness(1.2)';
+        }
         ctx.fillStyle = gradient;
         ctx.fill();
 
-        // Glow edge
-        ctx.globalCompositeOperation = 'screen';
-        ctx.strokeStyle = `rgba(${color.r},${color.g},${color.b},${op * 0.5})`;
-        ctx.lineWidth = 3;
-        ctx.filter = 'blur(10px) saturate(1.6)';
-        ctx.stroke();
+        // Glow edge (skip on iOS — CSS blur handles softening)
+        if (!isIOS) {
+          ctx.globalCompositeOperation = 'screen';
+          ctx.strokeStyle = `rgba(${color.r},${color.g},${color.b},${op * 0.5})`;
+          ctx.lineWidth = 3;
+          ctx.filter = 'blur(10px) saturate(1.6)';
+          ctx.stroke();
+        }
       }
 
       ctx.restore();

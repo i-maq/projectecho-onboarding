@@ -41,10 +41,6 @@ function generateParticles(count: number): Particle[] {
   return particles;
 }
 
-// Ripple configuration — 6 rings, staggered across 20s cycle
-const RIPPLE_COUNT = 6;
-const RIPPLE_CYCLE = 20; // seconds
-const RIPPLE_MAX_RADIUS = 600; // half of 1200px
 
 export const AuroraCanvasBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -131,32 +127,6 @@ export const AuroraCanvasBackground: React.FC = () => {
       ctx.fillStyle = glowGrad;
       ctx.fillRect(cx - 250, cy - 250, 500, 500);
 
-      // --- Draw concentric ripple rings ---
-      ctx.globalCompositeOperation = 'source-over';
-      for (let i = 0; i < RIPPLE_COUNT; i++) {
-        const delay = (i / RIPPLE_COUNT) * RIPPLE_CYCLE;
-        const elapsed = ((time - delay) % RIPPLE_CYCLE + RIPPLE_CYCLE) % RIPPLE_CYCLE;
-        const progress = elapsed / RIPPLE_CYCLE; // 0 to 1
-
-        const scale = 0.02 + progress * 0.98; // 0.02 to 1.0
-        const radius = RIPPLE_MAX_RADIUS * scale;
-
-        // Opacity: starts at 0.35, fades to 0 by 80% through
-        let opacity: number;
-        if (progress < 0.8) {
-          opacity = 0.35 * (1 - progress / 0.8);
-        } else {
-          opacity = 0;
-        }
-
-        if (opacity > 0.005) {
-          ctx.beginPath();
-          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(14, 165, 233, ${opacity})`;
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-        }
-      }
 
       // --- Draw floating particles ---
       ctx.globalCompositeOperation = 'source-over';
