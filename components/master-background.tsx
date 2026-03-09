@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
+import { AuroraCanvasBackground } from './aurora-canvas-background';
 
 // Aurora blob configuration
 const auroraBlobs = [
@@ -17,9 +18,19 @@ const rippleDelays = [0, 3.33, 6.67, 10, 13.33, 16.67]; // staggered across 20s
 export const MasterBackground = () => {
   const blobRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animFrameRef = useRef<number>(0);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  // Detect mobile device — run once on mount
+  useEffect(() => {
+    const touchDevice =
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches ||
+      navigator.maxTouchPoints > 0;
+    setIsMobile(touchDevice);
+  }, []);
 
   // Animate aurora blobs with sin/cos drift — direct DOM manipulation, zero re-renders
   useEffect(() => {
+    if (isMobile !== false) return; // Only run on desktop
     const animate = () => {
       const time = Date.now() / 1000;
       blobRefs.current.forEach((el, i) => {
@@ -34,7 +45,7 @@ export const MasterBackground = () => {
     };
     animFrameRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animFrameRef.current);
-  }, []);
+  }, [isMobile]);
 
   // Generate floating particles once (120 particles, 60% blue / 40% green)
   const particles = useMemo(() => {
@@ -68,6 +79,29 @@ export const MasterBackground = () => {
     });
   }, []);
 
+  // While detecting, render nothing (avoids flash)
+  if (isMobile === null) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 0,
+          background: '#ffffff',
+        }}
+      />
+    );
+  }
+
+  // Mobile: use canvas-based background (no backdrop-filter flickering)
+  if (isMobile) {
+    return <AuroraCanvasBackground />;
+  }
+
+  // Desktop: use DOM-based background with backdrop-filter interactions
   return (
     <>
       {/* Base layer: white background + aurora blobs + central glow */}
@@ -119,8 +153,7 @@ export const MasterBackground = () => {
         />
       </div>
 
-      {/* Atmosphere layer: particles + ripples — sits above content backgrounds
-          but below interactive glass card surfaces via pointer-events: none */}
+      {/* Atmosphere layer: particles — no overflow clipping */}
       <div
         style={{
           position: 'fixed',
@@ -133,30 +166,32 @@ export const MasterBackground = () => {
           pointerEvents: 'none',
         }}
       >
-        {/* Concentric ripples — sky blue, pure CSS animation */}
-        {rippleDelays.map((delay, index) => (
-          <div
-            key={`ripple-${index}`}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%) scale(0.02)',
-              width: '1200px',
-              height: '1200px',
-              borderRadius: '50%',
-              border: 'none',
-              boxShadow: 'inset 0 0 0 1.5px rgba(14, 165, 233, 0.15)',
-              animation: `ripple-expand 20s ${delay}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
-              pointerEvents: 'none',
-              willChange: 'transform, opacity',
-            }}
-          />
-        ))}
-
         {/* Floating particles */}
         {particles}
       </div>
+
+      {/* Concentric ripples — rendered outside overflow:hidden container
+          so they can expand fully without being clipped */}
+      {rippleDelays.map((delay, index) => (
+        <div
+          key={`ripple-${index}`}
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            width: '1200px',
+            height: '1200px',
+            borderRadius: '50%',
+            border: '1.5px solid rgba(14, 165, 233, 0.25)',
+            background: 'transparent',
+            boxShadow: 'none',
+            animation: `ripple-expand 20s ${delay}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
+            pointerEvents: 'none',
+            zIndex: 1,
+            willChange: 'transform, opacity',
+          }}
+        />
+      ))}
     </>
   );
 };
