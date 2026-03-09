@@ -71,47 +71,70 @@ export const MasterBackground = () => {
   }, []);
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 0,
-        overflow: 'hidden',
-        background: '#ffffff',
-      }}
-    >
-      {/* Aurora drifting blobs */}
-      {auroraBlobs.map((blob, i) => (
+    <>
+      {/* Base layer: white background + aurora blobs + central glow */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 0,
+          overflow: 'hidden',
+          background: '#ffffff',
+        }}
+      >
+        {/* Aurora drifting blobs */}
+        {auroraBlobs.map((blob, i) => (
+          <div
+            key={`blob-${i}`}
+            ref={(el) => { blobRefs.current[i] = el; }}
+            style={{
+              position: 'absolute',
+              width: `${blob.size}px`,
+              height: `${blob.size}px`,
+              left: `${blob.x}%`,
+              top: `${blob.y}%`,
+              transform: 'translate(-50%, -50%)',
+              background: `radial-gradient(circle, rgba(${blob.color}, 0.18) 0%, rgba(${blob.color}, 0.08) 40%, transparent 70%)`,
+              filter: 'blur(80px)',
+              borderRadius: '50%',
+              pointerEvents: 'none',
+            }}
+          />
+        ))}
+
+        {/* Central ambient teal glow */}
         <div
-          key={`blob-${i}`}
-          ref={(el) => { blobRefs.current[i] = el; }}
           style={{
             position: 'absolute',
-            width: `${blob.size}px`,
-            height: `${blob.size}px`,
-            left: `${blob.x}%`,
-            top: `${blob.y}%`,
+            top: '50%',
+            left: '50%',
             transform: 'translate(-50%, -50%)',
-            background: `radial-gradient(circle, rgba(${blob.color}, 0.18) 0%, rgba(${blob.color}, 0.08) 40%, transparent 70%)`,
-            filter: 'blur(80px)',
-            borderRadius: '50%',
+            width: '500px',
+            height: '500px',
+            background: 'radial-gradient(circle, rgba(14, 184, 166, 0.035) 0%, transparent 60%)',
             pointerEvents: 'none',
           }}
         />
-      ))}
+      </div>
 
-      {/* Concentric ripples — sky blue */}
+      {/* Atmosphere layer: particles + ripples — sits above content backgrounds
+          but below interactive glass card surfaces via pointer-events: none */}
       <div
         style={{
-          position: 'absolute',
-          inset: 0,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 1,
           overflow: 'hidden',
           pointerEvents: 'none',
         }}
       >
+        {/* Concentric ripples — sky blue */}
         {ripples.map(({ delay, index }) => (
           <div
             key={`ripple-${index}`}
@@ -130,33 +153,10 @@ export const MasterBackground = () => {
             }}
           />
         ))}
-      </div>
 
-      {/* Floating particles */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          overflow: 'hidden',
-          pointerEvents: 'none',
-        }}
-      >
+        {/* Floating particles */}
         {particles}
       </div>
-
-      {/* Central ambient teal glow */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '500px',
-          height: '500px',
-          background: 'radial-gradient(circle, rgba(14, 184, 166, 0.035) 0%, transparent 60%)',
-          pointerEvents: 'none',
-        }}
-      />
 
       {/* Inline keyframes for ripple animation */}
       <style>{`
@@ -174,6 +174,6 @@ export const MasterBackground = () => {
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };

@@ -24,8 +24,11 @@ export interface Echo {
 
 type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary' | 'echoConversation' | 'memoryReceipt' | 'memoryTimeline';
 
-// Screens that render as full-screen overlays (hide shell chrome)
-const OVERLAY_SCREENS: DashboardScreen[] = ['echoConversation', 'memoryReceipt', 'memoryTimeline'];
+// Only echo conversation is a full-screen immersive overlay (hides nav)
+const OVERLAY_SCREENS: DashboardScreen[] = ['echoConversation'];
+
+// In-shell screens that show inside the nav layout (nav stays visible)
+const IN_SHELL_FULL_SCREENS: DashboardScreen[] = ['memoryTimeline', 'memoryReceipt'];
 
 
 export function Dashboard() {
@@ -64,45 +67,49 @@ export function Dashboard() {
   const handleMemorySaved = (newEcho: Echo) => { setEchoes([newEcho, ...echoes]); toast.success('Memory saved successfully!'); setCurrentScreen('main'); };
 
   const isOverlay = OVERLAY_SCREENS.includes(currentScreen);
+  const isHomeTabActive = currentScreen === 'main' || currentScreen === 'memoryTimeline' || currentScreen === 'memoryReceipt';
 
   return (
     <div className="min-h-[100dvh] flex flex-col text-gray-800" style={{ background: 'transparent' }}>
       {/* ── Main content area ── */}
-      <div
-        className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: isOverlay ? 0 : 80 }}
-      >
-        <div className="p-4" style={{ maxWidth: 400, margin: '0 auto', width: '100%' }}>
-          {/* Inline screens (non-overlay) */}
-          {currentScreen === 'main' && (
-            <DashboardHomeScreen
-              onCreateMemory={navigateToEchoConversation}
-              onViewMemories={navigateToMemoryTimeline}
-              onViewReceipt={navigateToMemoryReceipt}
-            />
-          )}
-          {currentScreen === 'createMemory' && (
-            <CreateMemoryScreen onMemorySaved={handleMemorySaved} onCancel={navigateToMain} />
-          )}
-          {currentScreen === 'viewMemories' && (
-            <ViewMemoriesScreen echoes={echoes} onSelectDate={navigateToDaySummary} onBack={navigateToMain} isLoading={isLoading} />
-          )}
-          {currentScreen === 'daySummary' && selectedDate && (
-            <DaySummaryView date={selectedDate} echoes={echoes.filter(echo => new Date(echo.created_at).toDateString() === selectedDate.toDateString())} onBack={() => setCurrentScreen('viewMemories')} />
-          )}
+      {!isOverlay && !IN_SHELL_FULL_SCREENS.includes(currentScreen) && (
+        <div
+          className="flex-1 overflow-y-auto"
+          style={{ paddingBottom: 80 }}
+        >
+          <div className="p-4" style={{ maxWidth: 400, margin: '0 auto', width: '100%' }}>
+            {currentScreen === 'main' && (
+              <DashboardHomeScreen
+                onCreateMemory={navigateToEchoConversation}
+                onViewMemories={navigateToMemoryTimeline}
+                onViewReceipt={navigateToMemoryReceipt}
+              />
+            )}
+            {currentScreen === 'createMemory' && (
+              <CreateMemoryScreen onMemorySaved={handleMemorySaved} onCancel={navigateToMain} />
+            )}
+            {currentScreen === 'viewMemories' && (
+              <ViewMemoriesScreen echoes={echoes} onSelectDate={navigateToDaySummary} onBack={navigateToMain} isLoading={isLoading} />
+            )}
+            {currentScreen === 'daySummary' && selectedDate && (
+              <DaySummaryView date={selectedDate} echoes={echoes.filter(echo => new Date(echo.created_at).toDateString() === selectedDate.toDateString())} onBack={() => setCurrentScreen('viewMemories')} />
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* ── Full-screen overlays ── */}
+      {/* ── In-shell full screens (nav stays visible, own layout) ── */}
+      {currentScreen === 'memoryTimeline' && (
+        <MemoryTimelineScreen onBack={navigateToMain} onSelectMemory={() => navigateToMemoryReceipt()} />
+      )}
+      {currentScreen === 'memoryReceipt' && (
+        <MemoryReceiptScreen onAddMore={navigateToEchoConversation} onDone={navigateToMain} />
+      )}
+
+      {/* ── Full-screen overlay (hides nav) ── */}
       <AnimatePresence>
         {currentScreen === 'echoConversation' && (
           <EchoConversationScreen onBack={navigateToMain} onViewReceipt={navigateToMemoryReceipt} />
-        )}
-        {currentScreen === 'memoryReceipt' && (
-          <MemoryReceiptScreen onAddMore={navigateToEchoConversation} onDone={navigateToMain} />
-        )}
-        {currentScreen === 'memoryTimeline' && (
-          <MemoryTimelineScreen onBack={navigateToMain} onSelectMemory={() => navigateToMemoryReceipt()} />
         )}
       </AnimatePresence>
 
@@ -151,7 +158,7 @@ export function Dashboard() {
                 gap: 2,
                 padding: "6px 0",
                 borderRadius: 12,
-                background: currentScreen === 'main' ? "rgba(14, 165, 233, 0.08)" : "transparent",
+                background: isHomeTabActive ? "rgba(14, 165, 233, 0.08)" : "transparent",
                 border: "none",
                 cursor: "pointer",
                 transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
@@ -161,16 +168,16 @@ export function Dashboard() {
                 style={{
                   width: 20,
                   height: 20,
-                  color: currentScreen === 'main' ? "#0ea5e9" : "#94a3b8",
+                  color: isHomeTabActive ? "#0ea5e9" : "#94a3b8",
                   transition: "color 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
                 }}
               />
               <span
                 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: currentScreen === 'main' ? 500 : 300,
+                  fontWeight: isHomeTabActive ? 500 : 300,
                   fontSize: 10,
-                  color: currentScreen === 'main' ? "#0ea5e9" : "#94a3b8",
+                  color: isHomeTabActive ? "#0ea5e9" : "#94a3b8",
                   transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
                 }}
               >
@@ -185,8 +192,45 @@ export function Dashboard() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
+                position: "relative",
               }}
             >
+              {/* Fix 4: Pool-of-light radial glow behind the Echo button */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: -20,
+                  left: "50%",
+                  transform: "translateX(-50%) translateY(-50%)",
+                  width: 120,
+                  height: 120,
+                  background: "radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(16, 185, 129, 0.06) 40%, transparent 70%)",
+                  borderRadius: "50%",
+                  pointerEvents: "none",
+                  zIndex: 0,
+                }}
+              />
+
+              {/* Fix 3: Concentric ripple rings pulsing outward from the button */}
+              {[0, 1, 2, 3].map((i) => (
+                <div
+                  key={`echo-ripple-${i}`}
+                  style={{
+                    position: "absolute",
+                    top: -20,
+                    left: "50%",
+                    width: 64,
+                    height: 64,
+                    transform: "translate(-50%, -50%)",
+                    borderRadius: "50%",
+                    boxShadow: "inset 0 0 0 1px rgba(14, 165, 233, 0.15)",
+                    animation: `echo-btn-ripple 4s ${i}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
+                    pointerEvents: "none",
+                    zIndex: 1,
+                  }}
+                />
+              ))}
+
               <button
                 onClick={navigateToEchoConversation}
                 style={{
@@ -196,8 +240,8 @@ export function Dashboard() {
                   transform: "translateY(-20px)",
                   border: "1px solid rgba(255, 255, 255, 0.45)",
                   boxShadow: [
-                    "0 0 24px rgba(14, 165, 233, 0.35)",
-                    "0 0 48px rgba(16, 185, 129, 0.15)",
+                    "0 0 30px rgba(14, 165, 233, 0.4)",
+                    "0 0 60px rgba(16, 185, 129, 0.2)",
                     "0 4px 16px rgba(0, 0, 20, 0.1)",
                   ].join(", "),
                   cursor: "pointer",
@@ -207,6 +251,7 @@ export function Dashboard() {
                   background: "transparent",
                   display: "block",
                   transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
+                  zIndex: 2,
                 }}
               >
                 {/* Iridescent rim shimmer */}
@@ -243,6 +288,8 @@ export function Dashboard() {
                   fontSize: 10,
                   color: "#0ea5e9",
                   marginTop: -14,
+                  position: "relative",
+                  zIndex: 2,
                 }}
               >
                 Echo

@@ -283,6 +283,18 @@
 }
 
 /* --- GLOBAL ANIMATION DEFINITIONS --- */
+
+/* Echo hero button — concentric ripple rings (heartbeat pulse) */
+@keyframes echo-btn-ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0;
+  }
+}
 @keyframes random-float-animation {
   0%   { transform: translate(0, 0);      opacity: 1; }
   50%  {                                   opacity: 0.5; }
