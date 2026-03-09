@@ -123,7 +123,8 @@ export const MasterBackground = () => {
               width: '1200px',
               height: '1200px',
               borderRadius: '50%',
-              border: '1.5px solid rgba(14, 165, 233, 0.12)',
+              border: 'none',
+              boxShadow: 'inset 0 0 0 1.5px rgba(14, 165, 233, 0.12)',
               animation: `ripple-expand 20s ${delay}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
               pointerEvents: 'none',
             }}
@@ -163,7 +164,6 @@ export const MasterBackground = () => {
           0% {
             transform: translate(-50%, -50%) scale(0.02);
             opacity: 0.5;
-            border-color: rgba(14, 165, 233, 0.12);
           }
           80% {
             opacity: 0.03;
@@ -171,7 +171,6 @@ export const MasterBackground = () => {
           100% {
             transform: translate(-50%, -50%) scale(1);
             opacity: 0;
-            border-color: rgba(14, 165, 233, 0);
           }
         }
       `}</style>
