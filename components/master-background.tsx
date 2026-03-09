@@ -12,16 +12,13 @@ const auroraBlobs = [
 ];
 
 // Ripple configuration — 6 concentric ripples
-const ripples = Array.from({ length: 6 }, (_, i) => ({
-  delay: (i * 20) / 6, // stagger across 20s cycle
-  index: i,
-}));
+const rippleDelays = [0, 3.33, 6.67, 10, 13.33, 16.67]; // staggered across 20s
 
 export const MasterBackground = () => {
   const blobRefs = useRef<(HTMLDivElement | null)[]>([]);
   const animFrameRef = useRef<number>(0);
 
-  // Animate aurora blobs with sin/cos drift
+  // Animate aurora blobs with sin/cos drift — direct DOM manipulation, zero re-renders
   useEffect(() => {
     const animate = () => {
       const time = Date.now() / 1000;
@@ -39,7 +36,7 @@ export const MasterBackground = () => {
     return () => cancelAnimationFrame(animFrameRef.current);
   }, []);
 
-  // Generate floating particles (120 particles, 60% blue / 40% green)
+  // Generate floating particles once (120 particles, 60% blue / 40% green)
   const particles = useMemo(() => {
     return Array.from({ length: 120 }, (_, i) => {
       const isBlue = i < 72; // 60% blue
@@ -63,7 +60,8 @@ export const MasterBackground = () => {
             filter: `blur(${blur}px)`,
             animation: `random-float-animation ${duration}s infinite linear`,
             animationDelay: `${Math.random() * duration}s`,
-            pointerEvents: 'none',
+            pointerEvents: 'none' as const,
+            willChange: 'transform, opacity',
           }}
         />
       );
@@ -101,6 +99,7 @@ export const MasterBackground = () => {
               filter: 'blur(80px)',
               borderRadius: '50%',
               pointerEvents: 'none',
+              willChange: 'left, top',
             }}
           />
         ))}
@@ -134,8 +133,8 @@ export const MasterBackground = () => {
           pointerEvents: 'none',
         }}
       >
-        {/* Concentric ripples — sky blue */}
-        {ripples.map(({ delay, index }) => (
+        {/* Concentric ripples — sky blue, pure CSS animation */}
+        {rippleDelays.map((delay, index) => (
           <div
             key={`ripple-${index}`}
             style={{
@@ -147,9 +146,10 @@ export const MasterBackground = () => {
               height: '1200px',
               borderRadius: '50%',
               border: 'none',
-              boxShadow: 'inset 0 0 0 1.5px rgba(14, 165, 233, 0.12)',
+              boxShadow: 'inset 0 0 0 1.5px rgba(14, 165, 233, 0.15)',
               animation: `ripple-expand 20s ${delay}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
               pointerEvents: 'none',
+              willChange: 'transform, opacity',
             }}
           />
         ))}
@@ -157,23 +157,6 @@ export const MasterBackground = () => {
         {/* Floating particles */}
         {particles}
       </div>
-
-      {/* Inline keyframes for ripple animation */}
-      <style>{`
-        @keyframes ripple-expand {
-          0% {
-            transform: translate(-50%, -50%) scale(0.02);
-            opacity: 0.5;
-          }
-          80% {
-            opacity: 0.03;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </>
   );
 };
