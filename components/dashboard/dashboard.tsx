@@ -12,6 +12,7 @@ import { DaySummaryView } from './day-summary-view';
 import { EchoConversationScreen } from './echo-conversation-screen';
 import { MemoryReceiptScreen } from './memory-receipt-screen';
 import { MemoryTimelineScreen } from './memory-timeline-screen';
+import { ProfileScreen } from './profile-screen';
 import { MuteButton } from '../ambient-audio';
 
 export interface Echo {
@@ -23,7 +24,7 @@ export interface Echo {
   notes?: string;
 }
 
-type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary' | 'echoConversation' | 'memoryReceipt' | 'memoryTimeline';
+type DashboardScreen = 'main' | 'createMemory' | 'viewMemories' | 'daySummary' | 'echoConversation' | 'memoryReceipt' | 'memoryTimeline' | 'profile';
 
 // Only echo conversation is a full-screen immersive overlay (hides nav)
 const OVERLAY_SCREENS: DashboardScreen[] = ['echoConversation'];
@@ -64,11 +65,13 @@ export function Dashboard() {
   const navigateToEchoConversation = () => setCurrentScreen('echoConversation');
   const navigateToMemoryReceipt = () => setCurrentScreen('memoryReceipt');
   const navigateToMemoryTimeline = () => setCurrentScreen('memoryTimeline');
+  const navigateToProfile = () => setCurrentScreen('profile');
   const navigateToDaySummary = (date: Date) => { setSelectedDate(date); setCurrentScreen('daySummary'); };
   const handleMemorySaved = (newEcho: Echo) => { setEchoes([newEcho, ...echoes]); toast.success('Memory saved successfully!'); setCurrentScreen('main'); };
 
   const isOverlay = OVERLAY_SCREENS.includes(currentScreen);
   const isHomeTabActive = currentScreen === 'main' || currentScreen === 'memoryTimeline' || currentScreen === 'memoryReceipt';
+  const isProfileTabActive = currentScreen === 'profile';
 
   return (
     <div className="min-h-[100dvh] flex flex-col text-gray-800" style={{ background: 'transparent' }}>
@@ -101,6 +104,9 @@ export function Dashboard() {
             )}
             {currentScreen === 'daySummary' && selectedDate && (
               <DaySummaryView date={selectedDate} echoes={echoes.filter(echo => new Date(echo.created_at).toDateString() === selectedDate.toDateString())} onBack={() => setCurrentScreen('viewMemories')} />
+            )}
+            {currentScreen === 'profile' && (
+              <ProfileScreen />
             )}
           </div>
         </div>
@@ -316,6 +322,7 @@ export function Dashboard() {
 
             {/* Profile tab — 25% width */}
             <button
+              onClick={navigateToProfile}
               style={{
                 flex: "0 0 25%",
                 display: "flex",
@@ -324,7 +331,7 @@ export function Dashboard() {
                 gap: 2,
                 padding: "6px 0",
                 borderRadius: 12,
-                background: "transparent",
+                background: isProfileTabActive ? "rgba(14, 165, 233, 0.08)" : "transparent",
                 border: "none",
                 cursor: "pointer",
                 transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
@@ -334,16 +341,16 @@ export function Dashboard() {
                 style={{
                   width: 20,
                   height: 20,
-                  color: "#94a3b8",
+                  color: isProfileTabActive ? "#0ea5e9" : "#94a3b8",
                   transition: "color 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
                 }}
               />
               <span
                 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 300,
+                  fontWeight: isProfileTabActive ? 500 : 300,
                   fontSize: 10,
-                  color: "#94a3b8",
+                  color: isProfileTabActive ? "#0ea5e9" : "#94a3b8",
                   transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
                 }}
               >
