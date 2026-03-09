@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Mic, Type } from 'lucide-react';
 import { MiniOrb } from './mini-orb';
+import { MuteButton } from '../ambient-audio';
 
 const ECHO_PROMPTS = [
   "What made today different from yesterday?",
@@ -18,6 +19,10 @@ const SAMPLE_TRANSCRIPTION =
   "Today was actually a really interesting day at work. I had this meeting with the design team where we finally cracked the problem we'd been stuck on for weeks. Sarah suggested we flip the whole approach and look at it from the user's perspective instead. It was one of those lightbulb moments where everything just clicked. After that I went for a walk during lunch and noticed the cherry blossoms are starting to bloom. It reminded me of last spring when I first started this job. So much has changed since then.";
 
 const easing = [0.25, 0.46, 0.45, 0.94] as const;
+
+// 6 concentric ripple rings, staggered through a 20-second cycle
+const RIPPLE_COUNT = 6;
+const RIPPLE_DELAYS = Array.from({ length: RIPPLE_COUNT }, (_, i) => (i / RIPPLE_COUNT) * 20);
 
 interface EchoConversationScreenProps {
   onBack: () => void;
@@ -134,16 +139,19 @@ export function EchoConversationScreen({ onBack, onViewReceipt }: EchoConversati
           <span className="sr-only sm:not-sr-only">Back</span>
         </button>
 
-        {/* Interface mode toggle */}
-        <button
-          onClick={() => setInterfaceMode(!interfaceMode)}
-          className="glass-button glass-button-sm flex items-center gap-1.5"
-          style={{ padding: '8px 14px', fontSize: 13 }}
-          aria-label="Toggle interface mode"
-        >
-          <Type className="h-4 w-4" />
-          <span className="text-xs">Aa</span>
-        </button>
+        {/* Right controls: Aa toggle + mute */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setInterfaceMode(!interfaceMode)}
+            className="glass-button glass-button-sm flex items-center gap-1.5"
+            style={{ padding: '8px 14px', fontSize: 13 }}
+            aria-label="Toggle interface mode"
+          >
+            <Type className="h-4 w-4" />
+            <span className="text-xs">Aa</span>
+          </button>
+          <MuteButton />
+        </div>
       </div>
 
       {/* Main content area */}
@@ -159,12 +167,36 @@ export function EchoConversationScreen({ onBack, onViewReceipt }: EchoConversati
               transition={{ duration: 0.4, ease: easing }}
               className="flex flex-col items-center"
             >
-              {/* Echo Avatar — living mini orb */}
+              {/* Echo Avatar — living mini orb with ripple rings */}
               <motion.div
                 animate={isSaved ? { y: [0, -2, 0] } : {}}
                 transition={isSaved ? { duration: 1.5, ease: 'easeInOut' } : {}}
+                style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                <MiniOrb size={200} listening={isListening} saved={isSaved} />
+                {/* Full-screen concentric ripple rings pulsing from behind orb */}
+                {RIPPLE_DELAYS.map((delay, i) => (
+                  <div
+                    key={`orb-ripple-${i}`}
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      width: 200,
+                      height: 200,
+                      marginTop: -100,
+                      marginLeft: -100,
+                      borderRadius: '50%',
+                      boxShadow: 'inset 0 0 0 1.5px rgba(14, 165, 233, 0.25)',
+                      animation: `echo-orb-ripple 20s ${delay}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
+                      pointerEvents: 'none',
+                      zIndex: 0,
+                      willChange: 'transform, opacity',
+                    }}
+                  />
+                ))}
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <MiniOrb size={200} listening={isListening} saved={isSaved} />
+                </div>
               </motion.div>
 
               {/* Question / Status text */}

@@ -5,6 +5,7 @@ import { AuthForm } from '@/components/auth/auth-form';
 import { ExtendedOnboardingFlow } from '@/components/onboarding/extended-onboarding-flow';
 import { Dashboard } from '@/components/dashboard/dashboard';
 import { MasterBackground } from '@/components/master-background';
+import { AmbientAudioProvider } from '@/components/ambient-audio';
 import { supabase } from '@/lib/supabase-client';
 
 export default function HomePage() {
@@ -60,6 +61,7 @@ export default function HomePage() {
   };
 
   return (
+    <AmbientAudioProvider>
     <main style={{
       backgroundColor: '#ffffff',
       width: '100vw',
@@ -97,5 +99,6 @@ export default function HomePage() {
         </div>
       )}
     </main>
+    </AmbientAudioProvider>
   );
 }

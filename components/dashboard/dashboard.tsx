@@ -12,6 +12,7 @@ import { DaySummaryView } from './day-summary-view';
 import { EchoConversationScreen } from './echo-conversation-screen';
 import { MemoryReceiptScreen } from './memory-receipt-screen';
 import { MemoryTimelineScreen } from './memory-timeline-screen';
+import { MuteButton } from '../ambient-audio';
 
 export interface Echo {
   id: string;
@@ -71,6 +72,13 @@ export function Dashboard() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col text-gray-800" style={{ background: 'transparent' }}>
+      {/* ── Mute button — top-right on dashboard screens ── */}
+      {!isOverlay && (
+        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 40 }}>
+          <MuteButton />
+        </div>
+      )}
+
       {/* ── Main content area ── */}
       {!isOverlay && !IN_SHELL_FULL_SCREENS.includes(currentScreen) && (
         <div

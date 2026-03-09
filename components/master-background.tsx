@@ -12,8 +12,6 @@ const auroraBlobs = [
   { color: "16, 185, 129", x: 20, y: 70, size: 480, speed: 0.45, phase: 3 },   // emerald 2
 ];
 
-// Ripple configuration — 6 concentric ripples
-const rippleDelays = [0, 3.33, 6.67, 10, 13.33, 16.67]; // staggered across 20s
 
 export const MasterBackground = () => {
   const blobRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -170,28 +168,6 @@ export const MasterBackground = () => {
         {particles}
       </div>
 
-      {/* Concentric ripples — rendered outside overflow:hidden container
-          so they can expand fully without being clipped */}
-      {rippleDelays.map((delay, index) => (
-        <div
-          key={`ripple-${index}`}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            width: '1200px',
-            height: '1200px',
-            borderRadius: '50%',
-            border: '1.5px solid rgba(14, 165, 233, 0.25)',
-            background: 'transparent',
-            boxShadow: 'none',
-            animation: `ripple-expand 20s ${delay}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
-            pointerEvents: 'none',
-            zIndex: 1,
-            willChange: 'transform, opacity',
-          }}
-        />
-      ))}
     </>
   );
 };
