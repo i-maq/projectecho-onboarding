@@ -192,95 +192,105 @@ export function Dashboard() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                position: "relative",
               }}
             >
-              {/* Fix 4: Pool-of-light radial glow behind the Echo button */}
+              {/* Button wrapper — raised above nav, contains button + ripples + glow */}
               <div
                 style={{
-                  position: "absolute",
-                  top: -20,
-                  left: "50%",
-                  transform: "translateX(-50%) translateY(-50%)",
-                  width: 120,
-                  height: 120,
-                  background: "radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(16, 185, 129, 0.06) 40%, transparent 70%)",
-                  borderRadius: "50%",
-                  pointerEvents: "none",
-                  zIndex: 0,
-                }}
-              />
-
-              {/* Fix 3: Concentric ripple rings pulsing outward from the button */}
-              {[0, 1, 2, 3].map((i) => (
-                <div
-                  key={`echo-ripple-${i}`}
-                  style={{
-                    position: "absolute",
-                    top: -20,
-                    left: "50%",
-                    width: 64,
-                    height: 64,
-                    transform: "translate(-50%, -50%)",
-                    borderRadius: "50%",
-                    boxShadow: "inset 0 0 0 1px rgba(14, 165, 233, 0.15)",
-                    animation: `echo-btn-ripple 4s ${i}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
-                    pointerEvents: "none",
-                    zIndex: 1,
-                  }}
-                />
-              ))}
-
-              <button
-                onClick={navigateToEchoConversation}
-                style={{
+                  position: "relative",
                   width: 64,
                   height: 64,
-                  borderRadius: "50%",
                   transform: "translateY(-20px)",
-                  border: "1px solid rgba(255, 255, 255, 0.45)",
-                  boxShadow: [
-                    "0 0 30px rgba(14, 165, 233, 0.4)",
-                    "0 0 60px rgba(16, 185, 129, 0.2)",
-                    "0 4px 16px rgba(0, 0, 20, 0.1)",
-                  ].join(", "),
-                  cursor: "pointer",
-                  position: "relative",
-                  overflow: "hidden",
-                  padding: 0,
-                  background: "transparent",
-                  display: "block",
-                  transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
-                  zIndex: 2,
                 }}
               >
-                {/* Iridescent rim shimmer */}
+                {/* Pool-of-light radial glow behind the Echo button */}
                 <div
                   style={{
                     position: "absolute",
-                    inset: -1,
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 120,
+                    height: 120,
+                    background: "radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(16, 185, 129, 0.06) 40%, transparent 70%)",
                     borderRadius: "50%",
-                    background: `conic-gradient(
-                      from 180deg,
-                      rgba(14, 165, 233, 0.3),
-                      rgba(20, 184, 166, 0.25),
-                      rgba(167, 139, 250, 0.18),
-                      rgba(244, 114, 182, 0.14),
-                      rgba(14, 165, 233, 0.3)
-                    )`,
-                    mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                    maskComposite: "exclude",
-                    WebkitMaskComposite: "xor",
-                    padding: 1.5,
                     pointerEvents: "none",
-                    opacity: 0.9,
-                    zIndex: 3,
+                    zIndex: 0,
                   }}
                 />
-                {/* MiniOrb canvas fills the button */}
-                <MiniOrb size={64} />
-              </button>
+
+                {/* Concentric ripple rings pulsing outward from button center */}
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={`echo-ripple-${i}`}
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      width: 64,
+                      height: 64,
+                      marginTop: -32,
+                      marginLeft: -32,
+                      borderRadius: "50%",
+                      boxShadow: "inset 0 0 0 1px rgba(14, 165, 233, 0.25)",
+                      animation: `echo-btn-ripple 4s ${i}s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
+                      pointerEvents: "none",
+                      zIndex: 1,
+                      willChange: "transform, opacity",
+                    }}
+                  />
+                ))}
+
+                <button
+                  onClick={navigateToEchoConversation}
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: "50%",
+                    border: "1px solid rgba(255, 255, 255, 0.45)",
+                    boxShadow: [
+                      "0 0 30px rgba(14, 165, 233, 0.4)",
+                      "0 0 60px rgba(16, 185, 129, 0.2)",
+                      "0 4px 16px rgba(0, 0, 20, 0.1)",
+                    ].join(", "),
+                    cursor: "pointer",
+                    position: "relative",
+                    overflow: "hidden",
+                    padding: 0,
+                    background: "transparent",
+                    display: "block",
+                    transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
+                    zIndex: 2,
+                  }}
+                >
+                  {/* Iridescent rim shimmer */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: -1,
+                      borderRadius: "50%",
+                      background: `conic-gradient(
+                        from 180deg,
+                        rgba(14, 165, 233, 0.3),
+                        rgba(20, 184, 166, 0.25),
+                        rgba(167, 139, 250, 0.18),
+                        rgba(244, 114, 182, 0.14),
+                        rgba(14, 165, 233, 0.3)
+                      )`,
+                      mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                      WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                      maskComposite: "exclude",
+                      WebkitMaskComposite: "xor",
+                      padding: 1.5,
+                      pointerEvents: "none",
+                      opacity: 0.9,
+                      zIndex: 3,
+                    }}
+                  />
+                  {/* MiniOrb canvas fills the button */}
+                  <MiniOrb size={64} />
+                </button>
+              </div>
               <span
                 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
