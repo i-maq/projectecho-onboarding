@@ -60,7 +60,8 @@ export function MemoryReceiptScreen({ onAddMore, onDone }: MemoryReceiptScreenPr
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5, ease: easing }}
-      className="fixed inset-0 z-10 flex items-center justify-center px-4 py-8 overflow-y-auto"
+      className="flex-1 flex items-center justify-center px-4 py-8 overflow-y-auto"
+      style={{ position: 'relative', zIndex: 1, paddingBottom: 88 }}
     >
       {/* Receipt card */}
       <motion.div

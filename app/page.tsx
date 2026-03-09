@@ -72,12 +72,12 @@ export default function HomePage() {
       <MasterBackground />
 
       {currentStep === 'dashboard' ? (
-        <div style={{ zIndex: 1, position: 'relative', minHeight: '100dvh' }}>
+        <div style={{ zIndex: 2, position: 'relative', minHeight: '100dvh' }}>
           <Dashboard />
         </div>
       ) : (
         <div style={{
-          zIndex: 1,
+          zIndex: 2,
           color: '#1a1a1a',
           minHeight: '100dvh',
           display: 'flex',

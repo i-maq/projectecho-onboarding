@@ -126,7 +126,8 @@ export function MemoryTimelineScreen({ onBack, onSelectMemory }: MemoryTimelineS
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5, ease: easing }}
-      className="fixed inset-0 z-10 flex flex-col overflow-hidden"
+      className="flex-1 flex flex-col overflow-hidden"
+      style={{ position: 'relative', zIndex: 1 }}
     >
       {/* ── Sticky header area ── */}
       <div
@@ -251,7 +252,7 @@ export function MemoryTimelineScreen({ onBack, onSelectMemory }: MemoryTimelineS
       </div>
 
       {/* ── Scrollable timeline ── */}
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-8">
+      <div className="flex-1 overflow-y-auto px-4 pt-4" style={{ paddingBottom: 88 }}>
         <AnimatePresence mode="wait">
           {groups.length === 0 ? (
             <motion.p
