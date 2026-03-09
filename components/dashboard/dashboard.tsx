@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Sparkles, User } from 'lucide-react';
+import { Home, User } from 'lucide-react';
+import { MiniOrb } from './mini-orb';
 import { toast } from 'sonner';
 import { DashboardHomeScreen } from './dashboard-home-screen';
 import { CreateMemoryScreen } from './create-memory-screen';
@@ -65,7 +66,7 @@ export function Dashboard() {
   const isOverlay = OVERLAY_SCREENS.includes(currentScreen);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-white text-gray-800">
+    <div className="min-h-[100dvh] flex flex-col text-gray-800" style={{ background: 'transparent' }}>
       {/* ── Main content area ── */}
       <div
         className="flex-1 overflow-y-auto"
@@ -138,16 +139,17 @@ export function Dashboard() {
               zIndex: 2,
             }}
           />
-          <div style={{ display: "flex", justifyContent: "space-around", alignItems: "flex-end" }}>
-            {/* Home tab */}
+          <div style={{ display: "flex", alignItems: "flex-end" }}>
+            {/* Home tab — 25% width */}
             <button
               onClick={navigateToMain}
               style={{
+                flex: "0 0 25%",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 2,
-                padding: "6px 14px",
+                padding: "6px 0",
                 borderRadius: 12,
                 background: currentScreen === 'main' ? "rgba(14, 165, 233, 0.08)" : "transparent",
                 border: "none",
@@ -176,93 +178,86 @@ export function Dashboard() {
               </span>
             </button>
 
-            {/* Echo hero center button — raised above nav bar */}
-            <button
-              onClick={navigateToEchoConversation}
+            {/* Echo hero center — 50% width, 64px orb raised above nav */}
+            <div
               style={{
-                width: 56,
-                height: 56,
-                borderRadius: "50%",
-                transform: "translateY(-16px)",
-                background: `radial-gradient(circle at 40% 40%,
-                  rgba(14, 165, 233, 0.35),
-                  rgba(20, 184, 166, 0.28) 50%,
-                  rgba(16, 185, 129, 0.2) 80%,
-                  rgba(14, 165, 233, 0.12))`,
-                backdropFilter: "blur(16px) saturate(1.6)",
-                WebkitBackdropFilter: "blur(16px) saturate(1.6)",
-                border: "1px solid rgba(255, 255, 255, 0.45)",
-                boxShadow: [
-                  "0 0 20px rgba(14, 165, 233, 0.3)",
-                  "0 0 40px rgba(16, 185, 129, 0.15)",
-                  "0 4px 16px rgba(0, 0, 20, 0.08)",
-                  "inset 0 1px 0 rgba(255, 255, 255, 0.4)",
-                  "inset 0 -1px 2px rgba(0, 0, 0, 0.03)",
-                ].join(", "),
-                cursor: "pointer",
-                position: "relative",
-                overflow: "hidden",
+                flex: "0 0 50%",
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
               }}
             >
-              {/* Iridescent rim shimmer */}
-              <div
+              <button
+                onClick={navigateToEchoConversation}
                 style={{
-                  position: "absolute",
-                  inset: -1,
+                  width: 64,
+                  height: 64,
                   borderRadius: "50%",
-                  background: `conic-gradient(
-                    from 180deg,
-                    rgba(14, 165, 233, 0.25),
-                    rgba(20, 184, 166, 0.2),
-                    rgba(167, 139, 250, 0.15),
-                    rgba(244, 114, 182, 0.12),
-                    rgba(14, 165, 233, 0.25)
-                  )`,
-                  mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                  WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                  maskComposite: "exclude",
-                  WebkitMaskComposite: "xor",
-                  padding: 1.5,
-                  pointerEvents: "none",
-                  opacity: 0.8,
-                }}
-              />
-              {/* Specular top highlight */}
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: "10%",
-                  right: "10%",
-                  height: "1px",
-                  background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
-                  pointerEvents: "none",
-                }}
-              />
-              <Sparkles
-                style={{
-                  width: 24,
-                  height: 24,
-                  color: "#ffffff",
+                  transform: "translateY(-20px)",
+                  border: "1px solid rgba(255, 255, 255, 0.45)",
+                  boxShadow: [
+                    "0 0 24px rgba(14, 165, 233, 0.35)",
+                    "0 0 48px rgba(16, 185, 129, 0.15)",
+                    "0 4px 16px rgba(0, 0, 20, 0.1)",
+                  ].join(", "),
+                  cursor: "pointer",
                   position: "relative",
-                  zIndex: 1,
-                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.15))",
+                  overflow: "hidden",
+                  padding: 0,
+                  background: "transparent",
+                  display: "block",
+                  transition: "all 0.35s cubic-bezier(0.25,0.46,0.45,0.94)",
                 }}
-              />
-            </button>
+              >
+                {/* Iridescent rim shimmer */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: -1,
+                    borderRadius: "50%",
+                    background: `conic-gradient(
+                      from 180deg,
+                      rgba(14, 165, 233, 0.3),
+                      rgba(20, 184, 166, 0.25),
+                      rgba(167, 139, 250, 0.18),
+                      rgba(244, 114, 182, 0.14),
+                      rgba(14, 165, 233, 0.3)
+                    )`,
+                    mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                    maskComposite: "exclude",
+                    WebkitMaskComposite: "xor",
+                    padding: 1.5,
+                    pointerEvents: "none",
+                    opacity: 0.9,
+                    zIndex: 3,
+                  }}
+                />
+                {/* MiniOrb canvas fills the button */}
+                <MiniOrb size={64} />
+              </button>
+              <span
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 500,
+                  fontSize: 10,
+                  color: "#0ea5e9",
+                  marginTop: -14,
+                }}
+              >
+                Echo
+              </span>
+            </div>
 
-            {/* Profile tab */}
+            {/* Profile tab — 25% width */}
             <button
               style={{
+                flex: "0 0 25%",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 2,
-                padding: "6px 14px",
+                padding: "6px 0",
                 borderRadius: 12,
                 background: "transparent",
                 border: "none",
