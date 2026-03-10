@@ -1,19 +1,21 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import localFont from 'next/font/local';
+import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 
-const poppins = localFont({
-  src: [
-    { path: '../public/fonts/Poppins-300.woff2', weight: '300', style: 'normal' },
-    { path: '../public/fonts/Poppins-400.woff2', weight: '400', style: 'normal' },
-    { path: '../public/fonts/Poppins-500.woff2', weight: '500', style: 'normal' },
-    { path: '../public/fonts/Poppins-600.woff2', weight: '600', style: 'normal' },
-    { path: '../public/fonts/Poppins-700.woff2', weight: '700', style: 'normal' },
-    { path: '../public/fonts/Poppins-800.woff2', weight: '800', style: 'normal' },
-  ],
-  variable: '--font-poppins',
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-mono',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -28,14 +30,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className="h-full">
-      <body className={`${poppins.variable} font-poppins h-full flex flex-col`}>
+      <body className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} font-sans h-full flex flex-col`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="gradient-bg min-h-screen h-full flex-grow">
+          <div className="gradient-bg min-h-[100dvh] flex-grow overflow-y-auto">
             {children}
           </div>
           <Toaster />

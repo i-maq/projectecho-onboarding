@@ -7,12 +7,11 @@ import { DynamicOrbIntro } from '../orb/dynamic-orb-intro';
 import { DatabaseSetupCheck } from './database-setup-check';
 import { PersonalDataStep } from './personal-data-step';
 import { CameraCaptureStep } from './camera-capture-step';
-import { VideoCaptureStep } from '../avatar/video-capture-step';
 import { WelcomeStep } from './welcome-step';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase-client';
 
-type OnboardingStage = 'soundCheck' | 'welcome' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'videoCapture' | 'complete';
+type OnboardingStage = 'soundCheck' | 'welcome' | 'orbIntro' | 'dbCheck' | 'personalData' | 'cameraCapture' | 'complete';
 
 interface PersonalData {
   firstName: string;
@@ -25,14 +24,12 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const [stage, setStage] = useState<OnboardingStage>('soundCheck');
   const [personalData, setPersonalData] = useState<PersonalData | null>(null);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
-  const [replicaId, setReplicaId] = useState<string | null>(null);
   const [clickPulse, setClickPulse] = useState<{ x: number, y: number, key: number } | null>(null);
   const [headphonesAnimation, setHeadphonesAnimation] = useState<any>(null);
 
   const musicRef = useRef<HTMLAudioElement | null>(null);
   const soundRef = useRef<HTMLAudioElement | null>(null);
 
-  // Play background music immediately when component mounts
   useEffect(() => {
     if (musicRef.current) {
       musicRef.current.loop = true;
@@ -41,7 +38,6 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     }
   }, []);
 
-  // Load Lottie JSON from public at runtime
   useEffect(() => {
     fetch('/wired-outline-1055-earbud-wireless-earphones-hover-pinch.json')
       .then(res => {
@@ -55,7 +51,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
       });
   }, []);
 
-  const markOnboardingComplete = async (rid?: string) => {
+  const markOnboardingComplete = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -69,18 +65,14 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
     } catch (error) {
       console.error('Failed to mark onboarding complete in DB:', error);
     }
-    // Cache in localStorage as fallback
     localStorage.setItem('onboardingComplete', 'true');
-    if (rid) {
-      localStorage.setItem('replicaId', rid);
-    }
     onComplete();
   };
 
   const handleSoundCheckNext = (event: React.MouseEvent<HTMLButtonElement>) => {
     soundRef.current?.play();
     setClickPulse({ x: event.clientX, y: event.clientY, key: Date.now() });
-    setTimeout(() => setStage('welcome'), 300); // Transition to welcome
+    setTimeout(() => setStage('welcome'), 300);
   };
 
   const handleWelcomeNext = () => { setStage('orbIntro'); };
@@ -88,17 +80,14 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
   const handleOrbComplete = () => { setStage('dbCheck'); };
   const handleDatabaseReady = () => { setStage('personalData'); };
   const handlePersonalDataComplete = (data: PersonalData) => { setPersonalData(data); setStage('cameraCapture'); };
-  const handleCameraCaptureComplete = (photoData: string) => { setUserPhoto(photoData); setStage('videoCapture'); };
-  const handleVideoCaptureComplete = (rid: string) => { setReplicaId(rid); markOnboardingComplete(rid); };
-  const handleSkipCameraCapture = () => { toast.info('Camera capture skipped. You can add a photo later.'); setStage('videoCapture'); };
-  const handleSkipVideoCapture = () => { toast.info('Video capture skipped. You can create your Echo avatar later.'); markOnboardingComplete(); };
+  const handleCameraCaptureComplete = (photoData: string) => { setUserPhoto(photoData); markOnboardingComplete(); };
+  const handleSkipCameraCapture = () => { toast.info('Camera capture skipped. You can add a photo later.'); markOnboardingComplete(); };
   const handleBackToWelcome = () => { setStage('welcome'); };
   const handleBackToDatabaseCheck = () => { setStage('dbCheck'); };
   const handleBackToPersonalData = () => { setStage('personalData'); };
-  const handleBackToCameraCapture = () => { setStage('cameraCapture'); };
 
   return (
-    <div className="w-full h-full flex items-center justify-center px-6 py-8">
+    <div className="w-full min-h-[100dvh] flex items-center justify-center px-6 py-8 overflow-y-auto">
       <audio ref={musicRef} src="/ambient-music.mp3" preload="auto" />
       <audio ref={soundRef} src="/tap-sound.mp3" preload="auto" />
 
@@ -118,16 +107,15 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
               className="w-full max-w-lg mx-auto"
             >
               <div className="glass-panel-light text-center">
-                {/* Animated Headphone Icon */}
                 <motion.div className="flex justify-center mb-6" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }}>
                   <div className="w-24 h-24">
                     <Lottie animationData={headphonesAnimation} loop style={{ width:'100%', height:'100%', filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))' }} />
                   </div>
                 </motion.div>
 
-                <h2 className="text-3xl font-extrabold mb-4 text-gray-800 text-title">Can You Hear Me?</h2>
+                <h2 className="text-3xl font-bold mb-4 text-gray-800 text-title">Can You Hear Me?</h2>
                 <p className="text-lg text-gray-600 mb-8 text-body">This experience is best enjoyed with sound.</p>
-                <button onClick={handleSoundCheckNext} className="neumorphic-button-light text-button">Continue</button>
+                <button onClick={handleSoundCheckNext} className="glass-button glass-button-primary text-button">Continue</button>
               </div>
             </motion.div>
           )
@@ -163,11 +151,7 @@ export function ExtendedOnboardingFlow({ onComplete }: { onComplete: () => void 
           </motion.div>
         )}
 
-        {stage === 'videoCapture' && personalData && (
-          <motion.div key="videoCapture" initial={{opacity:0, x:100}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-100}} transition={{duration:0.5}} className="w-full flex flex-col overflow-y-auto">
-            <VideoCaptureStep personalData={personalData} onComplete={handleVideoCaptureComplete} onBack={handleBackToCameraCapture} onSkip={handleSkipVideoCapture} />
-          </motion.div>
-        )}
+
       </AnimatePresence>
 
       {clickPulse && <div key={clickPulse.key} className="click-pulse" style={{ left: clickPulse.x, top: clickPulse.y }} />}

@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/database';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: Request) {
   try {
@@ -29,21 +30,25 @@ export async function POST(req: Request) {
     }
 
     // Parse the request body
-    const { firstName, lastName, dateOfBirth, age } = await req.json();
+    const { firstName, lastName, dateOfBirth, age, photoData } = await req.json();
 
-    // Upsert into user_profiles table (using service role or anon key appropriately)
-    const { data: inserted, error: insertError } = await supabase
+    // Build the row to upsert — only include photoData if provided
+    const row: Record<string, unknown> = {
+      user_id: user.id,
+      first_name: firstName,
+      last_name: lastName,
+      date_of_birth: dateOfBirth,
+      age,
+    };
+    if (photoData) {
+      row.photo_data = photoData;
+    }
+
+    // Use the admin (service-role) client to bypass RLS — the user was already
+    // authenticated above via supabase.auth.getUser(token).
+    const { data: inserted, error: insertError } = await supabaseAdmin
       .from('user_profiles')
-      .upsert(
-        {
-          user_id: user.id,
-          first_name: firstName,
-          last_name: lastName,
-          date_of_birth: dateOfBirth,
-          age,
-        },
-        { onConflict: 'user_id' }
-      )
+      .upsert(row, { onConflict: 'user_id' })
       .select('*');
 
     if (insertError) {
